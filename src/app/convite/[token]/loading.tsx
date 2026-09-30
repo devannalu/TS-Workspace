@@ -1,0 +1,1 @@
+export default function Loading() { return <main className="flex min-h-dvh items-center justify-center px-6"><div className="h-72 w-full max-w-xl animate-pulse rounded-3xl bg-muted" role="status" aria-label="Carregando convite" /></main>; }

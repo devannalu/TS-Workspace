@@ -1,0 +1,42 @@
+@import "tailwindcss";
+
+:root {
+  --background: #f7f5f3;
+  --foreground: #292326;
+  --card: #ffffff;
+  --border: #e3dcde;
+  --muted: #f0ebed;
+  --muted-foreground: #706369;
+  --primary: #6c233e;
+  --primary-foreground: #ffffff;
+  --accent: #f3e0e7;
+  --accent-foreground: #702b45;
+  --danger: #ac2036;
+  --focus: #8a3655;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-border: var(--border);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-danger: var(--danger);
+  --color-focus: var(--focus);
+  --font-sans: ui-sans-serif, system-ui, sans-serif;
+}
+
+@layer base {
+  body { @apply bg-background font-sans text-foreground antialiased; }
+  ::selection { @apply bg-accent text-accent-foreground; }
+  :focus-visible { outline: 2px solid var(--focus); outline-offset: 5px; }
+}
+
+.foundation-surface {
+  background-image: radial-gradient(ellipse at 95% 0%, #f3e0e76b, transparent 55%);
+}
