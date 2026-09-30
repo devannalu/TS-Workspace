@@ -1,5 +1,24 @@
 name: ts-workspace
 services:
+  mysql-java:
+    image: mysql:8.4.11
+    container_name: ts-workspace-mysql-java
+    environment:
+      MYSQL_DATABASE: ts_workspace_java
+      MYSQL_USER: ts_workspace_java
+      MYSQL_PASSWORD: ${JAVA_MYSQL_PASSWORD:?Configure JAVA_MYSQL_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${JAVA_MYSQL_ROOT_PASSWORD:?Configure JAVA_MYSQL_ROOT_PASSWORD}
+    ports:
+      - "127.0.0.1:3309:3306"
+    volumes:
+      - mysql-java-data:/var/lib/mysql
+    networks: [java-network]
+    healthcheck:
+      test: ["CMD-SHELL", "MYSQL_PWD=\"$$MYSQL_PASSWORD\" mysql -h 127.0.0.1 -u ts_workspace_java -D ts_workspace_java -e 'SELECT 1' >/dev/null 2>&1"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 30s
   mysql:
     image: mysql:8.4.11
     container_name: ts-workspace-mysql
@@ -39,7 +58,12 @@ services:
       retries: 30
       start_period: 30s
 volumes:
+  mysql-java-data:
+    name: ts_workspace_mysql_java_data
   mysql-data:
     name: ts-workspace-mysql-data
   mysql-test-data:
     name: ts-workspace-mysql-test-data
+networks:
+  java-network:
+    name: ts-workspace-java-network

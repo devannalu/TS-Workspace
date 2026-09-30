@@ -1,0 +1,24 @@
+server:
+  port: ${SERVER_PORT:8080}
+  address: ${SERVER_ADDRESS:127.0.0.1}
+  error:
+    include-message: never
+    include-stacktrace: never
+spring:
+  application:
+    name: ts-workspace-java
+  datasource:
+    url: ${JAVA_DATABASE_URL:jdbc:mysql://127.0.0.1:3309/ts_workspace_java}
+    username: ${JAVA_MYSQL_USER:ts_workspace_java}
+    password: ${JAVA_MYSQL_PASSWORD}
+    hikari:
+      connection-timeout: 5000
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+  flyway:
+    enabled: true
+    clean-disabled: true
+app:
+  frontend-origin: ${FRONTEND_ORIGIN:http://localhost:3000}

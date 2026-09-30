@@ -1,199 +1,207 @@
 # TS Workspace
 
-Aplicação interna de gestão, operação e produtividade da Tech Sisters.
-Construída em fases com Next.js, MySQL, Prisma e Better Auth.
+Workspace interno da Tech Sisters. Monorepo com frontend Next.js, backend
+Java/Spring Boot e bancos MySQL separados durante a migração gradual.
 
-## Estado atual
+## Estado desta etapa
 
-**IMPLEMENTADO:** Fase 1.3 — banco local, autenticação, convites de uso único,
-gestão de usuárias, equipes, memberships, RBAC, seed, bootstrap administrativo,
-login e dashboard com dados reais.
+A Fase 1.1–1.3 foi recuperada, validada e publicada no checkpoint
+[`fabb67294509f89005c9bae0d7713b077f314691`](https://github.com/devannalu/TS-Workspace/commit/fabb67294509f89005c9bae0d7713b077f314691).
+O frontend existente foi movido intacto para `frontend/`: login, sessão,
+logout, RBAC, equipes, convites e usuárias continuam usando Prisma/Better Auth.
 
-**VALIDADO:** migrations, seed repetido, testes unitários e de integração,
-fluxos de convite/aceite, concorrência single-use, inativação, hierarquia,
-fluxo HTTP no Next, typecheck, lint, build e validação manual local.
-
-- [Registro da Fase 1.1](docs/fase-1.1.md)
-- [Decisões, segurança e validações da Fase 1.2](docs/fase-1.2.md)
-- [Convites, usuárias e equipes da Fase 1.3](docs/fase-1.3.md)
-
-Não existem ainda SMTP, recuperação de senha ou módulos de produtividade.
-
-## Pré-requisitos
-
-- Node.js 24 LTS; ambiente validado com 24.19.0 e npm 11.17.0.
-- Docker Desktop com Engine Linux acessível; validado Engine 29.7.2.
-- Git; ambiente validado com 2.51.1.windows.1.
-- Arquivo .env local com os valores reais. Use .env.example como referência;
-  não use seus placeholders como credenciais.
-
-Os arquivos reais de ambiente já foram preparados neste ambiente local e
-estão ignorados pelo Git. Não os sobrescreva ao retomar o projeto.
-
-## Instalação e execução
-
-Na raiz do projeto:
-
-```powershell
-npm install --cache .npm-cache --no-fund
-docker compose --profile test up -d --wait
-npm run db:validate
-npm run db:generate
-npm run db:migrate -- --name init_core
-npm run db:seed
-npm run dev -- --hostname 127.0.0.1
-```
-
-A migration init_core já foi aplicada neste ambiente. O comando migrate é
-para sincronização inicial/desenvolvimento; não gere outra migration de
-mesmo propósito. Não use reset. Acesse [localhost:3000](http://localhost:3000),
-mesma origem configurada em BETTER_AUTH_URL. Ctrl+C encerra o servidor.
-
-## Comandos disponíveis
-
-| Comando | Uso |
-| --- | --- |
-| npm run dev | Desenvolvimento |
-| npm run build | Build de produção |
-| npm run start | Servidor de produção após build |
-| npm run typecheck | Gera tipos das rotas e executa tsc --noEmit |
-| npm run lint | ESLint, sem tolerância a warnings |
-| npm run db:format | Formata schema Prisma |
-| npm run db:validate | Valida schema |
-| npm run db:generate | Gera Prisma Client |
-| npm run db:migrate -- --name NOME | Cria/aplica migration de desenvolvimento |
-| npm run db:seed | Seed idempotente |
-| npm run auth:schema:check | Check oficial Better Auth contra Prisma Client |
-| npm run bootstrap | Primeira Super Admin; requer arquivo local preenchido |
-| npm test | Testes unitários |
-| npm run test:integration | Aplica migrations no banco de testes e executa integração HTTP/MySQL |
-| npm run test:workspace | Testa o build real do Next com banco de testes na porta 3101 |
-
-O teste workspace exige build prévio e banco de testes migrado. Inicia e
-encerra seu próprio servidor Next, cria uma identidade temporária no banco
-de testes e remove somente os registros de teste que criou.
-
-## Banco e ambiente
-
-Imagem oficial fixa MySQL 8.4.11. Containers e volumes exclusivos:
-
-- ts-workspace-mysql / ts-workspace-mysql-data: banco ts_workspace em
-  127.0.0.1:3307, com usuário próprio ts_workspace.
-- ts-workspace-mysql-test / ts-workspace-mysql-test-data: banco
-  ts_workspace_test em 127.0.0.1:3308, com usuário ts_workspace_test.
-- ts_workspace_shadow: banco separado para Prisma Migrate na instância dev.
-
-Variáveis: DATABASE_URL, SHADOW_DATABASE_URL, TEST_DATABASE_URL,
-BETTER_AUTH_SECRET, BETTER_AUTH_URL e as quatro senhas MYSQL_* do Compose.
-Não é necessário NEXT_PUBLIC_APP_URL: o cliente de auth usa a mesma origem.
-
-Não executar DROP, migrate reset ou remoção de volumes sem autorização.
-Não usar banco de desenvolvimento ou produção para integração. O runner
-recusa qualquer destino fora do banco/host/porta/usuário de teste esperados.
-
-## Primeira Super Admin
-
-O seed cria quatro cargos e cinco equipes, mas **não cria pessoas**.
-O bootstrap lê `.env.bootstrap.local`, ignorado pelo Git, com:
-BOOTSTRAP_NAME, BOOTSTRAP_EMAIL e BOOTSTRAP_PASSWORD.
-
-A responsável define a senha localmente, de 12 a 128 caracteres. Não a
-passe em argumento de terminal, chat, Git ou relatório. Execute
-`npm run bootstrap` depois de seed e preenchimento do arquivo.
-
-É uma operação administrativa one-shot: não executar em dois processos
-simultaneamente. A mesma conta totalmente provisionada é idempotente;
-segunda Super Admin, conta preexistente ou estado parcial são recusados.
-User/Account, Profile, membership e auditoria compartilham uma transação.
-Better Auth faz o hashing através da API oficial; não há hashing caseiro.
-
-Depois da conclusão, a responsável pode retirar BOOTSTRAP_PASSWORD do arquivo
-local. Uma nova execução idempotente não redefine a senha da conta existente.
-
-## Segurança e domínio
-
-- Signup HTTP bloqueado no Better Auth; nenhuma página /signup. O cadastro
-  público continua fechado; contas novas só entram por `/convite/[token]`.
-- Autenticação Better Auth separada do RBAC TS Workspace.
-- requireAuth consulta sessão, User e Profile active no servidor.
-- Profile inactive não cria sessão; acesso com sessão anterior revoga todas.
-- Sem cache persistente de autorização ou token em localStorage.
-- RBAC: inactive nega; SUPER_ADMIN ativo tem bypass; override individual;
-  grants do cargo; negação por padrão. Ver matriz completa no registro 1.2.
-- Cinco equipes oficiais, Fundadoras raiz e as outras quatro filhas.
-- TeamMember liga User diretamente a Team, permitindo várias equipes.
-- Hierarquia validada no servidor, sem ciclos, parent inválido ou segunda raiz.
-- AuditLog não recebe credenciais, cookies ou tokens.
-- Login e logout têm loading/erro; dashboard usa somente dados persistidos.
-- `/usuarias` e `/equipes` usam mutations server-side com Zod, autorização e
-  auditoria. Convites não armazenam token puro e não enviam e-mail nesta fase.
-
-## Stack e versões
-
-| Pacote | Versão |
-| --- | --- |
-| Next.js / eslint-config-next | 16.3.7 |
-| React / React DOM | 19.3.0 |
-| TypeScript | 6.0.3, strict e noImplicitAny ativos |
-| Tailwind / @tailwindcss/postcss | 4.3.3 |
-| ESLint | 9.39.5 |
-| Lucide React | 1.48.0 |
-| Prisma / @prisma/client / @prisma/adapter-mariadb | 7.10.0 |
-| Better Auth / @better-auth/prisma-adapter / auth CLI | 1.7.6 |
-| Zod | 4.6.5 |
-| dotenv | 18.0.4 |
-| tsx | 4.23.15 |
-| Vitest | 5.0.2 |
-| bun-types | 1.4.2, somente declaração sqlite exigida pelo Better Auth |
-
-O runtime continua Node e o banco continua MySQL. Os adapters MariaDB/Bun
-nas dependências/tipos não indicam troca de banco ou runtime. O lockfile
-fixa a árvore instalada. Overrides de segurança estão documentados no
-registro 1.2, incluindo autorização para deepmerge-ts 8.0.2. O audit da
-instalação final reportou zero vulnerabilidades.
-
-ESLint 9 foi mantido por compatibilidade do plugin React, apesar do aviso
-de suporte encerrado do npm. Não atualizar majors sem revalidar peers.
+O Java oferece somente a fundação: Spring Web/Security/Data JPA/Validation,
+MySQL isolado, Flyway, validação Hibernate e `GET /api/v1/health`.
+A página técnica `/infra` usa `frontend/src/lib/api/client.ts` para consultar
+esse endpoint diretamente do navegador. Autenticação e domínio Java ainda
+não foram implementados. Nenhum dado real foi migrado.
 
 ## Estrutura
 
 ```text
-docker/mysql/init.sql
-prisma/
-  schema.prisma
-  migrations/20260929153313_init_core/migration.sql
-  seed.ts
-  seed-data.ts
-scripts/
-  auth-schema.config.ts
-  auth-check.config.ts
-  bootstrap.ts
-  test-integration.ts
-  test-workspace.ts
-src/
-  app/                 # /, /login, /workspace, API Better Auth
-  components/          # layout, formulários e UI utilizada
-  generated/prisma/    # gerado, ignorado pelo Git
-  lib/
-    auth/              # configuração, sessão, bootstrap e políticas
-    db/                # cliente e proteção do banco de testes
-    permissions/       # RBAC centralizado
-    teams/             # validação e serviço de hierarquia
- tests/                # unit e integration
- docs/                 # registros das fases
+frontend/
+  src/app/                 # páginas existentes + /infra
+  src/components/          # UI existente preservada
+  src/lib/api/             # cliente central para o Java
+  src/lib/auth/            # Better Auth e autorização existentes
+  prisma/                  # schema, migrations e seed existentes
+  scripts/                 # bootstrap e runners existentes
+  tests/                   # suítes existentes
+  package.json
+  package-lock.json
+  .env.example
+backend/
+  .mvn/wrapper/            # distribuição Maven com checksum
+  mvnw / mvnw.cmd
+  pom.xml
+  run-dev.ps1
+  src/main/java/com/devannalu/tsworkspace/
+  src/main/resources/application.yml
+  src/main/resources/db/migration/V1__foundation_marker.sql
+  src/test/java/com/devannalu/tsworkspace/FoundationTest.java
+docker/mysql/init.sql       # suporte ao banco Prisma existente
+docs/
 compose.yaml
-prisma.config.ts
-prisma.test.config.ts
-vitest.config.ts
 .env.example
+.gitignore
+README.md
 ```
 
-AGENTS.md e CLAUDE.md foram gerados pelo Next na Fase 1.1 e preservados.
-next-env.d.ts e Prisma Client são gerados, não editados manualmente.
-O alias @/* aponta para src/*. Tokens visuais seguem em src/app/globals.css.
+Não há diretório `legacy/` permanente. O histórico Git preserva o baseline;
+a única implementação ativa anterior está dentro de `frontend/`.
+Os documentos das fases anteriores são registros históricos, com caminhos
+relativos à antiga raiz: hoje esses caminhos estão sob `frontend/`.
 
-## Git e publicação
+## Ambiente validado
 
-Repositório local, sem commits ou remote configurado por este trabalho.
-.env e .env.bootstrap.local são ignorados; somente .env.example é versionável.
-Nenhum deploy, push, envio de e-mail ou reset de banco foi executado.
+| Recurso | Versão |
+| --- | --- |
+| Node / npm | 24.19.0 / 11.17.0 |
+| Next / React / TypeScript / Tailwind | 16.3.7 / 19.3.0 / 6.0.3 / 4.3.3 |
+| Prisma / Better Auth | 7.10.0 / 1.7.6 |
+| Java | 17.0.12, Oracle JDK |
+| Spring Boot | 3.5.16 |
+| Maven Wrapper / Maven | 3.3.4 / 3.9.16 |
+| Docker Client e Engine | 29.7.2, contexto desktop-linux |
+| MySQL | 8.4.11 |
+| Flyway / Testcontainers | 11.7.2 / 1.21.4, gerenciados pelo Spring Boot |
+
+Java 17, Node 24 e Docker Engine Linux acessível são necessários.
+Maven global não é necessário: todos os comandos usam o Wrapper oficial.
+O Wrapper baixa o Maven e valida o SHA-256 fixado no repositório.
+
+## Configuração local
+
+Use os exemplos para preparar os arquivos locais, sem sobrescrever os
+ambientes reais já existentes. Nunca use os placeholders como senhas.
+
+- `.env` da raiz: credenciais do Compose legado e Java. O novo banco usa
+  `JAVA_MYSQL_PASSWORD` e `JAVA_MYSQL_ROOT_PASSWORD`, diferentes das antigas.
+- `frontend/.env`: URLs Prisma, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL` e,
+  opcionalmente, `NEXT_PUBLIC_JAVA_API_URL=http://localhost:8080`.
+- `frontend/.env.bootstrap.local`: dados privados do bootstrap antigo.
+
+O `backend/run-dev.ps1` lê somente as variáveis Java necessárias do `.env`
+da raiz, sem imprimir valores. Variáveis já definidas no processo têm
+precedência. O backend não recebe a senha root do MySQL. Os padrões são
+`jdbc:mysql://127.0.0.1:3309/ts_workspace_java`, usuário `ts_workspace_java`,
+origem `http://localhost:3000` e bind `127.0.0.1:8080`.
+
+`NEXT_PUBLIC_JAVA_API_URL` é público e incorporado no build do Next. Nunca
+coloque credenciais em variáveis `NEXT_PUBLIC_*`. Alterar a URL exige novo
+build. Alterar a origem do frontend exige também ajustar `FRONTEND_ORIGIN`
+no backend e a configuração de origem do Better Auth.
+
+## Bancos e portas
+
+| Serviço | Host local | Banco | Volume |
+| --- | --- | --- | --- |
+| Prisma existente | 127.0.0.1:3307 | ts_workspace | ts-workspace-mysql-data |
+| Testes Prisma | 127.0.0.1:3308 | ts_workspace_test | ts-workspace-mysql-test-data |
+| Java | 127.0.0.1:3309 | ts_workspace_java | ts_workspace_mysql_java_data |
+| Spring Boot | 127.0.0.1:8080 | — | — |
+| Next.js | localhost:3000 | — | — |
+| Runner HTTP Next | 127.0.0.1:3101 | banco de testes | — |
+
+A porta 3306 pertence a outro projeto e foi preservada. O serviço `mysql-java`
+usa container `ts-workspace-mysql-java` e rede `ts-workspace-java-network`.
+O banco shadow Prisma permanece na instância legada. O Testcontainers usa
+containers efêmeros e portas aleatórias; nunca usa os bancos de desenvolvimento.
+
+## Iniciar neste ambiente (PowerShell)
+
+Na raiz, para o MySQL Java:
+
+```powershell
+docker compose config --quiet
+docker compose up -d mysql-java
+```
+
+Para os containers Prisma já existentes, se estiverem parados:
+
+```powershell
+docker start ts-workspace-mysql ts-workspace-mysql-test
+```
+
+Em um terminal na raiz, iniciar o backend:
+
+```powershell
+backend\mvnw.cmd --version
+powershell -NoProfile -File backend/run-dev.ps1
+```
+
+Em outro terminal, entrar em `frontend/` e executar:
+
+```powershell
+npm install --cache ../.npm-cache
+npm run db:generate
+npm run build
+npm run start -- --hostname 127.0.0.1
+```
+
+Acesse [workspace](http://localhost:3000) ou
+[verificação Java](http://localhost:3000/infra). Ctrl+C encerra cada servidor.
+As migrations Prisma do ambiente existente já estão aplicadas. Não gere
+outra migration de mesmo propósito nem reinicialize esse banco. O script
+`test:integration` aplica as migrations versionadas somente no banco de testes.
+
+## Flyway e segurança da fundação
+
+Na inicialização, Flyway aplica `V1__foundation_marker.sql` exclusivamente
+no banco Java, criando uma tabela técnica com uma linha. Hibernate usa
+`ddl-auto=validate`; não cria nem atualiza tabelas. `clean-disabled=true`.
+Uma segunda execução valida a migration e não a reaplica.
+
+`GET /api/v1/health` consulta a tabela via JPA e retorna apenas
+`{"status":"UP"}` quando disponível. Falha de banco retorna 503 sem SQL,
+credenciais, connection string ou stacktrace na resposta.
+
+CORS permite somente `http://localhost:3000`, GET e credentials. Origem
+externa é rejeitada. CSRF permanece habilitado e as demais rotas são
+negadas por padrão. Não existe login, senha gerada ou cadastro Java.
+
+## Testes
+
+Dentro de `backend/`, com Docker acessível:
+
+```powershell
+.\mvnw.cmd -B test
+.\mvnw.cmd -B package
+```
+
+Ambos executam os cinco testes reais com MySQL Testcontainers: contexto,
+Flyway idempotente e validação JPA, health, CORS permitido/rejeitado,
+CSRF e negação das demais rotas. O package produz
+`backend/target/ts-workspace-backend-0.1.0.jar`, ignorado pelo Git.
+Nenhum comando usa `-DskipTests`.
+
+Dentro de `frontend/`, com os bancos Prisma existentes acessíveis:
+
+```powershell
+npm run typecheck
+npm run lint
+npm test
+npm run build
+npm run test:integration
+npm run test:workspace
+npm run auth:schema:check
+```
+
+Foram aprovados 34 testes unitários e 16 de integração, além do runner
+HTTP do Next real. O runner usa a porta 3101 e remove somente seus próprios
+dados temporários no banco de testes. Consulte a cobertura e as limitações
+em [Fundação Java](docs/fundacao-java.md).
+
+## Histórico e cuidados
+
+- [Fase 1.1](docs/fase-1.1.md)
+- [Fase 1.2](docs/fase-1.2.md)
+- [Fase 1.3](docs/fase-1.3.md)
+- [Recuperação e fundação Java](docs/fundacao-java.md)
+- [Repositório oficial](https://github.com/devannalu/TS-Workspace), branch `main`.
+
+Arquivos reais de ambiente, logs, caches e artefatos gerados são ignorados.
+Migrations Flyway e Prisma, Maven Wrapper e lockfile são versionados.
+Não executar reset, DROP, remoção de volumes, prune ou alterações em
+containers de outros projetos. O frontend antigo só deve ser retirado por
+módulo depois que sua substituição Java correspondente estiver validada.
