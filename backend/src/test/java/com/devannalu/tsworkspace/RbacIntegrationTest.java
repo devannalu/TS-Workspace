@@ -66,7 +66,7 @@ class RbacIntegrationTest {
     }
 
     @Test void migrationsSeedAndActualDatabaseMatrixMatchFrozenBaseline() throws Exception {
-        assertThat(flyway.info().current().getVersion().getVersion()).isEqualTo("5");
+        assertThat(flyway.info().current().getVersion().getVersion()).isEqualTo("6");
         assertThat(flyway.migrate().migrationsExecuted).isZero();
         assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM roles", Integer.class)).isEqualTo(4);
         assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM permissions", Integer.class)).isEqualTo(14);

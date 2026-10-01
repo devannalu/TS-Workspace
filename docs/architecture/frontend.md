@@ -39,6 +39,9 @@ verificadas no servidor. Esconder uma ação ou item de menu não autoriza nem
 protege uma operação por si só.
 
 O cliente técnico tipa role e permission keys da [API Java](rbac.md).
+`src/lib/api/teams.ts` oferece list/detail/create/edit/archive e memberships da
+[API de equipes](teams.md), com sessão por cookie e CSRF em cada escrita.
+Esse cliente ainda não alimenta a página oficial `/equipes`.
 A troca do login e dos módulos deve ocorrer somente após a substituição
 correspondente estar validada.
 

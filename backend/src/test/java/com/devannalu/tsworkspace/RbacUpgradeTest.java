@@ -46,13 +46,15 @@ class RbacUpgradeTest {
         }
         Flyway upgrade = Flyway.configure().dataSource(source)
             .javaMigrations(new V5__provision_rbac(true, "upgrade@example.test", password)).load();
-        assertThat(upgrade.migrate().migrationsExecuted).isEqualTo(1);
+        assertThat(upgrade.migrate().migrationsExecuted).isEqualTo(2);
         assertThat(upgrade.migrate().migrationsExecuted).isZero();
         assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM app_user", Integer.class)).isEqualTo(1);
         assertThat(jdbc.queryForObject("SELECT id FROM app_user", String.class)).isEqualTo(id);
         assertThat(jdbc.queryForObject("SELECT email FROM app_user", String.class)).isEqualTo("upgrade@example.test");
         assertThat(hash.equals(jdbc.queryForObject("SELECT password_hash FROM app_user", String.class))).isTrue();
         assertThat(jdbc.queryForObject("SELECT r.role_key FROM app_profile p JOIN roles r ON r.id=p.role_id", String.class)).isEqualTo("SUPER_ADMIN");
+        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM team", Integer.class)).isEqualTo(5);
+        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM team_member tm JOIN team t ON t.id=tm.team_id WHERE tm.user_id=? AND t.team_key='fundadoras'", Integer.class, id)).isEqualTo(1);
         assertThat(jdbc.queryForObject("SELECT IS_NULLABLE FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='app_profile' AND COLUMN_NAME='role_id'", String.class)).isEqualTo("NO");
     }
 }

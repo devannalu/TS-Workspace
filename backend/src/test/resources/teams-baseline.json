@@ -1,0 +1,21 @@
+{
+  "commit": "fabb67294509f89005c9bae0d7713b077f314691",
+  "sources": ["prisma/schema.prisma", "prisma/seed-data.ts", "src/lib/teams/hierarchy.ts", "src/lib/teams/admin-service.ts", "tests/unit/policies.test.ts", "tests/integration/phase13.test.ts"],
+  "root": {"key":"fundadoras","name":"Fundadoras"},
+  "children": {"comunicacao":"Comunicação","eventos":"Eventos","desenvolvimento-projetos":"Desenvolvimento de Projetos","comunicacao-interna":"Comunicação Interna"},
+  "parentCases": [
+    {"id":"new","parent":"a","allowed":true},
+    {"id":"c","parent":"root","allowed":true},
+    {"id":"a","parent":"a","allowed":false},
+    {"id":"a","parent":"b","allowed":false},
+    {"id":"a","parent":"c","allowed":false},
+    {"id":"a","parent":"missing","allowed":false},
+    {"id":"a","parent":"archived","allowed":false},
+    {"id":"new","parent":null,"allowed":false},
+    {"id":"root","parent":"a","allowed":false}
+  ],
+  "archiveActiveChildren": "reject",
+  "lastActiveSuperAdminInFounders": "reject-removal",
+  "membershipKey": ["userId","teamId"],
+  "visibleMembers": "active profiles only"
+}

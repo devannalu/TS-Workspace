@@ -27,6 +27,12 @@ upgrade de identidade existente. O teste HTTP inicia Spring Boot em porta
 aleatória com MySQL efêmero e cookies reais para validar 200/401/403, CSRF,
 roles e logout, sem modificar o acesso da identidade de desenvolvimento.
 
+A suíte de [Equipes](../architecture/teams.md) cobre políticas de hierarquia,
+seed, memberships many-to-many, arquivamento, última Super Admin, compatibility
+com o baseline Prisma, RBAC e constraints. Testes concorrentes verificam
+duplicação de integrante, movimentos que formariam ciclo e remoção simultânea
+das administradoras. O upgrade valida a membership de identidade preexistente.
+
 ### Testcontainers
 
 Os testes integrados Java criam MySQL real efêmero e recebem URL, usuário,

@@ -27,7 +27,21 @@ automática entre identidades ou sessões dos dois serviços.
 
 No Java, identidade, sessões e [RBAC](rbac.md) estão disponíveis. Profile tem
 relação obrigatória com Role, e as tabelas RBAC possuem FKs e constraints de
-unicidade. Equipes e convites continuam no schema Prisma.
+unicidade. A API Java também possui Team e TeamMember; convites continuam
+somente no Prisma, e a interface oficial de equipes ainda utiliza o banco legado.
+
+`V6__teams.sql` cria `team` e `team_member`, preservando V1–V5. `team_key`
+é uma chave única estável, equivalente à key Prisma, usada para reconhecer
+Fundadoras sem fixar UUID. A self FK restringe exclusão/alteração do parent.
+Uma coluna gerada `root_slot` com índice único limita o banco a uma raiz.
+TeamMember tem PK `(user_id, team_id)`, FK para User com cascade e FK para
+Team com restrict; índices atendem busca por equipe, parent e status.
+
+A migration cria as cinco equipes e associa Super Admins ativas existentes
+a Fundadoras, sem alterar User/Profile/Role. `TeamSeed.seed()` completa dados
+faltantes de forma idempotente e preserva nomes, parents e arquivamentos
+administrativos; recusa Fundadoras em estado inválido. A execução explícita
+também completa memberships de Super Admins ativas em Fundadoras.
 
 ## Migrations
 
@@ -50,6 +64,10 @@ Criação de identidade/perfil, aceite de convite e mudanças organizacionais
 devem preservar atomicidade e suas invariantes. No backend atual, operações
 sensíveis de hierarquia e gestão usam transações e validações server-side.
 No Java, serviços usam transações Spring para operações relacionadas.
+Todas as escritas administrativas de equipes bloqueiam primeiro a mesma linha
+Fundadoras com `FOR UPDATE`. Isso serializa alterações da árvore e checagens da
+última Super Admin entre instâncias da API. Constraints complementam as regras
+do serviço. Veja [Equipes](teams.md).
 
 ## Testes e dados locais
 

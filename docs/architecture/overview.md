@@ -30,6 +30,8 @@ O frontend oficial usa Better Auth e serviços server-side Prisma para acesso,
 RBAC, usuárias, convites e equipes. A API Java possui autenticação baseada em
 sessão e health conectado ao banco; o cliente técnico em Next.js consome essa API.
 O [RBAC Java](rbac.md) centraliza permissões e protege métodos da API.
+A API de [Equipes Java](teams.md) oferece hierarquia, arquivamento e memberships
+sem substituir ainda a página oficial `/equipes`.
 
 Os bancos Java e Prisma são separados. Suas contas, sessões e migrations não
 são intercambiáveis, e autenticar em um serviço não autentica automaticamente

@@ -118,6 +118,10 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST, "/api/v1/auth/login", "/api/v1/auth/logout").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/v1/auth/me").authenticated()
                 .requestMatchers(HttpMethod.GET, "/api/v1/permissions").authenticated()
+                .requestMatchers(HttpMethod.GET, "/api/v1/teams", "/api/v1/teams/*").authenticated()
+                .requestMatchers(HttpMethod.POST, "/api/v1/teams", "/api/v1/teams/*/archive", "/api/v1/teams/*/members").authenticated()
+                .requestMatchers(HttpMethod.PUT, "/api/v1/teams/*").authenticated()
+                .requestMatchers(HttpMethod.DELETE, "/api/v1/teams/*/members/*").authenticated()
                 .anyRequest().denyAll())
             .addFilterAfter(new ActiveUserFilter(profiles, logoutHandler), org.springframework.security.web.context.SecurityContextHolderFilter.class)
             .build();
@@ -127,7 +131,7 @@ public class SecurityConfig {
     CorsConfigurationSource cors(@Value("${app.frontend-origin}") String origin) {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowedOrigins(List.of(origin));
-        config.setAllowedMethods(List.of("GET", "POST", "OPTIONS"));
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("Accept", "Content-Type", "X-XSRF-TOKEN"));
         config.setAllowCredentials(true);
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

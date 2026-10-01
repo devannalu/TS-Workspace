@@ -8,6 +8,11 @@ Os módulos implementados de gestão são atendidos pelo Next.js/Prisma/Better A
 A migração para Java é uma mudança de implementação; não equivale a entregar
 novos módulos.
 
+A API Java já atende Auth, RBAC e [Equipes](../architecture/teams.md), incluindo
+hierarquia e integrantes. A página oficial `/equipes` ainda usa Prisma;
+`frontend/src/lib/api/teams.ts` é o cliente técnico Java. Os bancos permanecem
+separados, sem copiar automaticamente memberships do Prisma.
+
 | Módulo | Estado | Escopo e limites |
 | --- | --- | --- |
 | Dashboard / Início | IMPLEMENTADO — base | Exibe nome, perfil de acesso, cargo e equipes reais da usuária. Indicadores de tarefas, projetos e agenda são planejados. |
