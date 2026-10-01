@@ -4,6 +4,14 @@ server:
   error:
     include-message: never
     include-stacktrace: never
+  servlet:
+    session:
+      cookie:
+        name: TS_SESSION
+        http-only: true
+        secure: ${SESSION_COOKIE_SECURE:false}
+        same-site: lax
+        path: /
 spring:
   application:
     name: ts-workspace-java
@@ -20,5 +28,13 @@ spring:
   flyway:
     enabled: true
     clean-disabled: true
+  session:
+    store-type: jdbc
+    jdbc:
+      initialize-schema: never
+    timeout: 8h
 app:
   frontend-origin: ${FRONTEND_ORIGIN:http://localhost:3000}
+  bootstrap:
+    enabled: ${JAVA_BOOTSTRAP_ENABLED:false}
+    exit-on-complete: ${JAVA_BOOTSTRAP_EXIT:false}

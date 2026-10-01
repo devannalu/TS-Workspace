@@ -3,16 +3,22 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { getJavaHealth } from "@/lib/api/client";
+import { getCsrf } from "@/lib/api/auth";
 
 export default function InfrastructurePage() {
   const [state, setState] = useState<"loading" | "up" | "error">("loading");
   const [attempt, setAttempt] = useState(0);
+  const [authState, setAuthState] = useState<"loading" | "up" | "error">("loading");
 
   useEffect(() => {
     let active = true;
     getJavaHealth().then(
       () => { if (active) setState("up"); },
       () => { if (active) setState("error"); },
+    );
+    getCsrf().then(
+      () => { if (active) setAuthState("up"); },
+      () => { if (active) setAuthState("error"); },
     );
     return () => { active = false; };
   }, [attempt]);
@@ -26,6 +32,11 @@ export default function InfrastructurePage() {
         {state === "loading" && "Verificando conexão…"}
         {state === "up" && "Conexão confirmada. Serviço Java e MySQL disponíveis."}
         {state === "error" && "Não foi possível conectar ao serviço Java. Verifique se ele está em execução."}
+      </p>
+      <p role="status" aria-live="polite">
+        Sessão Java: {authState === "loading" && "verificando CSRF…"}
+        {authState === "up" && "infraestrutura disponível (CSRF ativo)."}
+        {authState === "error" && "infraestrutura de autenticação indisponível."}
       </p>
       <button
         type="button"

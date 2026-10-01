@@ -39,7 +39,7 @@ class FoundationTest {
 
     @Test
     void contextMigratesAndValidatesRealMysql() {
-        assertThat(flyway.info().current().getVersion().getVersion()).isEqualTo("1");
+        assertThat(flyway.info().current().getVersion().getVersion()).isEqualTo("3");
         assertThat(jdbc.queryForObject("SELECT name FROM schema_marker WHERE id = 1", String.class)).isEqualTo("java-foundation");
         assertThat(flyway.migrate().migrationsExecuted).isZero();
         assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM schema_marker", Integer.class)).isEqualTo(1);
@@ -68,6 +68,6 @@ class FoundationTest {
     @Test
     void csrfAndDefaultDenialRemainEnabled() throws Exception {
         mvc.perform(post("/api/v1/health")).andExpect(status().isForbidden());
-        mvc.perform(get("/api/v1/users")).andExpect(status().isForbidden());
+        mvc.perform(get("/api/v1/users")).andExpect(status().isUnauthorized());
     }
 }

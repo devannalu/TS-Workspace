@@ -10,11 +10,13 @@ A Fase 1.1–1.3 foi recuperada, validada e publicada no checkpoint
 O frontend existente foi movido intacto para `frontend/`: login, sessão,
 logout, RBAC, equipes, convites e usuárias continuam usando Prisma/Better Auth.
 
-O Java oferece somente a fundação: Spring Web/Security/Data JPA/Validation,
-MySQL isolado, Flyway, validação Hibernate e `GET /api/v1/health`.
+O Java oferece a fundação e a Fase Java 1: Spring Web/Security/Data JPA,
+Validation, MySQL isolado, Flyway, sessões JDBC persistentes, autenticação
+email/senha e `GET /api/v1/health`.
 A página técnica `/infra` usa `frontend/src/lib/api/client.ts` para consultar
-esse endpoint diretamente do navegador. Autenticação e domínio Java ainda
-não foram implementados. Nenhum dado real foi migrado.
+esse endpoint diretamente do navegador. A autenticação Java está disponível
+tecnicamente, mas o frontend oficial ainda usa Better Auth/Prisma. RBAC,
+equipes, convites, gestão de usuárias e Tasks Java ainda não foram migrados.
 
 ## Estrutura
 
@@ -35,9 +37,12 @@ backend/
   mvnw / mvnw.cmd
   pom.xml
   run-dev.ps1
+  bootstrap.ps1
   src/main/java/com/devannalu/tsworkspace/
   src/main/resources/application.yml
   src/main/resources/db/migration/V1__foundation_marker.sql
+  src/main/resources/db/migration/V2__auth_identity.sql
+  src/main/resources/db/migration/V3__jdbc_sessions.sql
   src/test/java/com/devannalu/tsworkspace/FoundationTest.java
 docker/mysql/init.sql       # suporte ao banco Prisma existente
 docs/
@@ -86,6 +91,12 @@ da raiz, sem imprimir valores. Variáveis já definidas no processo têm
 precedência. O backend não recebe a senha root do MySQL. Os padrões são
 `jdbc:mysql://127.0.0.1:3309/ts_workspace_java`, usuário `ts_workspace_java`,
 origem `http://localhost:3000` e bind `127.0.0.1:8080`.
+
+`backend/bootstrap.ps1` é o comando explícito para criar a primeira
+identidade Java com `BOOTSTRAP_NAME`, `BOOTSTRAP_EMAIL` e
+`BOOTSTRAP_PASSWORD`. Ele lê o arquivo local ignorado do bootstrap, usa
+BCrypt e encerra ao concluir. Uma segunda execução é idempotente; estado
+parcial falha sem ser alterado.
 
 `NEXT_PUBLIC_JAVA_API_URL` é público e incorporado no build do Next. Nunca
 coloque credenciais em variáveis `NEXT_PUBLIC_*`. Alterar a URL exige novo
@@ -145,20 +156,37 @@ As migrations Prisma do ambiente existente já estão aplicadas. Não gere
 outra migration de mesmo propósito nem reinicialize esse banco. O script
 `test:integration` aplica as migrations versionadas somente no banco de testes.
 
-## Flyway e segurança da fundação
+## Flyway, sessões e segurança Java
 
-Na inicialização, Flyway aplica `V1__foundation_marker.sql` exclusivamente
-no banco Java, criando uma tabela técnica com uma linha. Hibernate usa
-`ddl-auto=validate`; não cria nem atualiza tabelas. `clean-disabled=true`.
-Uma segunda execução valida a migration e não a reaplica.
+Na inicialização, Flyway aplica V1 (marcador técnico), V2 (User/Profile) e
+V3 (tabelas `SPRING_SESSION` e `SPRING_SESSION_ATTRIBUTES`) exclusivamente no
+banco Java. Hibernate usa `ddl-auto=validate`; não cria nem atualiza tabelas.
+`clean-disabled=true`. Uma segunda execução valida as migrations e não as
+reaplica. User e Profile não possuem Role nesta fase.
 
 `GET /api/v1/health` consulta a tabela via JPA e retorna apenas
 `{"status":"UP"}` quando disponível. Falha de banco retorna 503 sem SQL,
 credenciais, connection string ou stacktrace na resposta.
 
-CORS permite somente `http://localhost:3000`, GET e credentials. Origem
-externa é rejeitada. CSRF permanece habilitado e as demais rotas são
-negadas por padrão. Não existe login, senha gerada ou cadastro Java.
+CORS permite somente `http://localhost:3000`, GET/POST/OPTIONS e credentials.
+CSRF usa `CookieCsrfTokenRepository`: `GET /api/v1/auth/csrf` entrega o token
+e o cookie `XSRF-TOKEN`; mutações exigem o header `X-XSRF-TOKEN`. A sessão usa
+Spring Session JDBC, cookie `TS_SESSION` HttpOnly, SameSite=Lax e Secure=false
+somente no HTTP local. Login troca email normalizado e senha por sessão
+persistente; `/api/v1/auth/me` nunca retorna hash. Logout invalida a sessão.
+Origem externa é rejeitada e demais rotas são negadas por padrão. O perfil
+INACTIVE bloqueia o login e invalida uma sessão já aberta. Não há JWT nem
+token de autenticação em localStorage.
+
+Endpoints Java desta fase:
+
+- `GET /api/v1/auth/csrf`
+- `POST /api/v1/auth/login`
+- `POST /api/v1/auth/logout`
+- `GET /api/v1/auth/me`
+
+O cliente técnico está em `frontend/src/lib/api/auth.ts`; ele ainda não
+substitui a página `/login` nem a proteção do Workspace.
 
 ## Testes
 
@@ -175,6 +203,11 @@ CSRF e negação das demais rotas. O package produz
 `backend/target/ts-workspace-backend-0.1.0.jar`, ignorado pelo Git.
 Nenhum comando usa `-DskipTests`.
 
+A suíte Java de autenticação acrescenta seis testes reais com Testcontainers:
+normalização e hashing, login inválido/válido, sessão persistida, `/me`,
+logout, CSRF, CORS, inactive, invalidação e bootstrap idempotente/estado
+parcial. Ao todo, `mvnw.cmd test` executa 11 testes.
+
 Dentro de `frontend/`, com os bancos Prisma existentes acessíveis:
 
 ```powershell
@@ -190,7 +223,8 @@ npm run auth:schema:check
 Foram aprovados 34 testes unitários e 16 de integração, além do runner
 HTTP do Next real. O runner usa a porta 3101 e remove somente seus próprios
 dados temporários no banco de testes. Consulte a cobertura e as limitações
-em [Fundação Java](docs/fundacao-java.md).
+em [Fundação Java](docs/fundacao-java.md) e na
+[Fase Java 1 — autenticação e sessões](docs/fase-java-1-auth.md).
 
 ## Histórico e cuidados
 
@@ -198,6 +232,7 @@ em [Fundação Java](docs/fundacao-java.md).
 - [Fase 1.2](docs/fase-1.2.md)
 - [Fase 1.3](docs/fase-1.3.md)
 - [Recuperação e fundação Java](docs/fundacao-java.md)
+- [Fase Java 1 — autenticação e sessões](docs/fase-java-1-auth.md)
 - [Repositório oficial](https://github.com/devannalu/TS-Workspace), branch `main`.
 
 Arquivos reais de ambiente, logs, caches e artefatos gerados são ignorados.
