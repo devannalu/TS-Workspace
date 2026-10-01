@@ -25,9 +25,9 @@ automática entre identidades ou sessões dos dois serviços.
 - Convites guardam hash do token e relacionam equipes por InviteTeam.
 - Senhas, cookies e tokens não pertencem a metadados de auditoria.
 
-No Java publicado, identidade e sessões estão disponíveis; as tabelas e a
-relação Profile → Role do RBAC estão [em migração](rbac.md). Equipes e convites
-continuam no schema Prisma.
+No Java, identidade, sessões e [RBAC](rbac.md) estão disponíveis. Profile tem
+relação obrigatória com Role, e as tabelas RBAC possuem FKs e constraints de
+unicidade. Equipes e convites continuam no schema Prisma.
 
 ## Migrations
 

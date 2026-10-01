@@ -5,7 +5,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import java.util.Map;
-import org.springframework.http.HttpStatus;
+import java.util.List;
+import com.devannalu.tsworkspace.rbac.PermissionService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -31,6 +32,7 @@ public class AuthController {
     private final LogoutHandler logoutHandler;
     private final UserRepository users;
     private final ProfileRepository profiles;
+    private final PermissionService permissions;
 
     public AuthController(
         AuthenticationManager authenticationManager,
@@ -38,7 +40,8 @@ public class AuthController {
         SessionAuthenticationStrategy sessionAuthenticationStrategy,
         LogoutHandler logoutHandler,
         UserRepository users,
-        ProfileRepository profiles
+        ProfileRepository profiles,
+        PermissionService permissions
     ) {
         this.authenticationManager = authenticationManager;
         this.securityContextRepository = securityContextRepository;
@@ -46,6 +49,7 @@ public class AuthController {
         this.logoutHandler = logoutHandler;
         this.users = users;
         this.profiles = profiles;
+        this.permissions = permissions;
     }
 
     @GetMapping("/csrf")
@@ -79,9 +83,11 @@ public class AuthController {
     private UserResponse currentUser(AppUserPrincipal principal) {
         User user = users.findById(principal.id()).orElseThrow(() -> new IllegalStateException("Usuária não encontrada."));
         Profile profile = profiles.findById(user.getId()).orElseThrow(() -> new IllegalStateException("Perfil não encontrado."));
-        return new UserResponse(user.getId(), user.getName(), user.getEmail(), profile.getJobTitle(), profile.getStatus());
+        var rbac = permissions.getUserPermissions(principal.id());
+        return new UserResponse(user.getId(), user.getName(), user.getEmail(), profile.getJobTitle(), profile.getStatus(), rbac.role(), rbac.effectiveKeys());
     }
 
     public record LoginRequest(@NotBlank String email, @NotBlank String password) { }
-    public record UserResponse(String id, String name, String email, String jobTitle, ProfileStatus status) { }
+    public record UserResponse(String id, String name, String email, String jobTitle, ProfileStatus status,
+                               PermissionService.RoleResponse role, List<String> permissions) { }
 }

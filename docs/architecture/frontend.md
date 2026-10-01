@@ -38,7 +38,7 @@ ferramenta técnica, não uma segunda página de login.
 verificadas no servidor. Esconder uma ação ou item de menu não autoriza nem
 protege uma operação por si só.
 
-O contrato técnico de role/permissions Java está [em migração](rbac.md).
+O cliente técnico tipa role e permission keys da [API Java](rbac.md).
 A troca do login e dos módulos deve ocorrer somente após a substituição
 correspondente estar validada.
 

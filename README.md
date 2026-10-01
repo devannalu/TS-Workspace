@@ -118,7 +118,7 @@ Os testes de integração e HTTP usam bancos separados. Consulte
 Projeto em desenvolvimento. O backend está sendo consolidado em Java/Spring
 Boot enquanto os módulos existentes são migrados gradualmente. O login oficial
 e a gestão organizacional continuam na implementação Next.js/Prisma/Better Auth;
-o RBAC Java está em migração.
+a API Java oferece autenticação por sessão e RBAC server-side.
 
 ## Roadmap
 

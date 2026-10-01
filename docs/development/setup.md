@@ -129,11 +129,19 @@ raiz, é:
 powershell -NoProfile -File backend/bootstrap.ps1
 ```
 
-O script utiliza os valores locais, executa em porta técnica e encerra.
-O [RBAC Java está em migração](../architecture/rbac.md): checkouts com esse
-trabalho pendente exigem revisão do procedimento de upgrade antes de executar
-bootstrap ou iniciar a API sobre um banco existente. O provisionamento de roles
-em revisão não deve ser tratado como operação já validada.
+O script utiliza os valores locais, executa na porta técnica 18081 e encerra.
+Em banco vazio, inicializa o catálogo RBAC e cria User/Profile SUPER_ADMIN.
+Para um banco com a identidade Java anterior sem role, execute esse bootstrap
+antes de iniciar normalmente a API: o script habilita
+`JAVA_RBAC_PROVISION_EXISTING=true` somente no processo. V5 exige uma única
+User/Profile ACTIVE, email correspondente e senha válida; associa SUPER_ADMIN
+sem alterar a identidade ou credencial e torna `role_id` obrigatório.
+Estado parcial ou conta incompatível interrompe o provisionamento.
+
+Repetir o bootstrap reexecuta o seed idempotente sem duplicar dados. Após V5
+aplicada, o servidor normal não precisa das credenciais nem da flag de upgrade.
+Não manter essa flag habilitada na configuração de runtime.
+Consulte [RBAC](../architecture/rbac.md) para matriz e precedência.
 
 ## Iniciar os servidores
 

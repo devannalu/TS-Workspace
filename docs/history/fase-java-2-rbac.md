@@ -136,3 +136,54 @@ migration foi aplicada ao banco local e a Super Admin existente não foi alterad
 Pendentes: recuperar o Engine, executar testes integrados/upgrade, package,
 bootstrap administrativo, HTTP real, revisão final e commit/push. Não considerar
 esta fase validada até concluir essas verificações.
+
+### Retomada e validação concluída — 2026-10-01
+
+Docker version e info passaram com Client/Engine 29.7.2 no contexto
+desktop-linux. O MySQL Java existente foi iniciado e ficou healthy; recursos
+de outros projetos foram preservados.
+
+V4 e V5 foram aplicadas pelo bootstrap explícito no banco Java. Comparações
+locais antes/depois confirmaram a mesma User, o mesmo Profile ACTIVE, mesmo
+ID, nome, email e passwordHash, sem segunda identidade. SUPER_ADMIN foi
+associada pela key. Hibernate validate passou; `role_id` ficou NOT NULL e
+com FK válida. V1/V2/V3 permaneceram intactas.
+
+O banco real contém 4 Roles, 14 Permissions e 32 RolePermissions. A segunda
+execução do bootstrap/seed preservou identidade e contagens. Flyway validou
+cinco migrations e informou que nenhuma reaplicação era necessária.
+
+`mvnw.cmd -B test` e `mvnw.cmd -B package` passaram sem skips:
+
+| Grupo | Testes | Resultado |
+| --- | --- | --- |
+| Resolver e guard unitários | 13 | aprovado |
+| Compatibilidade das combinações Role/Permission | 56 | aprovado |
+| Integração de autenticação | 6 | aprovado |
+| Fundação/Flyway/CORS | 5 | aprovado |
+| Integração RBAC/constraints/overrides | 12 | aprovado |
+| Upgrade V3 → V5 com identidade existente | 1 | aprovado |
+| HTTP TCP com Spring Boot e MySQL efêmero | 1 | aprovado |
+| Total | 94 | sem falhas, erros ou skips |
+
+O primeiro teste integrado após recuperação encontrou uma expectativa incorreta
+de classe de exceção: o CHECK de effect rejeitou OTHER com erro MySQL 3819,
+traduzido pelo Spring como UncategorizedSQLException. O teste foi corrigido
+para verificar essa classe e o código 3819; nenhuma constraint foi relaxada.
+
+O backend real em 8080 respondeu health 200, CSRF 200, login 200, me 200 com
+SUPER_ADMIN e 14 keys efetivas, catálogo protegido 200, anônima 401, logout
+204 e me pós-logout 401. HttpOnly e origem CORS localhost:3000 confirmados.
+O teste HTTP em porta aleatória confirmou SUPPORT autenticada sem permissão
+recebendo 403; utilizou banco efêmero e não alterou a role da conta real.
+Nenhum cookie, token, senha, hash ou identificador de sessão foi publicado.
+
+O frontend não mudou nesta retomada; typecheck, lint e build aprovados na
+implementação anterior foram mantidos. Guias vivos foram atualizados sem
+converter o README em relatório. Links relativos foram conferidos.
+
+Permanecem os avisos conhecidos do Flyway sobre sua matriz testada de MySQL 8.4
+e do Spring sobre configuração explícita do AuthenticationProvider. Migrations,
+autenticação e autorização passaram nas versões instaladas. Rate limiting
+distribuído é hardening futuro. Teams, gestão de Users, Invites e Tasks Java
+ficam fora deste escopo; o login oficial permanece no backend anterior.

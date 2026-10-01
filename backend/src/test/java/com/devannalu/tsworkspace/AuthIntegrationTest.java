@@ -6,6 +6,7 @@ import com.devannalu.tsworkspace.auth.ProfileRepository;
 import com.devannalu.tsworkspace.auth.ProfileStatus;
 import com.devannalu.tsworkspace.auth.User;
 import com.devannalu.tsworkspace.auth.UserRepository;
+import com.devannalu.tsworkspace.rbac.RoleRepository;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.Cookie;
@@ -59,6 +60,7 @@ class AuthIntegrationTest {
     @Autowired UserRepository users;
     @Autowired ProfileRepository profiles;
     @Autowired BootstrapService bootstrap;
+    @Autowired RoleRepository roles;
 
     @BeforeEach
     void resetData() {
@@ -169,7 +171,7 @@ class AuthIntegrationTest {
 
     private User createUser(String name, String email, String password) {
         User user = users.save(new User(name, email.trim().toLowerCase(), passwordEncoder.encode(password)));
-        profiles.save(new Profile(user.getId(), ProfileStatus.ACTIVE));
+        profiles.save(new Profile(user.getId(), ProfileStatus.ACTIVE, roles.findByKey("SUPPORT").orElseThrow()));
         return user;
     }
 

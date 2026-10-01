@@ -20,6 +20,7 @@ foreach ($required in @('BOOTSTRAP_NAME', 'BOOTSTRAP_EMAIL', 'BOOTSTRAP_PASSWORD
     }
 }
 $env:JAVA_BOOTSTRAP_ENABLED = 'true'
+$env:JAVA_RBAC_PROVISION_EXISTING = 'true'
 $env:JAVA_BOOTSTRAP_EXIT = 'true'
 $env:SERVER_PORT = '18081'
 & (Join-Path $PSScriptRoot 'mvnw.cmd') -f (Join-Path $PSScriptRoot 'pom.xml') spring-boot:run

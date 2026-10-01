@@ -6,6 +6,8 @@ export type JavaUser = {
   email: string;
   jobTitle: string | null;
   status: "ACTIVE" | "INACTIVE";
+  role: { key: "SUPER_ADMIN" | "ADMIN" | "SUPERVISOR" | "SUPPORT"; name: string };
+  permissions: string[];
 };
 
 type CsrfResponse = { token: string };

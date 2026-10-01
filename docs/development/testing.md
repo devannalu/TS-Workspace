@@ -21,10 +21,11 @@ A suíte cobre inicialização, Flyway, validação JPA, health, autenticação,
 sessões persistidas, logout, CSRF, CORS, inactive e bootstrap. Testes de
 autenticação usam credenciais exclusivamente de teste.
 
-A [migração RBAC](../architecture/rbac.md) acrescenta unitários do resolver e
+A suíte de [RBAC](../architecture/rbac.md) acrescenta unitários do resolver e
 guard, compatibilidade da matriz, integração de overrides/Method Security e
-upgrade de identidade existente. A existência desses testes não significa
-que a migração já foi validada.
+upgrade de identidade existente. O teste HTTP inicia Spring Boot em porta
+aleatória com MySQL efêmero e cookies reais para validar 200/401/403, CSRF,
+roles e logout, sem modificar o acesso da identidade de desenvolvimento.
 
 ### Testcontainers
 

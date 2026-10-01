@@ -11,7 +11,7 @@ completa do estado presente do produto.
 | [Fase 1.3](fase-1.3.md) | Convites, gestão de usuárias e equipes |
 | [Fundação Java](fundacao-java.md) | Recuperação, monorepo, Spring Boot e integração técnica |
 | [Fase Java 1](fase-java-1-auth.md) | Autenticação Java e sessões persistentes |
-| [Fase Java 2](fase-java-2-rbac.md) | Trabalho RBAC local e validação bloqueada, sem publicação da implementação |
+| [Fase Java 2](fase-java-2-rbac.md) | RBAC, bloqueio inicial de Docker e retomada com validação integrada |
 
 Os registros foram preservados ao reorganizar a documentação. Caminhos citados
 nas primeiras fases refletem a raiz usada na época; código Next.js, scripts,

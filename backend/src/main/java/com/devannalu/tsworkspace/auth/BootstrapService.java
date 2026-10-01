@@ -3,17 +3,23 @@ package com.devannalu.tsworkspace.auth;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.devannalu.tsworkspace.rbac.RoleRepository;
+import com.devannalu.tsworkspace.rbac.RbacSeed;
 
 @Service
 public class BootstrapService {
     private final UserRepository users;
     private final ProfileRepository profiles;
     private final PasswordEncoder passwordEncoder;
+    private final RoleRepository roles;
+    private final RbacSeed seed;
 
-    public BootstrapService(UserRepository users, ProfileRepository profiles, PasswordEncoder passwordEncoder) {
+    public BootstrapService(UserRepository users, ProfileRepository profiles, PasswordEncoder passwordEncoder, RoleRepository roles, RbacSeed seed) {
         this.users = users;
         this.profiles = profiles;
         this.passwordEncoder = passwordEncoder;
+        this.roles = roles;
+        this.seed = seed;
     }
 
     @Transactional
@@ -22,9 +28,13 @@ public class BootstrapService {
             throw new IllegalArgumentException("Dados de bootstrap inválidos.");
         }
         String normalizedEmail = EmailNormalizer.normalize(email);
+        seed.seed();
+        var superAdmin = roles.findByKey("SUPER_ADMIN").orElseThrow();
         User existing = users.findByEmail(normalizedEmail).orElse(null);
         if (existing != null) {
-            if (!profiles.existsById(existing.getId())) {
+            Profile profile = profiles.findById(existing.getId()).orElse(null);
+            if (profile == null || profile.getStatus() != ProfileStatus.ACTIVE || profile.getRole() == null
+                || !profile.getRole().getKey().equals("SUPER_ADMIN")) {
                 throw new IllegalStateException("Estado parcial de bootstrap detectado.");
             }
             return;
@@ -33,6 +43,6 @@ public class BootstrapService {
             throw new IllegalStateException("Estado parcial de bootstrap detectado.");
         }
         User user = users.save(new User(name.trim(), normalizedEmail, passwordEncoder.encode(password)));
-        profiles.save(new Profile(user.getId(), ProfileStatus.ACTIVE));
+        profiles.save(new Profile(user.getId(), ProfileStatus.ACTIVE, superAdmin));
     }
 }

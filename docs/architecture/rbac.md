@@ -1,9 +1,9 @@
 # Autorização e RBAC
 
-**Estado Java: em migração.** O RBAC funcional dos módulos atuais é executado
-no servidor Next.js com Prisma. A implementação Java possui trabalho local em
-revisão e ainda depende de validação integrada, provisionamento e publicação.
-Não considerar o endpoint Java de permissões disponível como contrato concluído.
+O RBAC está implementado na API Java e nos módulos atuais atendidos pelo
+servidor Next.js/Prisma. A API Java protege métodos e retorna permissões efetivas;
+o login oficial e a gestão organizacional continuam no serviço anterior até
+a substituição dos respectivos domínios.
 
 ## Modelo
 
@@ -17,8 +17,9 @@ Não considerar o endpoint Java de permissões disponível como contrato conclu�
 
 Role e cargo descritivo são distintos. TeamMember define participação em equipes,
 não substitui RolePermission. A relação Profile → Role é obrigatória no domínio
-Prisma; a migração Java deve garantir essa integridade após provisionar os perfis
-existentes. Não usar booleanos administrativos ou uma role sem relacionamento.
+Prisma e Java. O schema Java exige `role_id` válido após provisionamento
+controlado dos perfis existentes. Não usar booleanos administrativos ou uma
+role sem relacionamento.
 
 Chaves compostas impedem RolePermission repetida e múltiplos overrides da mesma
 permission para a mesma usuária. ALLOW e DENY não podem coexistir nesse par.
@@ -56,37 +57,38 @@ A política central do sistema atual aplica:
 4. Sem override, consultar RolePermission; ausência de grant nega.
 
 Portanto DENY individual prevalece sobre grants de ADMIN, SUPERVISOR e SUPPORT,
-mas não sobre o bypass de SUPER_ADMIN. Essa regra deve ser preservada na
-migração e coberta por testes de compatibilidade.
+mas não sobre o bypass de SUPER_ADMIN. Testes de compatibilidade verificam que
+a implementação Java reproduz essa regra e a matriz vigente.
 
 As implementações atuais estão em `frontend/src/lib/permissions/`, e o seed
 em `frontend/prisma/seed-data.ts`. Membership direto ou permissão de gestão
 pode autorizar acesso a uma equipe; não há herança automática de membership
 para equipes descendentes.
 
-## Estratégia Java em migração
+## Estratégia Java
 
 O desenho usa PermissionPolicy, PermissionService e PermissionGuard para
 centralizar decisões. O guard recebe a identidade do principal autenticado;
 o cliente não escolhe o userId avaliado. Profile, role, grants e overrides são
 consultados no banco, sem cache de permissões na sessão.
 
-Method Security deve proteger os métodos com `@EnableMethodSecurity` e, por
+Method Security protege os métodos com `@EnableMethodSecurity` e, por
 exemplo:
 
 ```java
 @PreAuthorize("@permissionGuard.has(authentication, 'permissions.view')")
 ```
 
-O endpoint previsto `GET /api/v1/permissions` expõe somente key/name, com 401
-para anônima e 403 para autenticada sem acesso. O contrato de `/auth/me` deverá
-incluir role key/name e apenas keys efetivas. Inactive continua bloqueada antes
+O endpoint `GET /api/v1/permissions` exige `permissions.view` e expõe somente
+key/name, com 401 para anônima e 403 para autenticada sem acesso. Login e
+`/auth/me` incluem role key/name e apenas keys efetivas. Inactive continua bloqueada antes
 da autorização.
 
-O provisionamento da identidade Java existente deve ser explícito, sem duplicar
-User, trocar email ou recriar senha. Seed deve ser idempotente e preservar
-decisões administrativas. O procedimento de migração deve ser validado antes
-de ser adotado como setup normal.
+O provisionamento da identidade Java existente é explícito, sem duplicar User,
+trocar email ou recriar senha. V4 cria as relações; V5 verifica a identidade
+única ACTIVE mediante as credenciais locais, associa SUPER_ADMIN e impõe
+`role_id NOT NULL`. O seed é idempotente, completa grants padrão faltantes e
+preserva decisões administrativas extras. Veja o [setup](../development/setup.md).
 
 Evidências e pendências específicas estão no
 [registro histórico de RBAC Java](../history/fase-java-2-rbac.md).

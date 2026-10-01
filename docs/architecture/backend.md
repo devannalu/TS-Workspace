@@ -9,7 +9,8 @@ testes integrados.
 
 O pacote base é `com.devannalu.tsworkspace`. `auth` reúne identidade e
 autenticação, `common` contém configuração de segurança e tratamento de erros,
-e `foundation` mantém a verificação de saúde. O domínio `rbac` está em migração.
+e `foundation` mantém a verificação de saúde. `rbac` contém catálogo, seed,
+resolução de permissões e proteção por Method Security.
 Novos pacotes devem corresponder a funcionalidades reais, sem pastas vazias
 criadas antecipadamente.
 

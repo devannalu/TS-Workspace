@@ -38,12 +38,12 @@ Não se usa origem curinga com cookies. Origem inclui protocolo, host e porta;
 | --- | --- | --- |
 | GET | /api/v1/auth/csrf | Obtém token CSRF |
 | POST | /api/v1/auth/login | Recebe email/senha, exige CSRF e cria sessão |
-| GET | /api/v1/auth/me | Retorna id, name, email, jobTitle e status da usuária autenticada |
+| GET | /api/v1/auth/me | Retorna id, name, email, jobTitle, status, role key/name e permission keys efetivas |
 | POST | /api/v1/auth/logout | Exige CSRF, encerra sessão e retorna 204 |
 
 As respostas não expõem hash, identificador de sessão ou dados internos.
 Não autenticada recebe 401; requisição sem CSRF válido recebe 403.
-Role e permission keys em `/auth/me` fazem parte da [migração RBAC](rbac.md).
+Login e `/auth/me` incluem role e keys efetivas conforme o [RBAC](rbac.md).
 
 ## Perfil inativo e bootstrap
 
@@ -54,7 +54,8 @@ acesso quando o perfil está ausente ou inativo. Permissões não contornam isso
 A primeira identidade é criada por bootstrap administrativo explícito com
 variáveis locais; não existe promoção automática da primeira pessoa cadastrada.
 User e Profile são criados em transação. Repetições completas são idempotentes;
-estados parciais exigem revisão. A associação à role no Java está em migração.
+estados parciais exigem revisão. O bootstrap localiza SUPER_ADMIN pela key e
+associa essa role ao Profile, sem IDs fixos.
 
 ## Coexistência dos serviços
 

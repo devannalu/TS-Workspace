@@ -117,6 +117,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/api/v1/health", "/api/v1/auth/csrf").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/v1/auth/login", "/api/v1/auth/logout").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/v1/auth/me").authenticated()
+                .requestMatchers(HttpMethod.GET, "/api/v1/permissions").authenticated()
                 .anyRequest().denyAll())
             .addFilterAfter(new ActiveUserFilter(profiles, logoutHandler), org.springframework.security.web.context.SecurityContextHolderFilter.class)
             .build();

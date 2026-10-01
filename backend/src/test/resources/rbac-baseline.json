@@ -1,0 +1,11 @@
+{
+  "commit": "fabb67294509f89005c9bae0d7713b077f314691",
+  "sources": ["prisma/seed-data.ts", "src/lib/permissions/policy.ts", "tests/unit/policies.test.ts"],
+  "permissions": ["users.view", "users.create", "users.edit", "users.disable", "users.manage", "teams.view", "teams.create", "teams.edit", "teams.archive", "teams.manage_members", "permissions.view", "permissions.manage", "settings.view", "audit.view"],
+  "roles": {
+    "SUPER_ADMIN": ["users.view", "users.create", "users.edit", "users.disable", "users.manage", "teams.view", "teams.create", "teams.edit", "teams.archive", "teams.manage_members", "permissions.view", "permissions.manage", "settings.view", "audit.view"],
+    "ADMIN": ["users.view", "users.create", "users.edit", "users.disable", "users.manage", "teams.view", "teams.create", "teams.edit", "teams.archive", "teams.manage_members", "permissions.view", "settings.view", "audit.view"],
+    "SUPERVISOR": ["users.view", "teams.view", "settings.view"],
+    "SUPPORT": ["teams.view", "settings.view"]
+  }
+}
