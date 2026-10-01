@@ -1,242 +1,137 @@
 # TS Workspace
 
-Workspace interno da Tech Sisters. Monorepo com frontend Next.js, backend
-Java/Spring Boot e bancos MySQL separados durante a migração gradual.
+Sistema interno de gestão, operação e produtividade da **Tech Sisters**, comunidade
+voltada para mulheres na tecnologia.
 
-## Estado desta etapa
+O TS Workspace reúne pessoas, equipes e rotinas da organização em um só lugar.
+Seu objetivo é reduzir a dispersão de informações entre mensagens, planilhas,
+documentos e calendários, com acesso controlado para fundadoras, diretoras,
+supervisoras, suporte e voluntárias autorizadas.
 
-A Fase 1.1–1.3 foi recuperada, validada e publicada no checkpoint
-[`fabb67294509f89005c9bae0d7713b077f314691`](https://github.com/devannalu/TS-Workspace/commit/fabb67294509f89005c9bae0d7713b077f314691).
-O frontend existente foi movido intacto para `frontend/`: login, sessão,
-logout, RBAC, equipes, convites e usuárias continuam usando Prisma/Better Auth.
+## O que existe
 
-O Java oferece a fundação e a Fase Java 1: Spring Web/Security/Data JPA,
-Validation, MySQL isolado, Flyway, sessões JDBC persistentes, autenticação
-email/senha e `GET /api/v1/health`.
-A página técnica `/infra` usa `frontend/src/lib/api/client.ts` para consultar
-esse endpoint diretamente do navegador. A autenticação Java está disponível
-tecnicamente, mas o frontend oficial ainda usa Better Auth/Prisma. RBAC,
-equipes, convites, gestão de usuárias e Tasks Java ainda não foram migrados.
+- **Acesso por convite:** login, logout, sessões e bloqueio de usuárias inativas.
+- **Usuárias:** gestão de perfil de acesso, status e participação em equipes.
+- **Convites:** criação, cancelamento e aceite com validade e uso único.
+- **Equipes:** hierarquia, integrantes, edição e arquivamento.
+- **Início do Workspace:** perfil e equipes da usuária autenticada.
+- **Autorização:** roles e permissões verificadas no servidor.
 
-## Estrutura
+Tasks, Projetos, Eventos e os demais módulos de produtividade fazem parte do
+roadmap. A [visão dos módulos](docs/product/modules.md) distingue o que está
+implementado do que está planejado.
+
+## Arquitetura e tecnologias
+
+A arquitetura alvo separa apresentação, regras de negócio e persistência:
+
+```mermaid
+flowchart LR
+    A["Next.js · React · TypeScript"] -->|API REST| B["Java · Spring Boot"]
+    B --> C[("MySQL")]
+```
+
+| Camada | Tecnologias |
+| --- | --- |
+| Frontend | Next.js, React, TypeScript, Tailwind CSS |
+| API | Java 17, Spring Boot, Spring Security, Bean Validation |
+| Persistência Java | Spring Data JPA, Hibernate, Flyway, MySQL |
+| Sessões Java | Spring Session JDBC |
+| Desenvolvimento e testes | Node.js, Maven Wrapper, Docker, Testcontainers, Vitest, ESLint |
+| Implementação em migração | Prisma e Better Auth, usados pelos módulos atuais do Workspace |
+
+A [arquitetura detalhada](docs/architecture/overview.md) explica as responsabilidades
+e a coexistência dos serviços durante a migração.
+
+## Repositório
 
 ```text
-frontend/
-  src/app/                 # páginas existentes + /infra
-  src/components/          # UI existente preservada
-  src/lib/api/             # cliente central para o Java
-  src/lib/auth/            # Better Auth e autorização existentes
-  prisma/                  # schema, migrations e seed existentes
-  scripts/                 # bootstrap e runners existentes
-  tests/                   # suítes existentes
-  package.json
-  package-lock.json
-  .env.example
-backend/
-  .mvn/wrapper/            # distribuição Maven com checksum
-  mvnw / mvnw.cmd
-  pom.xml
-  run-dev.ps1
-  bootstrap.ps1
-  src/main/java/com/devannalu/tsworkspace/
-  src/main/resources/application.yml
-  src/main/resources/db/migration/V1__foundation_marker.sql
-  src/main/resources/db/migration/V2__auth_identity.sql
-  src/main/resources/db/migration/V3__jdbc_sessions.sql
-  src/test/java/com/devannalu/tsworkspace/FoundationTest.java
-docker/mysql/init.sql       # suporte ao banco Prisma existente
+frontend/            Aplicação Next.js, integrações, Prisma e testes
+backend/             API Spring Boot, Maven Wrapper, migrations e testes
+docker/              Configuração auxiliar do MySQL
+compose.yaml         Serviços locais de banco de dados
 docs/
-compose.yaml
-.env.example
-.gitignore
-README.md
+  product/           Visão, módulos e roadmap
+  architecture/      Contratos e decisões técnicas vigentes
+  development/       Ambiente, testes e convenções
+  history/           Registros históricos de engenharia
 ```
 
-Não há diretório `legacy/` permanente. O histórico Git preserva o baseline;
-a única implementação ativa anterior está dentro de `frontend/`.
-Os documentos das fases anteriores são registros históricos, com caminhos
-relativos à antiga raiz: hoje esses caminhos estão sob `frontend/`.
+## Segurança
 
-## Ambiente validado
+Autenticação e autorização são responsabilidades distintas. O acesso exige
+sessão válida e perfil ativo; permissões são verificadas no servidor. Sessões
+usam cookies HttpOnly, com proteção CSRF e origens CORS explícitas na API Java.
+Credenciais, cookies e tokens não pertencem ao Git nem aos logs.
 
-| Recurso | Versão |
-| --- | --- |
-| Node / npm | 24.19.0 / 11.17.0 |
-| Next / React / TypeScript / Tailwind | 16.3.7 / 19.3.0 / 6.0.3 / 4.3.3 |
-| Prisma / Better Auth | 7.10.0 / 1.7.6 |
-| Java | 17.0.12, Oracle JDK |
-| Spring Boot | 3.5.16 |
-| Maven Wrapper / Maven | 3.3.4 / 3.9.16 |
-| Docker Client e Engine | 29.7.2, contexto desktop-linux |
-| MySQL | 8.4.11 |
-| Flyway / Testcontainers | 11.7.2 / 1.21.4, gerenciados pelo Spring Boot |
+Leia [autenticação](docs/architecture/authentication.md) e
+[RBAC](docs/architecture/rbac.md) para conhecer os contratos e limites.
 
-Java 17, Node 24 e Docker Engine Linux acessível são necessários.
-Maven global não é necessário: todos os comandos usam o Wrapper oficial.
-O Wrapper baixa o Maven e valida o SHA-256 fixado no repositório.
+## Executar localmente
 
-## Configuração local
+Requisitos: **Node.js 24**, **Java 17** e **Docker com Engine Linux acessível**.
+O Maven Wrapper acompanha o projeto; Maven global não é necessário.
 
-Use os exemplos para preparar os arquivos locais, sem sobrescrever os
-ambientes reais já existentes. Nunca use os placeholders como senhas.
-
-- `.env` da raiz: credenciais do Compose legado e Java. O novo banco usa
-  `JAVA_MYSQL_PASSWORD` e `JAVA_MYSQL_ROOT_PASSWORD`, diferentes das antigas.
-- `frontend/.env`: URLs Prisma, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL` e,
-  opcionalmente, `NEXT_PUBLIC_JAVA_API_URL=http://localhost:8080`.
-- `frontend/.env.bootstrap.local`: dados privados do bootstrap antigo.
-
-O `backend/run-dev.ps1` lê somente as variáveis Java necessárias do `.env`
-da raiz, sem imprimir valores. Variáveis já definidas no processo têm
-precedência. O backend não recebe a senha root do MySQL. Os padrões são
-`jdbc:mysql://127.0.0.1:3309/ts_workspace_java`, usuário `ts_workspace_java`,
-origem `http://localhost:3000` e bind `127.0.0.1:8080`.
-
-`backend/bootstrap.ps1` é o comando explícito para criar a primeira
-identidade Java com `BOOTSTRAP_NAME`, `BOOTSTRAP_EMAIL` e
-`BOOTSTRAP_PASSWORD`. Ele lê o arquivo local ignorado do bootstrap, usa
-BCrypt e encerra ao concluir. Uma segunda execução é idempotente; estado
-parcial falha sem ser alterado.
-
-`NEXT_PUBLIC_JAVA_API_URL` é público e incorporado no build do Next. Nunca
-coloque credenciais em variáveis `NEXT_PUBLIC_*`. Alterar a URL exige novo
-build. Alterar a origem do frontend exige também ajustar `FRONTEND_ORIGIN`
-no backend e a configuração de origem do Better Auth.
-
-## Bancos e portas
-
-| Serviço | Host local | Banco | Volume |
-| --- | --- | --- | --- |
-| Prisma existente | 127.0.0.1:3307 | ts_workspace | ts-workspace-mysql-data |
-| Testes Prisma | 127.0.0.1:3308 | ts_workspace_test | ts-workspace-mysql-test-data |
-| Java | 127.0.0.1:3309 | ts_workspace_java | ts_workspace_mysql_java_data |
-| Spring Boot | 127.0.0.1:8080 | — | — |
-| Next.js | localhost:3000 | — | — |
-| Runner HTTP Next | 127.0.0.1:3101 | banco de testes | — |
-
-A porta 3306 pertence a outro projeto e foi preservada. O serviço `mysql-java`
-usa container `ts-workspace-mysql-java` e rede `ts-workspace-java-network`.
-O banco shadow Prisma permanece na instância legada. O Testcontainers usa
-containers efêmeros e portas aleatórias; nunca usa os bancos de desenvolvimento.
-
-## Iniciar neste ambiente (PowerShell)
-
-Na raiz, para o MySQL Java:
+Prepare os arquivos de ambiente e inicialize o banco/frontend conforme o
+[guia de setup](docs/development/setup.md). Com essa configuração concluída,
+execute a partir da raiz, em terminais separados:
 
 ```powershell
-docker compose config --quiet
-docker compose up -d mysql-java
-```
-
-Para os containers Prisma já existentes, se estiverem parados:
-
-```powershell
-docker start ts-workspace-mysql ts-workspace-mysql-test
-```
-
-Em um terminal na raiz, iniciar o backend:
-
-```powershell
-backend\mvnw.cmd --version
+docker compose up -d mysql mysql-java
 powershell -NoProfile -File backend/run-dev.ps1
 ```
 
-Em outro terminal, entrar em `frontend/` e executar:
-
 ```powershell
-npm install --cache ../.npm-cache
+cd frontend
+npm ci
 npm run db:generate
-npm run build
-npm run start -- --hostname 127.0.0.1
+npm run dev
 ```
 
-Acesse [workspace](http://localhost:3000) ou
-[verificação Java](http://localhost:3000/infra). Ctrl+C encerra cada servidor.
-As migrations Prisma do ambiente existente já estão aplicadas. Não gere
-outra migration de mesmo propósito nem reinicialize esse banco. O script
-`test:integration` aplica as migrations versionadas somente no banco de testes.
+Abra [localhost:3000](http://localhost:3000).
+A página [/infra](http://localhost:3000/infra) verifica a conexão com a API Java.
+O acesso inicial depende do bootstrap administrativo descrito no setup.
 
-## Flyway, sessões e segurança Java
+## Testar
 
-Na inicialização, Flyway aplica V1 (marcador técnico), V2 (User/Profile) e
-V3 (tabelas `SPRING_SESSION` e `SPRING_SESSION_ATTRIBUTES`) exclusivamente no
-banco Java. Hibernate usa `ddl-auto=validate`; não cria nem atualiza tabelas.
-`clean-disabled=true`. Uma segunda execução valida as migrations e não as
-reaplica. User e Profile não possuem Role nesta fase.
-
-`GET /api/v1/health` consulta a tabela via JPA e retorna apenas
-`{"status":"UP"}` quando disponível. Falha de banco retorna 503 sem SQL,
-credenciais, connection string ou stacktrace na resposta.
-
-CORS permite somente `http://localhost:3000`, GET/POST/OPTIONS e credentials.
-CSRF usa `CookieCsrfTokenRepository`: `GET /api/v1/auth/csrf` entrega o token
-e o cookie `XSRF-TOKEN`; mutações exigem o header `X-XSRF-TOKEN`. A sessão usa
-Spring Session JDBC, cookie `TS_SESSION` HttpOnly, SameSite=Lax e Secure=false
-somente no HTTP local. Login troca email normalizado e senha por sessão
-persistente; `/api/v1/auth/me` nunca retorna hash. Logout invalida a sessão.
-Origem externa é rejeitada e demais rotas são negadas por padrão. O perfil
-INACTIVE bloqueia o login e invalida uma sessão já aberta. Não há JWT nem
-token de autenticação em localStorage.
-
-Endpoints Java desta fase:
-
-- `GET /api/v1/auth/csrf`
-- `POST /api/v1/auth/login`
-- `POST /api/v1/auth/logout`
-- `GET /api/v1/auth/me`
-
-O cliente técnico está em `frontend/src/lib/api/auth.ts`; ele ainda não
-substitui a página `/login` nem a proteção do Workspace.
-
-## Testes
-
-Dentro de `backend/`, com Docker acessível:
+Backend, a partir da raiz, com Docker disponível:
 
 ```powershell
-.\mvnw.cmd -B test
-.\mvnw.cmd -B package
+backend\mvnw.cmd -f backend/pom.xml -B test
+backend\mvnw.cmd -f backend/pom.xml -B package
 ```
 
-Ambos executam os cinco testes reais com MySQL Testcontainers: contexto,
-Flyway idempotente e validação JPA, health, CORS permitido/rejeitado,
-CSRF e negação das demais rotas. O package produz
-`backend/target/ts-workspace-backend-0.1.0.jar`, ignorado pelo Git.
-Nenhum comando usa `-DskipTests`.
-
-A suíte Java de autenticação acrescenta seis testes reais com Testcontainers:
-normalização e hashing, login inválido/válido, sessão persistida, `/me`,
-logout, CSRF, CORS, inactive, invalidação e bootstrap idempotente/estado
-parcial. Ao todo, `mvnw.cmd test` executa 11 testes.
-
-Dentro de `frontend/`, com os bancos Prisma existentes acessíveis:
+Frontend, dentro de `frontend/`:
 
 ```powershell
 npm run typecheck
 npm run lint
 npm test
 npm run build
-npm run test:integration
-npm run test:workspace
-npm run auth:schema:check
 ```
 
-Foram aprovados 34 testes unitários e 16 de integração, além do runner
-HTTP do Next real. O runner usa a porta 3101 e remove somente seus próprios
-dados temporários no banco de testes. Consulte a cobertura e as limitações
-em [Fundação Java](docs/fundacao-java.md) e na
-[Fase Java 1 — autenticação e sessões](docs/fase-java-1-auth.md).
+Os testes de integração e HTTP usam bancos separados. Consulte
+[como testar](docs/development/testing.md) antes de executá-los.
 
-## Histórico e cuidados
+## Status
 
-- [Fase 1.1](docs/fase-1.1.md)
-- [Fase 1.2](docs/fase-1.2.md)
-- [Fase 1.3](docs/fase-1.3.md)
-- [Recuperação e fundação Java](docs/fundacao-java.md)
-- [Fase Java 1 — autenticação e sessões](docs/fase-java-1-auth.md)
-- [Repositório oficial](https://github.com/devannalu/TS-Workspace), branch `main`.
+Projeto em desenvolvimento. O backend está sendo consolidado em Java/Spring
+Boot enquanto os módulos existentes são migrados gradualmente. O login oficial
+e a gestão organizacional continuam na implementação Next.js/Prisma/Better Auth;
+o RBAC Java está em migração.
 
-Arquivos reais de ambiente, logs, caches e artefatos gerados são ignorados.
-Migrations Flyway e Prisma, Maven Wrapper e lockfile são versionados.
-Não executar reset, DROP, remoção de volumes, prune ou alterações em
-containers de outros projetos. O frontend antigo só deve ser retirado por
-módulo depois que sua substituição Java correspondente estiver validada.
+## Roadmap
+
+- Consolidar acesso, autorização e gestão organizacional na API Java.
+- Desenvolver produtividade: Tasks, Projetos, reuniões, arquivos e calendário.
+- Ampliar a operação: conteúdo, eventos, parcerias e comunicação interna.
+- Preparar produção: busca, auditoria completa, integrações e qualidade operacional.
+
+Veja o [roadmap do produto](docs/product/roadmap.md).
+
+## Documentação
+
+- **Produto:** [visão geral](docs/product/overview.md) · [módulos](docs/product/modules.md) · [roadmap](docs/product/roadmap.md)
+- **Arquitetura:** [visão geral](docs/architecture/overview.md) · [backend](docs/architecture/backend.md) · [frontend](docs/architecture/frontend.md) · [banco](docs/architecture/database.md) · [autenticação](docs/architecture/authentication.md) · [RBAC](docs/architecture/rbac.md)
+- **Desenvolvimento:** [setup](docs/development/setup.md) · [testes](docs/development/testing.md) · [convenções](docs/development/conventions.md)
+- **Histórico:** [registros de engenharia](docs/history/README.md)

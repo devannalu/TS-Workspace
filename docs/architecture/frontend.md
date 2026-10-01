@@ -1,0 +1,47 @@
+# Frontend
+
+## Stack
+
+A aplicação em `frontend/` utiliza Next.js App Router, React, TypeScript
+estrito e Tailwind CSS. As versões exatas estão em `package.json` e
+`package-lock.json`; o Node suportado está declarado em `engines`.
+
+## Responsabilidades
+
+O frontend organiza rotas, navegação, formulários, feedback e apresentação.
+Componentes devem considerar carregamento, vazio, erro, sucesso e falta de
+permissão. A interface prioriza HTML semântico, labels, contraste e foco visível,
+com adaptação para desktop, tablet e mobile.
+
+`src/app/` contém páginas e ações; `src/components/` contém componentes de
+interface; `src/lib/` contém integrações e serviços. Módulos atuais de gestão
+ainda possuem ações e regras server-side ligadas ao Prisma. Sua migração não
+deve deslocar autorização para o navegador.
+
+## Consumo da API Java
+
+O cliente em `src/lib/api/` concentra chamadas técnicas ao Java.
+`NEXT_PUBLIC_JAVA_API_URL` define a origem da API e é incorporada no build.
+Variáveis públicas nunca podem conter segredos.
+
+Chamadas de autenticação usam `credentials: "include"`. Antes de login/logout,
+o cliente obtém CSRF e envia o header exigido pelo backend. A sessão fica em
+cookie HttpOnly; tokens de autenticação não são armazenados em localStorage.
+
+A página `/infra` verifica health e disponibilidade de CSRF. Ela é uma
+ferramenta técnica, não uma segunda página de login.
+
+## Rotas e autorização
+
+`/login`, `/workspace`, `/usuarias`, `/equipes` e o aceite em
+`/convite/[token]` pertencem ao fluxo oficial atual. Sessão e permissões são
+verificadas no servidor. Esconder uma ação ou item de menu não autoriza nem
+protege uma operação por si só.
+
+O contrato técnico de role/permissions Java está [em migração](rbac.md).
+A troca do login e dos módulos deve ocorrer somente após a substituição
+correspondente estar validada.
+
+Para APIs do Next, consulte os guias da versão instalada em
+`frontend/node_modules/next/dist/docs/`, conforme `AGENTS.md`.
+Veja [setup](../development/setup.md) e [testes](../development/testing.md).
