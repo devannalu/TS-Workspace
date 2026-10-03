@@ -87,6 +87,12 @@ class UsuariosConvitesIntegrationTest {
         assertThat(jdbc.queryForObject("SELECT token_hash FROM invite WHERE id=?",String.class,created.invite().id())).isEqualTo(PoliticaConvite.calcularHashToken(created.token())).isNotEqualTo(created.token());
         assertThat(created.invite().teams()).hasSize(2);assertThat(created.invite().role().id()).isEqualTo(role);
         String json=mapper.writeValueAsString(invites.listarConvites(0,10));assertThat(json).doesNotContain(created.token(),"tokenHash","token_hash","inviteUrl");
+        var contrato=mapper.readTree(json);
+        assertThat(contrato.path("page").asInt(-1)).isZero();
+        assertThat(contrato.path("size").asInt(-1)).isEqualTo(10);
+        assertThat(contrato.path("items").get(0).path("invitedBy").path("name").asText()).isNotBlank();
+        assertThat(contrato.has("pagina")).isFalse();
+        assertThat(contrato.has("tamanhoPagina")).isFalse();
         assertThat(invites.listarConvites(0,1).total()).isEqualTo(1);assertThat(invites.listarConvites(1,1).items()).isEmpty();
         assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM audit_log WHERE action='invite.created'",Long.class)).isEqualTo(1);
     }

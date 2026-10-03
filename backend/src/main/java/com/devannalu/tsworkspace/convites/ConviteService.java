@@ -4,7 +4,6 @@ import com.devannalu.tsworkspace.auditoria.AuditoriaRepository;
 import com.devannalu.tsworkspace.auth.EmailNormalizer;
 import com.devannalu.tsworkspace.compartilhado.*;
 import com.devannalu.tsworkspace.usuarios.UsuarioService;
-import java.sql.Timestamp;
 import java.time.*;
 import java.util.*;
 import org.springframework.beans.factory.annotation.Value;
@@ -15,9 +14,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class ConviteService {
-    public record AutorConvite(String id,String nome) { }
+    public record AutorConvite(String id,String name) { }
     public record ConviteResponse(String id,String email,UsuarioService.PerfilAcesso role,List<UsuarioService.EquipeReferencia> teams,AutorConvite invitedBy,Instant createdAt,Instant expiresAt,PoliticaConvite.SituacaoConvite status) { }
-    public record PaginaConvites(List<ConviteResponse> items,long total,int pagina,int tamanhoPagina) { }
+    public record PaginaConvites(List<ConviteResponse> items,long total,int page,int size) { }
     public record ConviteCriadoResponse(ConviteResponse invite,String token,String inviteUrl) { }
     public record ConvitePublicoResponse(String email,String role,List<String> teams,Instant expiresAt) { }
     public record ConviteAceitoResponse(String userId,String inviteId) { }
