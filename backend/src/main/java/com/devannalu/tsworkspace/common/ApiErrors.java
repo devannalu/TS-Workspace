@@ -10,6 +10,10 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @RestControllerAdvice
 public class ApiErrors {
+    @ExceptionHandler(DomainProblem.class)
+    ProblemDetail domainProblem(DomainProblem error) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.valueOf(error.status()), error.getMessage());
+    }
     @ExceptionHandler(com.devannalu.tsworkspace.teams.TeamProblem.class)
     ProblemDetail teamProblem(com.devannalu.tsworkspace.teams.TeamProblem error) {
         return ProblemDetail.forStatusAndDetail(HttpStatus.valueOf(error.status()), error.getMessage());

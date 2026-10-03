@@ -13,6 +13,7 @@ completa do estado presente do produto.
 | [Fase Java 1](fase-java-1-auth.md) | Autenticação Java e sessões persistentes |
 | [Fase Java 2](fase-java-2-rbac.md) | RBAC, bloqueio inicial de Docker e retomada com validação integrada |
 | [Fase Java 3](fase-java-3-teams.md) | Teams, hierarquia, memberships e validação de compatibilidade |
+| [Fase Java 4](fase-java-4-users-invites.md) | Usuárias, convites, provisionamento atômico, revogação de sessões e auditoria mínima |
 
 Os registros foram preservados ao reorganizar a documentação. Caminhos citados
 nas primeiras fases refletem a raiz usada na época; código Next.js, scripts,

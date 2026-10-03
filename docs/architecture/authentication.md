@@ -51,6 +51,21 @@ Profile INACTIVE não pode autenticar. Em requisição com sessão existente,
 o filtro consulta o estado atual do Profile, invalida a sessão e bloqueia o
 acesso quando o perfil está ausente ou inativo. Permissões não contornam isso.
 
+A inativação administrativa Java revoga imediatamente todas as sessões pelo
+principal indexado (email da User) na mesma transação da mudança de Profile.
+Reativação mantém User/Profile e exige novo login, sem restaurar sessões antigas.
+Role/permissões continuam sendo consultadas no banco em requisições autenticadas.
+
+Novas usuárias Java entram por [convite](users-invites.md), sem endpoint de signup
+ou criação administrativa direta. Aceite cria User, Profile ACTIVE, role e
+memberships atomicamente, sem criar sessão. Usa BCrypt força 12; a senha exige
+12–128 caracteres e no máximo 72 bytes UTF-8, respeitando o limite do encoder,
+com confirmação igual. Recuperação de senha e SMTP não estão implementados.
+
+Validação/aceite recebem o token secreto no corpo de POST e exigem CSRF mesmo
+sem autenticação. O cliente obtém o cookie/header em `/auth/csrf`; CORS permanece
+restrito à origem configurada. Não existe exceção global de CSRF para convites.
+
 A primeira identidade é criada por bootstrap administrativo explícito com
 variáveis locais; não existe promoção automática da primeira pessoa cadastrada.
 User e Profile são criados em transação. Repetições completas são idempotentes;

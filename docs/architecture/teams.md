@@ -41,7 +41,8 @@ inclusive para alvo inativo, é a regra exata do serviço Prisma validado.
 Escritas são transacionais e bloqueiam Fundadoras antes de ler a árvore ou
 contar administradoras. Isso impede ciclos causados por movimentos simultâneos
 e duas remoções que deixariam a raiz sem Super Admin ativa. Não substitui as
-constraints do banco. Gestão Java de Users/roles/status ainda não é oferecida.
+constraints do banco. A [gestão de usuárias](users-invites.md) compartilha esse
+bloqueio e protege perda da última administradora da raiz ao mudar role/status.
 
 ## API
 
@@ -68,7 +69,8 @@ Consultas de listagem usam uma agregação para memberCount; detalhe faz duas
 consultas, sem carregar coleções JPA por equipe. `/auth/me` permanece com o
 contrato anterior. O cliente técnico `frontend/src/lib/api/teams.ts` usa cookies
 e CSRF; a página `/equipes` permanece no Next.js/Prisma. Não há sincronização
-automática entre os bancos nem gestão completa Java de Users/Invites/Tasks.
+automática entre os bancos. Users e Invites Java possuem clientes técnicos;
+Tasks Java ainda não está implementado.
 
 ## Validação
 

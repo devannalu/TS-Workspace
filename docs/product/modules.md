@@ -8,10 +8,11 @@ Os módulos implementados de gestão são atendidos pelo Next.js/Prisma/Better A
 A migração para Java é uma mudança de implementação; não equivale a entregar
 novos módulos.
 
-A API Java já atende Auth, RBAC e [Equipes](../architecture/teams.md), incluindo
-hierarquia e integrantes. A página oficial `/equipes` ainda usa Prisma;
-`frontend/src/lib/api/teams.ts` é o cliente técnico Java. Os bancos permanecem
-separados, sem copiar automaticamente memberships do Prisma.
+A API Java já atende Auth, RBAC, [Equipes](../architecture/teams.md),
+[Usuárias e Convites](../architecture/users-invites.md), incluindo provisionamento,
+revogação de sessões e auditoria mínima. As páginas oficiais ainda usam Prisma;
+os clientes em `frontend/src/lib/api/` são técnicos. Os bancos permanecem
+separados, sem copiar automaticamente identidades ou memberships do Prisma.
 
 | Módulo | Estado | Escopo e limites |
 | --- | --- | --- |
@@ -29,7 +30,7 @@ separados, sem copiar automaticamente memberships do Prisma.
 | Arquivos | PLANEJADO | Organização de materiais associados ao trabalho. |
 | Chat | PLANEJADO | Comunicação interna contextual ao Workspace. |
 | Notificações | PLANEJADO | Avisos relevantes sobre atividades e mudanças. |
-| Auditoria | PLANEJADO — módulo completo | Já existem registros técnicos de operações administrativas no backend Prisma; consulta administrativa completa e migração Java não estão entregues. |
+| Auditoria | PLANEJADO — módulo completo | Registros administrativos existem no Prisma e no Java (convites, roles, status e equipes de usuárias). Consulta administrativa completa ainda não está entregue. |
 | Busca | PLANEJADO | Busca global pelos conteúdos e módulos acessíveis à usuária. |
 
 Notas e comentários também fazem parte da evolução de colaboração.

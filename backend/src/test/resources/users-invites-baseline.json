@@ -1,0 +1,20 @@
+{
+ "commit":"fabb67294509f89005c9bae0d7713b077f314691",
+ "sources":["src/lib/users/service.ts","src/lib/invites/service.ts","src/lib/invites/token.ts","tests/unit/invites.test.ts","tests/integration/phase13.test.ts"],
+ "ttlDays":7,"entropyBytes":32,"encoding":"hex","hash":"SHA-256",
+ "minimumPasswordCharacters":12,"minimumTeams":1,"maximumInviteTeams":20,
+ "states":[
+  {"used":true,"cancelled":true,"future":false,"state":"USED"},
+  {"used":false,"cancelled":true,"future":false,"state":"CANCELLED"},
+  {"used":false,"cancelled":false,"future":false,"state":"EXPIRED"},
+  {"used":false,"cancelled":false,"future":true,"state":"PENDING"}
+ ],
+ "adminCases":[
+  {"role":"SUPER_ADMIN","nextRole":"SUPPORT","nextActive":true,"count":1,"self":false,"allowed":false},
+  {"role":"SUPER_ADMIN","nextRole":"SUPER_ADMIN","nextActive":false,"count":1,"self":false,"allowed":false},
+  {"role":"SUPER_ADMIN","nextRole":"ADMIN","nextActive":true,"count":2,"self":true,"allowed":false},
+  {"role":"SUPER_ADMIN","nextRole":"SUPPORT","nextActive":true,"count":2,"self":false,"allowed":true}
+ ],
+ "cancelOnlyPending":true,"singleUse":true,"provisioning":"User+ACTIVE Profile+Invite Role+Invite Teams",
+ "deactivationRevokesSessions":true
+}

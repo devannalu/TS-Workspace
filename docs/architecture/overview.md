@@ -32,6 +32,8 @@ sessão e health conectado ao banco; o cliente técnico em Next.js consome essa 
 O [RBAC Java](rbac.md) centraliza permissões e protege métodos da API.
 A API de [Equipes Java](teams.md) oferece hierarquia, arquivamento e memberships
 sem substituir ainda a página oficial `/equipes`.
+A [gestão Java de usuárias e convites](users-invites.md) adiciona entrada por
+convite, perfis, inativação/reativação, revogação de sessões e auditoria mínima.
 
 Os bancos Java e Prisma são separados. Suas contas, sessões e migrations não
 são intercambiáveis, e autenticar em um serviço não autentica automaticamente

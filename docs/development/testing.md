@@ -35,6 +35,12 @@ das administradoras. O upgrade valida a membership de identidade preexistente.
 
 ### Testcontainers
 
+A suíte de [Users/Invites](../architecture/users-invites.md) cobre token/hash,
+estados, validação, proteção administrativa, provisionamento atômico,
+concorrência, rollback, auditoria, paginação, filtros, autorização e revogação
+de todas as sessões. A falha intermediária usa uma constraint temporária
+somente no banco Testcontainers, sem exigir privilégios globais MySQL.
+
 Os testes integrados Java criam MySQL real efêmero e recebem URL, usuário,
 senha e porta do container. Não utilizam o banco Java de desenvolvimento.
 Falha no setup do Docker bloqueia essa validação: não substituir silenciosamente

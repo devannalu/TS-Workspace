@@ -15,6 +15,10 @@ resolução de permissões e proteção por Method Security.
 seed, serviço transacional e controller REST. As consultas desse módulo usam
 JdbcTemplate, com projeções DTO e contagem agregada para evitar N+1; Hibernate
 valida os mapeamentos JPA sem criar o schema.
+`users` oferece gestão paginada de perfis; `invites` coordena tokens e
+provisionamento transacional; `audit` persiste eventos mínimos sem segredos.
+`OrganizationLock` compartilha o bloqueio de Fundadoras entre esses domínios.
+`SessionRevocationService` centraliza a remoção das sessões de uma identidade.
 Novos pacotes devem corresponder a funcionalidades reais, sem pastas vazias
 criadas antecipadamente.
 
@@ -53,4 +57,5 @@ Operações que alteram dados relacionados devem ser transacionais.
 banco produz resposta controlada. O bind local padrão é `127.0.0.1:8080`.
 
 Consulte [autenticação](authentication.md), [RBAC](rbac.md),
-[equipes](teams.md), [banco](database.md) e [testes](../development/testing.md).
+[equipes](teams.md), [usuárias e convites](users-invites.md), [banco](database.md)
+e [testes](../development/testing.md).

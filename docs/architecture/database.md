@@ -27,8 +27,9 @@ automática entre identidades ou sessões dos dois serviços.
 
 No Java, identidade, sessões e [RBAC](rbac.md) estão disponíveis. Profile tem
 relação obrigatória com Role, e as tabelas RBAC possuem FKs e constraints de
-unicidade. A API Java também possui Team e TeamMember; convites continuam
-somente no Prisma, e a interface oficial de equipes ainda utiliza o banco legado.
+unicidade. A API Java também possui Team e TeamMember; convites existem
+no frontend Prisma e na API Java, em bancos independentes. As interfaces
+oficiais de gestão ainda utilizam o banco legado.
 
 `V6__teams.sql` cria `team` e `team_member`, preservando V1–V5. `team_key`
 é uma chave única estável, equivalente à key Prisma, usada para reconhecer
@@ -42,6 +43,18 @@ a Fundadoras, sem alterar User/Profile/Role. `TeamSeed.seed()` completa dados
 faltantes de forma idempotente e preserva nomes, parents e arquivamentos
 administrativos; recusa Fundadoras em estado inválido. A execução explícita
 também completa memberships de Super Admins ativas em Fundadoras.
+
+`V7__users_invites_audit.sql` adiciona Invite, InviteTeam e AuditLog, com FKs,
+PK composta invite/team, token_hash único e índices por email/estado/expiração,
+criação e entidade/ator de auditoria. Só o SHA-256 do token é persistido;
+estado do convite é derivado dos timestamps. AuditLog permite ator nulo e
+metadados JSON nulos, sem credenciais ou tokens. A coluna principal_name de
+Spring Session passa a 320 caracteres para comportar o email da User.
+
+Aceite é inteiramente atômico no MySQL: identidade, Profile, memberships,
+usedAt e auditoria. Não depende de uma API externa de cadastro. Revogação
+de sessões usa o índice principal_name e cascade das session attributes.
+V1–V6 permanecem intactas; Hibernate continua em validate.
 
 ## Migrations
 

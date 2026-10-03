@@ -119,7 +119,7 @@ Projeto em desenvolvimento. O backend está sendo consolidado em Java/Spring
 Boot enquanto os módulos existentes são migrados gradualmente. O login oficial
 e a gestão organizacional continuam na implementação Next.js/Prisma/Better Auth;
 a API Java oferece autenticação por sessão, RBAC server-side e gestão de equipes
-com hierarquia e integrantes.
+com hierarquia e integrantes, gestão de usuárias e provisionamento por convites.
 
 ## Roadmap
 

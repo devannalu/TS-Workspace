@@ -42,6 +42,10 @@ O cliente técnico tipa role e permission keys da [API Java](rbac.md).
 `src/lib/api/teams.ts` oferece list/detail/create/edit/archive e memberships da
 [API de equipes](teams.md), com sessão por cookie e CSRF em cada escrita.
 Esse cliente ainda não alimenta a página oficial `/equipes`.
+`users.ts` e `invites.ts` oferecem gestão Java paginada e aceite por convite,
+compartilhando cookies/CSRF em `management.ts`. São clientes técnicos, sem
+nova interface administrativa. Links de convites Java ainda não são consumidos
+pela página oficial `/convite/[token]`, que continua no serviço Prisma.
 A troca do login e dos módulos deve ocorrer somente após a substituição
 correspondente estar validada.
 

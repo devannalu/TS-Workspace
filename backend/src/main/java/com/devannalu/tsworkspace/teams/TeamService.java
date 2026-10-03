@@ -8,7 +8,8 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class TeamService {
     private final JdbcTemplate jdbc;
-    public TeamService(JdbcTemplate jdbc) { this.jdbc = jdbc; }
+    private final com.devannalu.tsworkspace.common.OrganizationLock organizationLock;
+    public TeamService(JdbcTemplate jdbc, com.devannalu.tsworkspace.common.OrganizationLock organizationLock) { this.jdbc = jdbc; this.organizationLock = organizationLock; }
     public record Summary(String id, String key, String name, String description, String parentId, boolean archived, long memberCount) { }
     public record Member(String id, String name, String email) { }
     public record Detail(Summary team, List<Member> members) { }
@@ -39,8 +40,7 @@ public class TeamService {
     // All administrative writes acquire the same root row first. This serializes
     // tree changes and membership removals across API instances, including last-admin checks.
     private void lockTree() {
-        if (jdbc.queryForList("SELECT id FROM team WHERE team_key='fundadoras' FOR UPDATE", String.class).isEmpty())
-            throw TeamProblem.conflict("Raiz estrutural indisponível.");
+        organizationLock.acquire();
     }
     private List<TeamPolicy.Node> tree() {
         return jdbc.query("SELECT id,team_key,parent_id,archived_at FROM team", (rs, row) ->

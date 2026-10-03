@@ -116,6 +116,10 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(HttpMethod.GET, "/api/v1/health", "/api/v1/auth/csrf").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/v1/auth/login", "/api/v1/auth/logout").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/v1/invites/validate", "/api/v1/invites/accept").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/v1/users", "/api/v1/users/*", "/api/v1/invites").authenticated()
+                .requestMatchers(HttpMethod.PATCH, "/api/v1/users/*").authenticated()
+                .requestMatchers(HttpMethod.POST, "/api/v1/users/*/deactivate", "/api/v1/users/*/activate", "/api/v1/invites", "/api/v1/invites/*/cancel").authenticated()
                 .requestMatchers(HttpMethod.GET, "/api/v1/auth/me").authenticated()
                 .requestMatchers(HttpMethod.GET, "/api/v1/permissions").authenticated()
                 .requestMatchers(HttpMethod.GET, "/api/v1/teams", "/api/v1/teams/*").authenticated()
@@ -131,7 +135,7 @@ public class SecurityConfig {
     CorsConfigurationSource cors(@Value("${app.frontend-origin}") String origin) {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowedOrigins(List.of(origin));
-        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("Accept", "Content-Type", "X-XSRF-TOKEN"));
         config.setAllowCredentials(true);
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
