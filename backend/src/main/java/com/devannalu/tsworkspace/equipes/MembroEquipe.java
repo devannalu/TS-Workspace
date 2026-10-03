@@ -1,6 +1,6 @@
 package com.devannalu.tsworkspace.equipes;
 
-import com.devannalu.tsworkspace.auth.User;
+import com.devannalu.tsworkspace.usuarios.Usuario;
 import jakarta.persistence.*;
 import java.time.Instant;
 
@@ -9,7 +9,7 @@ import java.time.Instant;
 public class MembroEquipe {
     @EmbeddedId private IdMembroEquipe id;
     @MapsId("userId") @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "user_id", nullable = false) private User user;
+    @JoinColumn(name = "user_id", nullable = false) private Usuario user;
     @MapsId("teamId") @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "team_id", nullable = false) private Equipe team;
     @Column(name = "created_at", nullable = false) private Instant createdAt;

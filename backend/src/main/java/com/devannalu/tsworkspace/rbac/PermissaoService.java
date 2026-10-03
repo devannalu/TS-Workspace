@@ -1,13 +1,12 @@
 package com.devannalu.tsworkspace.rbac;
 
-import com.devannalu.tsworkspace.auth.ProfileRepository;
+import com.devannalu.tsworkspace.usuarios.PerfilRepository;
 import com.devannalu.tsworkspace.auth.ProfileStatus;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,12 +14,12 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @Transactional(readOnly = true)
 public class PermissaoService {
-    private final ProfileRepository perfis;
-    private final JdbcTemplate jdbc;
+    private final PerfilRepository perfis;
+    private final PermissoesUsuarioRepository permissoesUsuario;
 
-    public PermissaoService(ProfileRepository perfis, JdbcTemplate jdbc) {
+    public PermissaoService(PerfilRepository perfis, PermissoesUsuarioRepository permissoesUsuario) {
         this.perfis = perfis;
-        this.jdbc = jdbc;
+        this.permissoesUsuario = permissoesUsuario;
     }
 
     public record PerfilAcessoResponse(String key, String name) { }
@@ -32,16 +31,17 @@ public class PermissaoService {
 
     public PermissoesEfetivas buscarPermissoesUsuario(String usuarioId) {
         var perfil = perfis.findById(usuarioId).orElse(null);
-        if (perfil == null || perfil.getRole() == null || perfil.getStatus() != ProfileStatus.ACTIVE) {
+        if (perfil == null || perfil.getPerfilAcesso() == null || perfil.getStatus() != ProfileStatus.ACTIVE) {
             return new PermissoesEfetivas(null, new PoliticaPermissao.ContextoPermissao(false, null, Set.of(), Set.of(), Map.of()));
         }
-        PerfilAcesso perfilAcesso = perfil.getRole();
-        Set<String> catalogo = new HashSet<>(jdbc.queryForList("SELECT permission_key FROM permissions", String.class));
-        Set<String> concessoes = new HashSet<>(jdbc.queryForList("SELECT p.permission_key FROM role_permissions rp JOIN permissions p ON p.id=rp.permission_id WHERE rp.role_id=?", String.class, perfilAcesso.getId()));
+        PerfilAcesso perfilAcesso = perfil.getPerfilAcesso();
+        Set<String> catalogo = new HashSet<>(permissoesUsuario.listarCatalogo());
+        Set<String> concessoes = new HashSet<>(permissoesUsuario.listarConcessoesPerfil(perfilAcesso.getId()));
         Map<String, EfeitoPermissao> excecoes = new HashMap<>();
-        jdbc.query("SELECT p.permission_key, up.effect FROM user_permissions up JOIN permissions p ON p.id=up.permission_id WHERE up.user_id=?",
-            (org.springframework.jdbc.core.RowCallbackHandler) row -> excecoes.put(row.getString(1), EfeitoPermissao.valueOf(row.getString(2))), usuarioId);
-        return new PermissoesEfetivas(new PerfilAcessoResponse(perfilAcesso.getKey(), perfilAcesso.getName()),
+        permissoesUsuario.listarExcecoesUsuario(usuarioId).forEach(
+            (chave, efeito) -> excecoes.put(chave, EfeitoPermissao.valueOf(efeito))
+        );
+        return new PermissoesEfetivas(new PerfilAcessoResponse(perfilAcesso.getKey(), perfilAcesso.getNome()),
             new PoliticaPermissao.ContextoPermissao(true, perfilAcesso.getKey(), catalogo, concessoes, excecoes));
     }
 

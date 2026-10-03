@@ -1,8 +1,8 @@
 package com.devannalu.tsworkspace.seguranca;
 
 import com.devannalu.tsworkspace.auth.AppUserPrincipal;
-import com.devannalu.tsworkspace.auth.Profile;
-import com.devannalu.tsworkspace.auth.ProfileRepository;
+import com.devannalu.tsworkspace.usuarios.Perfil;
+import com.devannalu.tsworkspace.usuarios.PerfilRepository;
 import com.devannalu.tsworkspace.auth.ProfileStatus;
 
 import jakarta.servlet.FilterChain;
@@ -16,10 +16,10 @@ import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 public class UsuarioAtivoFilter extends OncePerRequestFilter {
-    private final ProfileRepository profiles;
+    private final PerfilRepository profiles;
     private final LogoutHandler logoutHandler;
 
-    public UsuarioAtivoFilter(ProfileRepository profiles, LogoutHandler logoutHandler) {
+    public UsuarioAtivoFilter(PerfilRepository profiles, LogoutHandler logoutHandler) {
         this.profiles = profiles;
         this.logoutHandler = logoutHandler;
     }
@@ -29,7 +29,7 @@ public class UsuarioAtivoFilter extends OncePerRequestFilter {
         throws ServletException, IOException {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication != null && authentication.isAuthenticated() && authentication.getPrincipal() instanceof AppUserPrincipal principal) {
-            ProfileStatus status = profiles.findById(principal.id()).map(Profile::getStatus).orElse(ProfileStatus.INACTIVE);
+            ProfileStatus status = profiles.findById(principal.id()).map(Perfil::getStatus).orElse(ProfileStatus.INACTIVE);
             if (status != ProfileStatus.ACTIVE) {
                 logoutHandler.logout(request, response, authentication);
                 response.setStatus(HttpServletResponse.SC_FORBIDDEN);

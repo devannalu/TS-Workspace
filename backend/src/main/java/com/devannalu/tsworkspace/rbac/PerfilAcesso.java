@@ -15,5 +15,5 @@ public class PerfilAcesso {
     protected PerfilAcesso() { }
     public String getId() { return id; }
     public String getKey() { return key; }
-    public String getName() { return name; }
+    public String getNome() { return name; }
 }

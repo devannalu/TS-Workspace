@@ -40,7 +40,7 @@ class RbacHttpTest {
     @Autowired ObjectMapper mapper;
     private static final String PASSWORD = "HTTP RBAC test password only";
 
-    @Test void realHttpEnforcesSessionCsrfRoleAndPermissionAndLogout() throws Exception {
+    @Test void deveValidarSessaoCsrfPermissoesELogoutPorHttpReal() throws Exception {
         bootstrap.criarPrimeiraIdentidade("HTTP Admin Test", "http-admin@example.test", PASSWORD);
         bootstrap.criarPrimeiraIdentidade("HTTP Support Test", "http-support@example.test", PASSWORD);
         jdbc.update("UPDATE app_profile SET role_id=(SELECT id FROM roles WHERE role_key='SUPPORT') WHERE user_id=(SELECT id FROM app_user WHERE email='http-support@example.test')");

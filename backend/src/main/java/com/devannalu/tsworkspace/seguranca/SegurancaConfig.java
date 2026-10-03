@@ -2,7 +2,7 @@ package com.devannalu.tsworkspace.seguranca;
 
 import com.devannalu.tsworkspace.seguranca.UsuarioAtivoFilter;
 import com.devannalu.tsworkspace.autenticacao.AutenticacaoUsuarioService;
-import com.devannalu.tsworkspace.auth.ProfileRepository;
+import com.devannalu.tsworkspace.usuarios.PerfilRepository;
 import java.io.IOException;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Value;
@@ -98,7 +98,7 @@ public class SegurancaConfig {
         SecurityContextRepository contextRepository,
         CsrfTokenRepository csrfRepository,
         CorsConfigurationSource cors,
-        ProfileRepository profiles,
+        PerfilRepository profiles,
         LogoutHandler logoutHandler
     ) throws Exception {
         CsrfTokenRequestAttributeHandler csrfHandler = new CsrfTokenRequestAttributeHandler();

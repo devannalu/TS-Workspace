@@ -1,6 +1,7 @@
 package com.devannalu.tsworkspace;
 
 import com.devannalu.tsworkspace.auth.*;
+import com.devannalu.tsworkspace.usuarios.*;
 import com.devannalu.tsworkspace.autenticacao.*;
 import com.devannalu.tsworkspace.rbac.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -49,7 +50,7 @@ class RbacIntegrationTest {
     @Autowired JdbcTemplate jdbc;
     @Autowired RbacSeed seed;
     @Autowired InicializacaoIdentidadeService bootstrap;
-    @Autowired UserRepository users;
+    @Autowired UsuarioRepository users;
     @Autowired PermissaoService permissions;
     @Autowired PermissaoController controller;
     @Autowired AutenticacaoUsuarioService details;
@@ -66,7 +67,7 @@ class RbacIntegrationTest {
         seed.seed();
     }
 
-    @Test void migrationsSeedAndActualDatabaseMatrixMatchFrozenBaseline() throws Exception {
+    @Test void devePreservarCatalogoEPermissoesDoCheckpoint() throws Exception {
         assertThat(flyway.info().current().getVersion().getVersion()).isEqualTo("7");
         assertThat(flyway.migrate().migrationsExecuted).isZero();
         assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM roles", Integer.class)).isEqualTo(4);
@@ -89,7 +90,7 @@ class RbacIntegrationTest {
         }
     }
 
-    @Test void seedIsIdempotentAndPreservesAdministrativeDecisions() {
+    @Test void deveInicializarCatalogoSemSobrescreverDecisoesAdministrativas() {
         String id = createUser("SUPPORT");
         override(id, "teams.view", "DENY");
         jdbc.update("INSERT INTO role_permissions SELECT r.id, p.id FROM roles r CROSS JOIN permissions p WHERE r.role_key='SUPPORT' AND p.permission_key='audit.view'");
@@ -101,12 +102,12 @@ class RbacIntegrationTest {
         assertThat(permissions.possuiPermissao(id, "teams.view")).isFalse();
     }
 
-    @Test void endpointUses401ForAnonymousAnd403ForInsufficientPermission() throws Exception {
+    @Test void deveRetornar401SemSessaoE403SemPermissao() throws Exception {
         mvc.perform(get("/api/v1/permissions")).andExpect(status().isUnauthorized());
         String id = createUser("SUPPORT");
         mvc.perform(get("/api/v1/permissions").cookie(login(id))).andExpect(status().isForbidden());
     }
-    @Test void adminCanListCatalogAndMeExposesOnlyEffectiveKeys() throws Exception {
+    @Test void deveListarCatalogoEExporApenasPermissoesEfetivas() throws Exception {
         String id = createUser("ADMIN");
         Cookie session = login(id);
         mvc.perform(get("/api/v1/permissions").cookie(session)).andExpect(status().isOk()).andExpect(jsonPath("$.length()").value(14));
@@ -115,7 +116,7 @@ class RbacIntegrationTest {
             .andExpect(jsonPath("$.permissions.length()").value(13))
             .andExpect(jsonPath("$.passwordHash").doesNotExist()).andExpect(jsonPath("$.sessionId").doesNotExist());
     }
-    @Test void allowAndDenyTakeEffectImmediatelyInExistingSession() throws Exception {
+    @Test void deveAplicarConcessoesENegacoesNaSessaoExistente() throws Exception {
         String id = createUser("SUPPORT");
         Cookie session = login(id);
         override(id, "permissions.view", "ALLOW");
@@ -124,27 +125,27 @@ class RbacIntegrationTest {
         mvc.perform(get("/api/v1/permissions").cookie(session)).andExpect(status().isForbidden());
         mvc.perform(get("/api/v1/auth/me").cookie(session)).andExpect(jsonPath("$.permissions", org.hamcrest.Matchers.not(org.hamcrest.Matchers.hasItem("permissions.view"))));
     }
-    @Test void denyOverridesAdminRoleGrant() throws Exception {
+    @Test void devePriorizarNegacaoSobreConcessaoDoPerfil() throws Exception {
         String id = createUser("ADMIN");
         override(id, "permissions.view", "DENY");
         mvc.perform(get("/api/v1/permissions").cookie(login(id))).andExpect(status().isForbidden());
         assertThatThrownBy(() -> permissions.exigirPermissao(id, "permissions.view")).isInstanceOf(AccessDeniedException.class);
     }
-    @Test void superAdminBypassesDenyWithoutRoleGrantButNotUnknownPermissions() throws Exception {
+    @Test void devePermitirSuperAdminSemAceitarPermissaoDesconhecida() throws Exception {
         String id = createUser("SUPER_ADMIN");
         override(id, "permissions.view", "DENY");
         jdbc.update("DELETE rp FROM role_permissions rp JOIN roles r ON r.id=rp.role_id WHERE r.role_key='SUPER_ADMIN'");
         mvc.perform(get("/api/v1/permissions").cookie(login(id))).andExpect(status().isOk());
         assertThat(permissions.possuiPermissao(id, "unknown.permission")).isFalse();
     }
-    @Test void changedRoleIsReadFromDatabaseInsteadOfStalePrincipal() throws Exception {
+    @Test void deveConsultarPerfilAtualizadoNoBanco() throws Exception {
         String id = createUser("ADMIN");
         Cookie session = login(id);
         jdbc.update("UPDATE app_profile SET role_id=(SELECT id FROM roles WHERE role_key='SUPPORT') WHERE user_id=?", id);
         mvc.perform(get("/api/v1/permissions").cookie(session)).andExpect(status().isForbidden());
         mvc.perform(get("/api/v1/auth/me").cookie(session)).andExpect(jsonPath("$.role.key").value("SUPPORT"));
     }
-    @Test void inactiveSuperAdminIsBlockedAndSessionRevoked() throws Exception {
+    @Test void deveBloquearSuperAdminInativaERevogarSessao() throws Exception {
         String id = createUser("SUPER_ADMIN");
         Cookie session = login(id);
         jdbc.update("UPDATE app_profile SET status='INACTIVE' WHERE user_id=?", id);
@@ -152,7 +153,7 @@ class RbacIntegrationTest {
         mvc.perform(get("/api/v1/auth/me").cookie(session)).andExpect(status().isUnauthorized());
         assertThat(permissions.possuiPermissao(id, "permissions.view")).isFalse();
     }
-    @Test void databaseEnforcesOverrideUniquenessRoleNotNullAndForeignKeys() {
+    @Test void deveGarantirUnicidadePerfilObrigatorioEChavesEstrangeiras() {
         String id = createUser("SUPPORT");
         override(id, "teams.view", "ALLOW");
         assertThatThrownBy(() -> override(id, "teams.view", "DENY")).isInstanceOf(DataIntegrityViolationException.class);
@@ -164,20 +165,20 @@ class RbacIntegrationTest {
             .satisfies(error -> assertThat(((org.springframework.jdbc.UncategorizedSQLException) error)
                 .getSQLException().getErrorCode()).isEqualTo(3819));
     }
-    @Test void bootstrapIsIdempotentWithoutChangingIdentityCredentialsAndRejectsPartialRole() {
+    @Test void devePreservarCredenciaisNaInicializacaoERejeitarPerfilParcial() {
         bootstrap.criarPrimeiraIdentidade("Test Bootstrap", "bootstrap-rbac@example.test", TEST_PASSWORD);
-        User user = users.findByEmail("bootstrap-rbac@example.test").orElseThrow();
-        String originalHash = user.getPasswordHash();
+        Usuario user = users.findByEmail("bootstrap-rbac@example.test").orElseThrow();
+        String originalHash = user.getHashSenha();
         bootstrap.criarPrimeiraIdentidade("Ignored Name", "bootstrap-rbac@example.test", "different test password");
-        User after = users.findByEmail("bootstrap-rbac@example.test").orElseThrow();
+        Usuario after = users.findByEmail("bootstrap-rbac@example.test").orElseThrow();
         assertThat(after.getId()).isEqualTo(user.getId());
-        assertThat(after.getName()).isEqualTo("Test Bootstrap");
-        assertThat(after.getPasswordHash().equals(originalHash)).isTrue();
+        assertThat(after.getNome()).isEqualTo("Test Bootstrap");
+        assertThat(after.getHashSenha().equals(originalHash)).isTrue();
         assertThat(permissions.buscarPermissoesUsuario(user.getId()).role().key()).isEqualTo("SUPER_ADMIN");
         jdbc.update("UPDATE app_profile SET role_id=(SELECT id FROM roles WHERE role_key='SUPPORT') WHERE user_id=?", user.getId());
         assertThatThrownBy(() -> bootstrap.criarPrimeiraIdentidade("Test", "bootstrap-rbac@example.test", TEST_PASSWORD)).isInstanceOf(IllegalStateException.class);
     }
-    @Test void methodSecurityProtectsDirectBeanInvocation() {
+    @Test void deveProtegerInvocacaoDiretaDoServico() {
         String id = createUser("SUPPORT");
         var principal = details.loadUserByUsername(users.findById(id).orElseThrow().getEmail());
         SecurityContextHolder.getContext().setAuthentication(UsernamePasswordAuthenticationToken.authenticated(principal, null, principal.getAuthorities()));

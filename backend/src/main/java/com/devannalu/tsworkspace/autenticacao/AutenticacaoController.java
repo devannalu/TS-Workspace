@@ -2,11 +2,11 @@ package com.devannalu.tsworkspace.autenticacao;
 
 import com.devannalu.tsworkspace.auth.AppUserPrincipal;
 import com.devannalu.tsworkspace.auth.EmailNormalizer;
-import com.devannalu.tsworkspace.auth.Profile;
-import com.devannalu.tsworkspace.auth.ProfileRepository;
+import com.devannalu.tsworkspace.usuarios.Perfil;
+import com.devannalu.tsworkspace.usuarios.PerfilRepository;
 import com.devannalu.tsworkspace.auth.ProfileStatus;
-import com.devannalu.tsworkspace.auth.User;
-import com.devannalu.tsworkspace.auth.UserRepository;
+import com.devannalu.tsworkspace.usuarios.Usuario;
+import com.devannalu.tsworkspace.usuarios.UsuarioRepository;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -38,33 +38,33 @@ public class AutenticacaoController {
     private final SecurityContextRepository securityContextRepository;
     private final SessionAuthenticationStrategy sessionAuthenticationStrategy;
     private final LogoutHandler logoutHandler;
-    private final UserRepository users;
-    private final ProfileRepository profiles;
-    private final PermissaoService permissions;
+    private final UsuarioRepository usuarios;
+    private final PerfilRepository perfis;
+    private final PermissaoService permissoes;
 
     public AutenticacaoController(
         AuthenticationManager authenticationManager,
         SecurityContextRepository securityContextRepository,
         SessionAuthenticationStrategy sessionAuthenticationStrategy,
         LogoutHandler logoutHandler,
-        UserRepository users,
-        ProfileRepository profiles,
-        PermissaoService permissions
+        UsuarioRepository usuarios,
+        PerfilRepository perfis,
+        PermissaoService permissoes
     ) {
         this.authenticationManager = authenticationManager;
         this.securityContextRepository = securityContextRepository;
         this.sessionAuthenticationStrategy = sessionAuthenticationStrategy;
         this.logoutHandler = logoutHandler;
-        this.users = users;
-        this.profiles = profiles;
-        this.permissions = permissions;
+        this.usuarios = usuarios;
+        this.perfis = perfis;
+        this.permissoes = permissoes;
     }
 
     @GetMapping("/csrf")
     public Map<String, String> csrf(CsrfToken token) { return Map.of("token", token.getToken()); }
 
     @PostMapping("/login")
-    public UserResponse login(@Valid @RequestBody LoginRequest request, HttpServletRequest servletRequest, HttpServletResponse servletResponse) {
+    public UsuarioAtualResponse login(@Valid @RequestBody LoginRequest request, HttpServletRequest servletRequest, HttpServletResponse servletResponse) {
         Authentication authentication = authenticationManager.authenticate(
             UsernamePasswordAuthenticationToken.unauthenticated(EmailNormalizer.normalize(request.email()), request.password())
         );
@@ -84,18 +84,18 @@ public class AutenticacaoController {
     }
 
     @GetMapping("/me")
-    public UserResponse me(Authentication authentication) {
+    public UsuarioAtualResponse me(Authentication authentication) {
         return montarUsuarioAtual((AppUserPrincipal) authentication.getPrincipal());
     }
 
-    private UserResponse montarUsuarioAtual(AppUserPrincipal principal) {
-        User user = users.findById(principal.id()).orElseThrow(() -> new IllegalStateException("Usuária não encontrada."));
-        Profile profile = profiles.findById(user.getId()).orElseThrow(() -> new IllegalStateException("Perfil não encontrado."));
-        var rbac = permissions.buscarPermissoesUsuario(principal.id());
-        return new UserResponse(user.getId(), user.getName(), user.getEmail(), profile.getJobTitle(), profile.getStatus(), rbac.role(), rbac.chavesEfetivas());
+    private UsuarioAtualResponse montarUsuarioAtual(AppUserPrincipal principal) {
+        Usuario usuario = usuarios.findById(principal.id()).orElseThrow(() -> new IllegalStateException("Usuária não encontrada."));
+        Perfil perfil = perfis.findById(usuario.getId()).orElseThrow(() -> new IllegalStateException("Perfil não encontrado."));
+        var rbac = permissoes.buscarPermissoesUsuario(principal.id());
+        return new UsuarioAtualResponse(usuario.getId(), usuario.getNome(), usuario.getEmail(), perfil.getCargo(), perfil.getStatus(), rbac.role(), rbac.chavesEfetivas());
     }
 
     public record LoginRequest(@NotBlank String email, @NotBlank String password) { }
-    public record UserResponse(String id, String name, String email, String jobTitle, ProfileStatus status,
+    public record UsuarioAtualResponse(String id, String name, String email, String jobTitle, ProfileStatus status,
                                PermissaoService.PerfilAcessoResponse role, List<String> permissions) { }
 }

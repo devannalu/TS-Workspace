@@ -13,7 +13,7 @@ public class PermissaoController {
     @GetMapping("/api/v1/permissions")
     @PreAuthorize("@verificadorPermissao.possuiPermissao(authentication, 'permissions.view')")
     public List<PermissaoResponse> listarPermissoes() {
-        return permissoes.findAllByOrderByKeyAsc().stream().map(p -> new PermissaoResponse(p.getKey(), p.getName())).toList();
+        return permissoes.findAllByOrderByKeyAsc().stream().map(p -> new PermissaoResponse(p.getKey(), p.getNome())).toList();
     }
 
     public record PermissaoResponse(String key, String name) { }
