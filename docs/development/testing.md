@@ -35,7 +35,7 @@ das administradoras. O upgrade valida a membership de identidade preexistente.
 
 ### Testcontainers
 
-A suíte de [Users/Invites](../architecture/users-invites.md) cobre token/hash,
+A suíte de [Usuárias/Convites](../architecture/users-invites.md) cobre token/hash,
 estados, validação, proteção administrativa, provisionamento atômico,
 concorrência, rollback, auditoria, paginação, filtros, autorização e revogação
 de todas as sessões. A falha intermediária usa uma constraint temporária
@@ -84,3 +84,15 @@ revisão de conteúdo, diff e segredos. Quando houver trabalho prévio não
 relacionado, compare o conteúdo antes/depois e selecione apenas os arquivos
 documentais para o commit. Não é necessário repetir suítes da aplicação se
 nenhum código, configuração, migration ou dependência mudou.
+
+## Verificação de refatorações
+
+Na padronização da Fase 7, cada módulo foi validado antes do próximo. A suíte
+Java contém 148 testes; o frontend possui 36 testes em `tests/unit`, distribuídos
+entre cliente Java, falhas da API, painel e interface. Nomes de testes descrevem
+comportamento em PT-BR. Uma renomeação não altera fixtures, endpoints ou o banco.
+
+A verificação final inclui `mvnw.cmd -B test`, `mvnw.cmd -B package`, typecheck,
+lint, testes e build do frontend, além do navegador na porta local 3010. Dados
+transitórios usados no navegador devem ser removidos com escopo explícito e
+comparação dos dados oficiais antes/depois, sem limpar o banco ou volumes.

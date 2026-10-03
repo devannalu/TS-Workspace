@@ -2,9 +2,9 @@
 
 ## Modelo e compatibilidade
 
-Uma usuária pode participar de várias equipes por TeamMember. Team tem UUID,
+Uma usuária pode participar de várias equipes por MembroEquipe. Equipe tem UUID,
 key estável, nome, descrição opcional, parent opcional, arquivamento e timestamps.
-TeamMember tem chave composta user/equipe e data de criação. Não existe User.teamId.
+MembroEquipe tem chave composta user/equipe e data de criação. Não existe Usuario.teamId.
 Entidades JPA não são serializadas pela API.
 
 A fonte validada é o commit `fabb67294509f89005c9bae0d7713b077f314691`:
@@ -32,7 +32,7 @@ históricos permanecem. A listagem omite equipes arquivadas; detalhe por ID
 permite consultar uma equipe arquivada. Contagens e integrantes visíveis
 consideram somente Profiles ativas, como a listagem anterior.
 
-Adicionar membro exige User existente e Profile ativa. A PK impede duplicação.
+Adicionar membro exige Usuario existente e Perfil ativa. A PK impede duplicação.
 Remoção permite retirar membership de uma usuária inativa de equipe ativa.
 Em Fundadoras, uma integrante com role SUPER_ADMIN não pode ser removida
 quando a contagem de Super Admins ativas é menor ou igual a um. Essa condição,
@@ -47,13 +47,13 @@ bloqueio e protege perda da última administradora da raiz ao mudar role/status.
 ## API
 
 Sessão Java e CSRF são obrigatórios nas escritas. Method Security reutiliza
-PermissionGuard e as permissões existentes, consultadas no banco.
+VerificadorPermissao e as permissões existentes, consultadas no banco.
 
 | Método e rota | Permissão | Resposta |
 | --- | --- | --- |
 | GET /api/v1/teams | teams.view | Lista flat ativa, parentId e memberCount agregado |
 | GET /api/v1/teams/mine | teams.view | Resumos das equipes ativas da própria sessão, em uma consulta |
-| GET /api/v1/teams/{id} | teams.view | Team e integrantes ativas (id, nome, email) |
+| GET /api/v1/teams/{id} | teams.view | Equipe e integrantes ativas (id, nome, email) |
 | POST /api/v1/teams | teams.create | 201, detalhe da equipe criada |
 | PUT /api/v1/teams/{id} | teams.edit | 200, detalhe atualizado |
 | POST /api/v1/teams/{id}/archive | teams.archive | 200, equipe arquivada |
@@ -68,15 +68,15 @@ sessões, SQL ou exceptions de persistência.
 
 Consultas de listagem usam uma agregação para memberCount; detalhe faz duas
 consultas, sem carregar coleções JPA por equipe. `/auth/me` permanece com o
-contrato anterior. O cliente técnico `frontend/src/lib/api/teams.ts` usa cookies
+contrato anterior. O cliente técnico `frontend/src/lib/api/equipes.ts` usa cookies
 e CSRF; a página oficial /equipes utiliza esse cliente.
 Tasks Java ainda não está implementado.
 
 ## Validação
 
-TeamPolicyTest cobre regras reais de hierarquia, arquivamento e memberships.
-TeamsIntegrationTest usa Testcontainers/MySQL para Flyway, seed idempotente,
+PoliticaEquipeTest cobre regras reais de hierarquia, arquivamento e memberships.
+EquipesIntegrationTest usa Testcontainers/MySQL para Flyway, seed idempotente,
 compatibilidade com a fixture de compatibilidade, CRUD, FKs, RBAC, CSRF e concorrência
 de memberships, movimentos e remoções da última administradora.
-RbacUpgradeTest também verifica a associação à raiz ao atualizar uma identidade
+AtualizacaoRbacTest também verifica a associação à raiz ao atualizar uma identidade
 preexistente, preservando seu ID, email e hash.

@@ -5,7 +5,7 @@ datas nem substitui a [lista de módulos implementados](modules.md).
 
 ## 1. Acesso e organização
 
-Fundação Java, Auth, RBAC, Teams e Users/Invites concluídos.
+Fundação Java, Auth, RBAC, Teams e Usuárias/Convites concluídos.
 O frontend oficial utiliza Spring Boot com MySQL.
 
 ## 2. Produtividade

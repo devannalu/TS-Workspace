@@ -6,7 +6,7 @@ e Tailwind CSS. As versões estão no package.json e lockfile.
 ## API oficial
 
 Todos os módulos usam src/lib/api/. http.ts centraliza base URL, cookies,
-CSRF, parsing de Problem Details e ApiError com status 400/401/403/404/409.
+CSRF, parsing de Problem Details e ErroApi com status 400/401/403/404/409.
 Mensagens controladas não expõem SQL, stacks ou detalhes de autenticação.
 NEXT_PUBLIC_JAVA_API_URL é incorporada no build e nunca contém segredos.
 
@@ -18,13 +18,13 @@ Nenhuma mutação é reenviada automaticamente.
 ## Sessão e rotas
 
 A sessão permanece no cookie HttpOnly TS_SESSION, sem localStorage ou
-sessionStorage. auth/session.ts consulta /auth/me com o cookie da requisição
+sessionStorage. lib/sessao.ts consulta /auth/me com o cookie da requisição
 e no-store. A ausência de sessão redireciona as páginas protegidas para login.
-SessionBoundary trata loading, authenticated, unauthenticated, forbidden e
+ProtecaoSessao trata loading, authenticated, unauthenticated, forbidden e
 indisponibilidade, revalida no foco e trata expiração recebida pelo cliente.
 A proteção Next é navegação; autorização real pertence ao Spring Boot.
 
-Login/logout usam auth.ts. Dashboard usa me e equipes reais. /equipes preserva
+Login/logout usam autenticacao.ts. Dashboard usa me e equipes reais. /equipes preserva
 hierarquia, criação, edição, arquivamento e integrantes; /usuarias usa Users
 e Invites. Editar role/cargo/equipes e ativar/inativar são ações separadas,
 com suas permissões próprias. Menus e botões refletem as keys da sessão.
@@ -40,11 +40,11 @@ frontend/node_modules/next/dist/docs/, conforme AGENTS.md.
 
 ## Shell, páginas e dados
 
-WorkspaceShell é uma composição server-side que exige sessão e entrega a
-identidade Java ao AppShell. A navegação deriva das permissions atuais; o
-SessionBoundary bloqueia a exibição durante bootstrap. Sidebar desktop e drawer
+ShellWorkspace é uma composição server-side que exige sessão e entrega a
+identidade Java ao ShellAplicacao. A navegação deriva das permissions atuais; o
+ProtecaoSessao bloqueia a exibição durante bootstrap. Sidebar desktop e drawer
 mobile compartilham os links reais. O header oferece avatar por iniciais,
-contexto da página e menu pessoal com logout. Login e convite usam PublicShell,
+contexto da página e menu pessoal com logout. Login e convite usam ShellPublico,
 sem navegação autenticada.
 
 O dashboard consulta auth/me e /teams/mine, que deriva as memberships da sessão,
@@ -53,7 +53,7 @@ consulta /users?status=ACTIVE&size=1. /invites/pending-count devolve a contagem
 agregada de convites não usados, não cancelados e não expirados. Essas duas
 leituras Java evitam percorrer equipes e páginas de convites. Somente
 users.view habilita essas consultas e cards. Ações rápidas também exigem as keys
-de criação correspondentes. AuditLog não tem endpoint de leitura apropriado;
+de criação correspondentes. RegistroAuditoria não tem endpoint de leitura apropriado;
 atividade recente permanece futura.
 
 Usuárias são paginadas no servidor (20 por página), com parâmetros de busca,
@@ -72,3 +72,19 @@ atalho para login, sem sessão automática.
 Veja o [Design System](design-system.md) para tokens, componentes e responsividade.
 
 Veja [setup](../development/setup.md), [RBAC](rbac.md) e [testes](../development/testing.md).
+
+## Organização do código
+
+`components/autenticacao`, `components/equipes`, `components/usuarios` e
+`components/convites` reúnem apresentação por domínio. `components/layout`
+compõe os shells; `components/ui` contém primitivas técnicas compartilhadas.
+`DialogosEquipe` trata criação, edição e arquivamento; `DialogoIntegrantesEquipe`
+possui a busca e as mutações de integrantes. Ambos preservam os estados e o
+comportamento anterior, sem um hook genérico de diálogo.
+
+`lib/api/contratos.ts` concentra os três tipos comuns. `http.ts` é o único
+cliente de mutações Java e também expõe a consulta de saúde. `acoes.ts` converte
+erros controlados em feedback local. `lib/sessao.ts` contém as leituras de sessão;
+`lib/ui/painel.ts`, `permissoes.ts` e `formatacao.ts` são utilitários concretos.
+Rotas, chaves JSON, permissions e eventos de expiração permanecem compatíveis.
+Nomes técnicos de React, HTML e componentes do Design System ficam em inglês.

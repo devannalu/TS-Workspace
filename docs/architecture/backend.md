@@ -7,20 +7,35 @@ em `backend/pom.xml`. O Maven Wrapper fixa a distribuição do Maven e permite
 compilar sem instalação global. Testcontainers fornece MySQL efêmero para
 testes integrados.
 
-O pacote base é `com.devannalu.tsworkspace`. `auth` reúne identidade e
-autenticação, `common` contém configuração de segurança e tratamento de erros,
-e `foundation` mantém a verificação de saúde. `rbac` contém catálogo, seed,
-resolução de permissões e proteção por Method Security.
-`teams` reúne entidades Team/TeamMember, políticas de hierarquia e memberships,
-seed, serviço transacional e controller REST. As consultas desse módulo usam
-JdbcTemplate, com projeções DTO e contagem agregada para evitar N+1; Hibernate
-valida os mapeamentos JPA sem criar o schema.
-`users` oferece gestão paginada de perfis; `invites` coordena tokens e
-provisionamento transacional; `audit` persiste eventos mínimos sem segredos.
-`OrganizationLock` compartilha o bloqueio de Fundadoras entre esses domínios.
-`SessionRevocationService` centraliza a remoção das sessões de uma identidade.
-Novos pacotes devem corresponder a funcionalidades reais, sem pastas vazias
-criadas antecipadamente.
+O pacote base é `com.devannalu.tsworkspace`. A organização acompanha o domínio:
+
+- `autenticacao`: login, identidade inicial e revogação de sessões;
+- `seguranca`: cadeia Spring Security e bloqueio de usuárias inativas;
+- `rbac`: catálogo, permissões, perfis de acesso e autorização;
+- `equipes`: hierarquia, integrantes e operações transacionais;
+- `usuarios`: identidade, perfil e gestão paginada;
+- `convites`: criação, validação e provisionamento atômico;
+- `auditoria`: persistência de eventos mínimos;
+- `compartilhado`: bloqueio de Fundadoras e erros de domínio;
+- `infraestrutura`: verificação de saúde e marcador do schema.
+
+Controllers recebem DTOs e delegam. Serviços coordenam regras e transações.
+Repositories possuem as consultas JPA/JDBC; políticas são funções de domínio
+sem acesso a banco. `GestaoUsuariosRepository` concentra as consultas da gestão,
+enquanto `UsuarioRepository` mantém a identidade usada na autenticação.
+`AuditoriaRepository` apenas persiste dentro da transação existente, sem serviço
+intermediário que só encaminharia argumentos. DTOs pequenos permanecem junto
+aos seus casos de uso; não há hierarquia genérica de mappers ou repositories.
+
+`BloqueioOrganizacao` protege invariantes compartilhadas de Fundadoras.
+`ProblemaDominio` e `TratamentoErrosApi` centralizam os erros controlados.
+`RevogacaoSessaoService` remove sessões da identidade pelo email indexado.
+
+`auth.AppUserPrincipal` e `auth.ProfileStatus` permanecem nos nomes originais
+para preservar sessões Java serializadas. `EmailNormalizer.normalize` e
+`RbacSeed.seed` permanecem por serem referenciados pela migration Java V5,
+que não pode ser reescrita após aplicação. Essa compatibilidade não cria duas
+implementações de autenticação.
 
 ## Componentes
 

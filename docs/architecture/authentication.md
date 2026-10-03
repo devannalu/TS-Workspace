@@ -47,17 +47,17 @@ Login e `/auth/me` incluem role e keys efetivas conforme o [RBAC](rbac.md).
 
 ## Perfil inativo e bootstrap
 
-Profile INACTIVE não pode autenticar. Em requisição com sessão existente,
-o filtro consulta o estado atual do Profile, invalida a sessão e bloqueia o
+Perfil INACTIVE não pode autenticar. Em requisição com sessão existente,
+o filtro consulta o estado atual do Perfil, invalida a sessão e bloqueia o
 acesso quando o perfil está ausente ou inativo. Permissões não contornam isso.
 
 A inativação administrativa Java revoga imediatamente todas as sessões pelo
-principal indexado (email da User) na mesma transação da mudança de Profile.
-Reativação mantém User/Profile e exige novo login, sem restaurar sessões antigas.
-Role/permissões continuam sendo consultadas no banco em requisições autenticadas.
+principal indexado (email da Usuario) na mesma transação da mudança de Perfil.
+Reativação mantém Usuario/Perfil e exige novo login, sem restaurar sessões antigas.
+PerfilAcesso/permissões continuam sendo consultadas no banco em requisições autenticadas.
 
 Novas usuárias Java entram por [convite](users-invites.md), sem endpoint de signup
-ou criação administrativa direta. Aceite cria User, Profile ACTIVE, role e
+ou criação administrativa direta. Aceite cria Usuario, Perfil ACTIVE, role e
 memberships atomicamente, sem criar sessão. Usa BCrypt força 12; a senha exige
 12–128 caracteres e no máximo 72 bytes UTF-8, respeitando o limite do encoder,
 com confirmação igual. Recuperação de senha e SMTP não estão implementados.
@@ -68,9 +68,9 @@ restrito à origem configurada. Não existe exceção global de CSRF para convit
 
 A primeira identidade é criada por bootstrap administrativo explícito com
 variáveis locais; não existe promoção automática da primeira pessoa cadastrada.
-User e Profile são criados em transação. Repetições completas são idempotentes;
+Usuario e Perfil são criados em transação. Repetições completas são idempotentes;
 estados parciais exigem revisão. O bootstrap localiza SUPER_ADMIN pela key e
-associa essa role ao Profile, sem IDs fixos.
+associa essa role ao Perfil, sem IDs fixos.
 
 ## Frontend oficial
 

@@ -29,7 +29,7 @@ sessões e dados de domínio. A organização é um monorepo com módulos por do
 Login, sessão, dashboard, equipes, usuárias e convites usam a API Spring Boot.
 Leituras em Server Components encaminham somente o cookie TS_SESSION ao Java.
 Mutações partem do navegador, com credentials include e CSRF centralizado.
-Spring Security e PermissionGuard permanecem a autoridade dos dados.
+Spring Security e VerificadorPermissao permanecem a autoridade dos dados.
 O frontend não possui banco próprio nem regras de autorização duplicadas.
 
 ## Contratos

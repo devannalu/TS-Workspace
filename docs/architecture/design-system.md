@@ -35,7 +35,7 @@ Botões e campos têm alvos mínimos de 44 px. Bordas de campos usam border-stro
 
 ## Componentes
 
-AppShell, Brand, PublicShell, Avatar, Button (primary/secondary/ghost/danger),
+ShellAplicacao, MarcaWorkspace, ShellPublico, Avatar, Button (primary/secondary/ghost/danger),
 Input, PasswordInput, Badge, Card, Dialog/Drawer, Toast, Skeleton, EmptyState,
 ErrorState e Pagination. Menus de contexto usam disclosure nativo e botões.
 Use labels associados; não deixe o botão de senha integrar o label do campo.

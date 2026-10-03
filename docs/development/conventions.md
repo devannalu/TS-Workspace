@@ -82,7 +82,7 @@ sem reescrever a história.
 ## Interface e identidade
 
 Usar os [tokens e componentes compartilhados](../architecture/design-system.md).
-Páginas autenticadas usam WorkspaceShell; experiências públicas usam PublicShell.
+Páginas autenticadas usam ShellWorkspace; experiências públicas usam ShellPublico.
 Navegação e ações refletem permissions Java, sem substituir autorização backend.
 Não criar indicadores fictícios ou links para módulos inexistentes.
 
@@ -119,3 +119,22 @@ antes de concluir. Evitar N+1, fetch duplicado, loops de consultas e listagens
 inteiras sem paginação. Não adicionar estado global, dependências, rotas ou
 módulos sem necessidade atual. Uma pessoa nova deve entender cada arquivo em
 poucos minutos.
+
+## Padrão permanente de nomes e comentários
+
+Código próprio de domínio usa PT-BR natural, sem acentos nos identificadores:
+`EquipeService`, `criarConvite`, `FormularioLogin`, `buscarUsuarioDaSessao`.
+Arquivos e pastas acompanham o caso de uso; siglas técnicas como RBAC e nomes
+exigidos pelo framework mantêm sua grafia. Contratos HTTP/JSON, schema e chaves
+de permissão não são traduzidos em uma refatoração interna.
+
+Comentários explicam decisões ou restrições que o código não demonstra sozinho.
+Não narrar getters, persistência óbvia ou o nome de uma classe. Javadoc é útil
+para contrato público ou decisão não evidente; não é obrigatório em cada classe.
+Exceções de compatibilidade precisam de motivo concreto, como a classe do
+principal serializado ou o símbolo chamado por uma migration imutável.
+
+Revisar e testar um módulo antes de avançar ao próximo. Consolidar wrappers
+que apenas repassam argumentos; separar arquivos grandes quando existe uma
+responsabilidade própria. Não criar pastas DTO/mapper/hook por rotina, nem uma
+camada genérica para evitar nomes de domínio. Dependências novas exigem uso real.
