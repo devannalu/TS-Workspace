@@ -2,7 +2,8 @@
 import { useState, type FormEvent } from "react";
 import { ArrowRight } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { authClient } from "@/lib/auth/client";
+import { loginJava } from "@/lib/api/auth";
+import { ApiError } from "@/lib/api/http";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 
@@ -15,15 +16,15 @@ export function LoginForm() {
     setError(""); setPending(true);
     const form = new FormData(event.currentTarget);
     try {
-      const result = await authClient.signIn.email({ email: String(form.get("email")).trim(), password: String(form.get("password")), rememberMe: false });
-      if (result.error) {
-        setError(result.error.status === 429 ? "Muitas tentativas. Aguarde um minuto e tente novamente." : "Não foi possível entrar. Confira suas credenciais ou procure uma administradora.");
-        setPending(false);
-        return;
-      }
+      await loginJava(String(form.get("email")).trim(), String(form.get("password")));
       router.replace("/workspace");
       router.refresh();
-    } catch { setError("Não foi possível conectar. Tente novamente em instantes."); setPending(false); }
+    } catch (error) {
+      setError(error instanceof ApiError
+        ? error.status === 401 ? "Não foi possível entrar. Confira suas credenciais ou procure uma administradora." : error.message
+        : "Não foi possível conectar. Tente novamente em instantes.");
+      setPending(false);
+    }
   }
   return (
     <form onSubmit={submit} className="mt-8 space-y-5" aria-busy={pending}>

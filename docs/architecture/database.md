@@ -1,19 +1,10 @@
 # Banco de dados
 
-## MySQL e separação de dados
+## MySQL oficial
 
-O projeto utiliza MySQL. O Compose fixa a imagem utilizada pelos serviços
-locais e restringe suas portas ao loopback.
-
-| Uso | Banco | Porta local |
-| --- | --- | --- |
-| Módulos atuais via Prisma | ts_workspace | 3307 |
-| Integração Prisma | ts_workspace_test | 3308 |
-| API Java | ts_workspace_java | 3309 |
-
-O banco shadow Prisma é separado do banco da aplicação, na instância local
-correspondente. O Java não acessa tabelas Prisma; não existe sincronização
-automática entre identidades ou sessões dos dois serviços.
+O serviço mysql-java do Compose usa ts_workspace_java em 127.0.0.1:3309.
+O frontend não acessa bancos. Testcontainers usa instâncias efêmeras isoladas.
+Volumes persistem dados e não devem ser removidos como parte do setup.
 
 ## Modelagem
 
@@ -27,12 +18,10 @@ automática entre identidades ou sessões dos dois serviços.
 
 No Java, identidade, sessões e [RBAC](rbac.md) estão disponíveis. Profile tem
 relação obrigatória com Role, e as tabelas RBAC possuem FKs e constraints de
-unicidade. A API Java também possui Team e TeamMember; convites existem
-no frontend Prisma e na API Java, em bancos independentes. As interfaces
-oficiais de gestão ainda utilizam o banco legado.
+unicidade. Team, TeamMember e Invites são atendidos pela API oficial.
 
 `V6__teams.sql` cria `team` e `team_member`, preservando V1–V5. `team_key`
-é uma chave única estável, equivalente à key Prisma, usada para reconhecer
+é uma chave única estável, usada para reconhecer
 Fundadoras sem fixar UUID. A self FK restringe exclusão/alteração do parent.
 Uma coluna gerada `root_slot` com índice único limita o banco a uma raiz.
 TeamMember tem PK `(user_id, team_id)`, FK para User com cascade e FK para
@@ -62,9 +51,8 @@ Flyway controla o schema Java em `backend/src/main/resources/db/migration/`;
 migrations Java, quando usadas, são registradas explicitamente. Hibernate
 mantém `ddl-auto=validate`, e Flyway possui `clean-disabled=true`.
 
-Prisma mantém seu schema e migrations em `frontend/prisma/`. Não editar uma
-migration já aplicada, recriar uma migration equivalente ou usar reset para
-contornar erros. Mudanças posteriores recebem novas versões.
+Não editar migrations já aplicadas ou usar reset para contornar erros.
+Mudanças recebem novas versões.
 
 Ao adicionar coluna obrigatória a tabelas com dados, separar criação,
 provisionamento controlado e imposição de integridade. DDL MySQL pode realizar
@@ -85,9 +73,7 @@ do serviço. Veja [Equipes](teams.md).
 ## Testes e dados locais
 
 Testcontainers cria MySQL efêmero com portas dinâmicas para integração Java.
-Os testes Prisma usam `TEST_DATABASE_URL`, diferente da URL da aplicação;
-os runners validam o destino antes de executar. O banco de desenvolvimento
-não é um substituto para o banco de testes.
+O banco de desenvolvimento não substitui o banco de testes.
 
 Volumes locais persistem dados. Não usar remoção de volumes, reset, clean ou
 limpeza de outros projetos como parte de um setup rotineiro.

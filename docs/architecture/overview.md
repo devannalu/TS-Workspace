@@ -1,6 +1,6 @@
 # Arquitetura do sistema
 
-## Arquitetura alvo
+## Arquitetura oficial
 
 ```mermaid
 flowchart LR
@@ -24,21 +24,13 @@ sessões e dados de domínio. A organização é um monorepo com módulos por do
 | Flyway | Evolução versionada do schema Java |
 | MySQL | Integridade relacional, persistência e transações |
 
-## Funcionamento atual e migração
+## Funcionamento oficial
 
-O frontend oficial usa Better Auth e serviços server-side Prisma para acesso,
-RBAC, usuárias, convites e equipes. A API Java possui autenticação baseada em
-sessão e health conectado ao banco; o cliente técnico em Next.js consome essa API.
-O [RBAC Java](rbac.md) centraliza permissões e protege métodos da API.
-A API de [Equipes Java](teams.md) oferece hierarquia, arquivamento e memberships
-sem substituir ainda a página oficial `/equipes`.
-A [gestão Java de usuárias e convites](users-invites.md) adiciona entrada por
-convite, perfis, inativação/reativação, revogação de sessões e auditoria mínima.
-
-Os bancos Java e Prisma são separados. Suas contas, sessões e migrations não
-são intercambiáveis, e autenticar em um serviço não autentica automaticamente
-no outro. A substituição ocorre por domínio, após validação funcional e de
-segurança; a implementação anterior é preservada até a troca correspondente.
+Login, sessão, dashboard, equipes, usuárias e convites usam a API Spring Boot.
+Leituras em Server Components encaminham somente o cookie TS_SESSION ao Java.
+Mutações partem do navegador, com credentials include e CSRF centralizado.
+Spring Security e PermissionGuard permanecem a autoridade dos dados.
+O frontend não possui banco próprio nem regras de autorização duplicadas.
 
 ## Contratos
 

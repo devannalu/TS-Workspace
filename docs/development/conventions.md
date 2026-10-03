@@ -14,7 +14,6 @@ e autorizar a troca correspondente.
 ## Dados e migrations
 
 - Flyway é responsável pelo schema Java; Hibernate permanece em validate.
-- Prisma continua responsável pelo schema dos módulos que atende.
 - Não editar migrations aplicadas; criar novas versões para mudanças.
 - Planejar backfill/provisionamento antes de impor novas constraints obrigatórias.
 - Usar FKs, unicidade, relações normalizadas e transações para proteger invariantes.

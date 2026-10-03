@@ -1,9 +1,8 @@
 # Autorização e RBAC
 
-O RBAC está implementado na API Java e nos módulos atuais atendidos pelo
-servidor Next.js/Prisma. A API Java protege métodos e retorna permissões efetivas;
-o login oficial e a gestão organizacional continuam no serviço anterior até
-a substituição dos respectivos domínios.
+O RBAC oficial pertence ao Spring Boot. PermissionGuard protege métodos;
+/auth/me retorna apenas permissões efetivas. O frontend usa essas keys para
+menus e botões, sem decidir acesso aos dados.
 
 ## Modelo
 
@@ -17,7 +16,7 @@ a substituição dos respectivos domínios.
 
 Role e cargo descritivo são distintos. TeamMember define participação em equipes,
 não substitui RolePermission. A relação Profile → Role é obrigatória no domínio
-Prisma e Java. O schema Java exige `role_id` válido após provisionamento
+Java. O schema Java exige `role_id` válido após provisionamento
 controlado dos perfis existentes. Não usar booleanos administrativos ou uma
 role sem relacionamento.
 
@@ -44,7 +43,7 @@ permission para a mesma usuária. ALLOW e DENY não podem coexistir nesse par.
 | audit.view | sim | sim | não | não |
 
 São 4 roles, 14 keys e 32 grants padrão. A existência de uma key não significa
-que sua tela ou módulo já foi entregue. O seed Prisma completa grants padrão
+que sua tela ou módulo já foi entregue. O seed completa grants padrão
 faltantes sem apagar ajustes administrativos extras.
 
 ## Resolução e precedência
@@ -60,10 +59,9 @@ Portanto DENY individual prevalece sobre grants de ADMIN, SUPERVISOR e SUPPORT,
 mas não sobre o bypass de SUPER_ADMIN. Testes de compatibilidade verificam que
 a implementação Java reproduz essa regra e a matriz vigente.
 
-As implementações atuais estão em `frontend/src/lib/permissions/`, e o seed
-em `frontend/prisma/seed-data.ts`. Membership direto ou permissão de gestão
-pode autorizar acesso a uma equipe; não há herança automática de membership
-para equipes descendentes.
+PermissionPolicy, PermissionService e PermissionGuard ficam em
+backend/src/main/java/com/devannalu/tsworkspace/rbac/. Membership direto ou
+permissão de gestão autoriza acesso à equipe; não há herança automática.
 
 ## Estratégia Java
 

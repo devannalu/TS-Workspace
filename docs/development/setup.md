@@ -1,175 +1,73 @@
 # Ambiente de desenvolvimento
 
-## Requisitos
-
-- Node.js 24 e npm, conforme `frontend/package.json` e seu lockfile.
-- Java 17 disponível no PATH ou por JAVA_HOME.
-- Docker Desktop/Engine com containers Linux e Docker Compose.
-- Git e acesso aos repositórios de dependências para o primeiro download.
-- PowerShell para os scripts locais fornecidos.
-
-O MySQL é executado pelo Compose; não é necessário instalar um servidor global.
-O Maven Wrapper de `backend/` baixa a distribuição fixada, com verificação de
-checksum. Maven global não é requisito.
-
-A partir da raiz:
-
-```powershell
-node --version
-npm --version
-java -version
-docker version
-docker info
-backend\mvnw.cmd --version
-```
-
-Docker precisa mostrar o **Server/Engine**, não apenas o Client. Se estiver
-indisponível, não executar migrations ou declarar os testes integrados aprovados.
-Preserve volumes e dados ao diagnosticar o ambiente.
+Node.js 24, npm, Java 17 e Docker Engine Linux acessível são requisitos.
+O Maven Wrapper acompanha backend/. Não é necessário MySQL ou Maven global.
+Confira Client e Server em docker version antes de iniciar.
 
 ## Configuração
 
-Na primeira preparação, copie os exemplos somente se os destinos não existirem:
+Copie os exemplos para .env e frontend/.env somente se esses destinos ainda
+não existirem. Substitua placeholders localmente. Arquivos reais são ignorados.
 
-```powershell
-if (-not (Test-Path -LiteralPath '.env')) {
-    Copy-Item -LiteralPath '.env.example' -Destination '.env'
-}
-if (-not (Test-Path -LiteralPath 'frontend/.env')) {
-    Copy-Item -LiteralPath 'frontend/.env.example' -Destination 'frontend/.env'
-}
-```
-
-Substitua placeholders localmente. Os arquivos reais são ignorados pelo Git.
-Não imprimir variáveis sensíveis nem incluí-las em comandos compartilhados.
-
-| Local | Variáveis e finalidade |
+| Arquivo | Variáveis |
 | --- | --- |
-| `.env` da raiz | `JAVA_MYSQL_PASSWORD`, `JAVA_MYSQL_ROOT_PASSWORD`, `JAVA_DATABASE_URL`, `JAVA_MYSQL_USER`, `FRONTEND_ORIGIN`; configuração Java e Compose |
-| `.env` da raiz | `MYSQL_PASSWORD`, `MYSQL_ROOT_PASSWORD`, `MYSQL_TEST_PASSWORD`, `MYSQL_TEST_ROOT_PASSWORD`; bancos Prisma e testes |
-| `frontend/.env` | `DATABASE_URL`, `SHADOW_DATABASE_URL`, `TEST_DATABASE_URL`; destinos Prisma compatíveis com o Compose |
-| `frontend/.env` | `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`; identidade do login oficial |
-| `frontend/.env` | `NEXT_PUBLIC_JAVA_API_URL`; origem pública da API, padrão http://localhost:8080 |
-| `frontend/.env.bootstrap.local` | `BOOTSTRAP_NAME`, `BOOTSTRAP_EMAIL`, `BOOTSTRAP_PASSWORD`; bootstrap explícito |
+| .env | JAVA_MYSQL_PASSWORD, JAVA_MYSQL_ROOT_PASSWORD, JAVA_DATABASE_URL, JAVA_MYSQL_USER |
+| .env | FRONTEND_ORIGIN, origem exata do Next, padrão http://localhost:3000 |
+| frontend/.env | NEXT_PUBLIC_JAVA_API_URL, padrão http://localhost:8080 |
+| .env ou frontend/.env.bootstrap.local | BOOTSTRAP_NAME, BOOTSTRAP_EMAIL, BOOTSTRAP_PASSWORD, somente comando administrativo |
 
-Use credenciais distintas para bancos Java, Prisma e testes. O backend usa
-usuário de aplicação, não root. As URLs Prisma devem corresponder às credenciais
-e aos bancos declarados no Compose; não reutilizar a URL de desenvolvimento
-como URL de testes.
+O frontend não recebe credenciais do banco. NEXT_PUBLIC é público.
+backend/run-dev.ps1 importa apenas configurações Java selecionadas sem imprimir
+valores. SESSION_COOKIE_SECURE deve ser fornecida no processo, true em HTTPS
+produção; false somente em HTTP local. O bind Java padrão é 127.0.0.1:8080.
+SERVER_PORT e SERVER_ADDRESS permitem ajuste explícito.
 
-O script `backend/run-dev.ps1` importa somente variáveis Java selecionadas
-da raiz. Valores já presentes no processo têm precedência. `SERVER_PORT` e
-`SERVER_ADDRESS` podem ajustar o bind; o padrão é `127.0.0.1:8080`.
+## Iniciar
 
-`SESSION_COOKIE_SECURE` não é importada por esse script: se necessário, forneça
-a variável diretamente no ambiente do processo. Use true no ambiente HTTPS de
-produção e false apenas no HTTP local. Não confundir `NEXT_PUBLIC_*` com
-configuração privada: essas variáveis são incorporadas no código do navegador.
-
-Mantenha frontend e backend coerentes: `BETTER_AUTH_URL` e `FRONTEND_ORIGIN`
-usam `http://localhost:3000` por padrão. A origem inclui protocolo, host e porta.
-
-## Bancos locais
-
-Na raiz, com os arquivos de ambiente preenchidos:
+Na raiz, em um terminal:
 
 ```powershell
-docker compose config --quiet
-docker compose up -d mysql mysql-java
-docker compose --profile test up -d mysql-test
-docker compose ps
+docker compose up -d mysql-java
+powershell -NoProfile -File backend/run-dev.ps1
 ```
 
-| Serviço | Container | Porta | Banco |
-| --- | --- | --- | --- |
-| Prisma | ts-workspace-mysql | 127.0.0.1:3307 | ts_workspace |
-| Testes Prisma | ts-workspace-mysql-test | 127.0.0.1:3308 | ts_workspace_test |
-| Java | ts-workspace-mysql-java | 127.0.0.1:3309 | ts_workspace_java |
+Aguarde ts-workspace-mysql-java healthy. O banco ts_workspace_java usa porta
+3309. Flyway versiona o schema e Hibernate executa validate. Serviços auxiliares
+preservados não fazem parte do perfil padrão. Não use down -v, reset ou prune.
 
-Aguarde os healthchecks. Os volumes persistem dados; não use `down -v`,
-prune ou reset para iniciar o projeto. Testcontainers gerencia seus próprios
-containers efêmeros e portas dinâmicas.
-
-## Preparar o frontend e o schema Prisma
-
-Dentro de `frontend/`:
+Em outro terminal:
 
 ```powershell
-npm ci
-npm run db:generate
-npm run db:validate
-npx prisma migrate deploy
-npm run db:seed
+cd frontend
+npm install
+npm run dev
 ```
 
-`migrate deploy` aplica migrations já versionadas ao banco configurado.
-Confira o destino antes de executar. Em ambiente já preparado, não recrie
-migrations nem reinicialize os dados. O seed completa os dados organizacionais
-padrão e não é uma restauração de banco.
+Abra [Workspace](http://localhost:3000) ou [/infra](http://localhost:3000/infra).
+Se a porta estiver ocupada, preserve o outro projeto e use
+`npm run dev -- --port 3010`. Ajuste FRONTEND_ORIGIN para http://localhost:3010
+no ambiente Java e reinicie apenas esta API. A validação local desta fase usa
+3010. Mantenha o mesmo hostname para frontend e API: cookies não são
+compartilhados entre localhost e 127.0.0.1.
 
 ## Acesso inicial
 
-O Workspace não possui signup público. Para uma instalação nova, preencha
-as variáveis BOOTSTRAP no arquivo local ignorado e execute dentro de
-`frontend/`:
-
-```powershell
-npm run bootstrap
-```
-
-O fluxo cria explicitamente a primeira Super Admin e sua participação em
-Fundadoras. A mesma identidade completa é idempotente; conta preexistente
-incompatível, estado parcial ou segunda Super Admin são rejeitados.
-Novas integrantes entram pelo fluxo de convites. SMTP não está configurado.
-
-A identidade Java é independente. Seu comando administrativo, a partir da
-raiz, é:
+Não existe signup público. Para instalação nova, configure as variáveis
+BOOTSTRAP em arquivo ignorado e execute:
 
 ```powershell
 powershell -NoProfile -File backend/bootstrap.ps1
 ```
 
-O script utiliza os valores locais, executa na porta técnica 18081 e encerra.
-Em banco vazio, inicializa o catálogo RBAC e cria User/Profile SUPER_ADMIN.
-Para um banco com a identidade Java anterior sem role, execute esse bootstrap
-antes de iniciar normalmente a API: o script habilita
-`JAVA_RBAC_PROVISION_EXISTING=true` somente no processo. V5 exige uma única
-User/Profile ACTIVE, email correspondente e senha válida; associa SUPER_ADMIN
-sem alterar a identidade ou credencial e torna `role_id` obrigatório.
-Estado parcial ou conta incompatível interrompe o provisionamento.
+O comando usa porta 18081 e encerra. Cria User/Profile ACTIVE SUPER_ADMIN e
+membership em Fundadoras de forma explícita/idempotente. Não substitui
+identidades existentes. Novas integrantes entram por convite. Não mantenha
+JAVA_BOOTSTRAP_ENABLED ou JAVA_RBAC_PROVISION_EXISTING no runtime normal.
+Veja [RBAC](../architecture/rbac.md).
 
-Repetir o bootstrap reexecuta o seed idempotente sem duplicar dados. Após V5
-aplicada, o servidor normal não precisa das credenciais nem da flag de upgrade.
-Não manter essa flag habilitada na configuração de runtime.
-Consulte [RBAC](../architecture/rbac.md) para matriz e precedência.
+## Build e verificações
 
-## Iniciar os servidores
-
-Em um terminal na raiz:
-
-```powershell
-powershell -NoProfile -File backend/run-dev.ps1
-```
-
-Flyway aplica as migrations Java e Hibernate valida o schema.
-Em outro terminal:
-
-```powershell
-cd frontend
-npm run dev
-```
-
-Abra [Workspace](http://localhost:3000) e
-[verificação técnica Java](http://localhost:3000/infra).
-O [health Java](http://localhost:8080/api/v1/health) deve responder UP quando
-a aplicação e o banco estiverem disponíveis.
-
-Para executar o frontend como build local de produção, dentro de `frontend/`:
-
-```powershell
-npm run build
-npm run start
-```
-
-Ctrl+C encerra cada servidor. Não execute dev e start na mesma porta.
-Os próximos passos estão em [testes](testing.md) e [convenções](conventions.md).
+Dentro de frontend/: npm run typecheck, npm run lint, npm test e npm run build.
+Use npm run start depois do build. Dev e start não devem ocupar a mesma porta.
+Consulte [testes](testing.md), [convenções](conventions.md) e
+[histórico operacional](../history/fase-java-5-cutover.md).

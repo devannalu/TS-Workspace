@@ -5,5 +5,5 @@ import nextTypescript from "eslint-config-next/typescript";
 export default defineConfig([
   ...nextVitals,
   ...nextTypescript,
-  globalIgnores([".next/**", "out/**", "next-env.d.ts", ".npm-cache/**", ".verification/**", "src/generated/prisma/**"]),
+  globalIgnores([".next/**", "out/**", "next-env.d.ts", ".npm-cache/**", ".verification/**"]),
 ]);

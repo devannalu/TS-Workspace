@@ -20,13 +20,14 @@ services:
       retries: 30
       start_period: 30s
   mysql:
+    profiles: [legacy]
     image: mysql:8.4.11
     container_name: ts-workspace-mysql
     environment:
       MYSQL_DATABASE: ts_workspace
       MYSQL_USER: ts_workspace
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD:?Configure MYSQL_PASSWORD}
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?Configure MYSQL_ROOT_PASSWORD}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-LEGACY_SERVICE_DISABLED}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-LEGACY_SERVICE_DISABLED}
     ports:
       - "127.0.0.1:3307:3306"
     volumes:
@@ -41,12 +42,12 @@ services:
   mysql-test:
     image: mysql:8.4.11
     container_name: ts-workspace-mysql-test
-    profiles: [test]
+    profiles: [legacy-test]
     environment:
       MYSQL_DATABASE: ts_workspace_test
       MYSQL_USER: ts_workspace_test
-      MYSQL_PASSWORD: ${MYSQL_TEST_PASSWORD:?Configure MYSQL_TEST_PASSWORD}
-      MYSQL_ROOT_PASSWORD: ${MYSQL_TEST_ROOT_PASSWORD:?Configure MYSQL_TEST_ROOT_PASSWORD}
+      MYSQL_PASSWORD: ${MYSQL_TEST_PASSWORD:-LEGACY_SERVICE_DISABLED}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_TEST_ROOT_PASSWORD:-LEGACY_SERVICE_DISABLED}
     ports:
       - "127.0.0.1:3308:3306"
     volumes:

@@ -5,9 +5,8 @@ datas nem substitui a [lista de módulos implementados](modules.md).
 
 ## 1. Acesso e organização
 
-Consolidar identidade, sessão, perfis de acesso, convites, usuárias, equipes e
-uma página inicial baseada em dados reais. A base organizacional já existe;
-a consolidação em Java deve preservar suas regras e validar cada substituição.
+Fundação Java, Auth, RBAC, Teams e Users/Invites concluídos.
+O frontend oficial utiliza Spring Boot com MySQL.
 
 ## 2. Produtividade
 

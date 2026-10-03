@@ -72,12 +72,11 @@ User e Profile são criados em transação. Repetições completas são idempote
 estados parciais exigem revisão. O bootstrap localiza SUPER_ADMIN pela key e
 associa essa role ao Profile, sem IDs fixos.
 
-## Coexistência dos serviços
+## Frontend oficial
 
-O login oficial do Workspace continua usando Better Auth e seu banco Prisma.
-Convites são o fluxo de entrada de novas usuárias, com signup público bloqueado.
-A autenticação Java é independente; sua sessão não concede acesso automático
-aos módulos atendidos pelo serviço anterior.
+O login usa csrf → login → me da API Java. Logout invalida a sessão no
+servidor; me retorna 401 depois dele. O frontend não mantém outra autoridade
+de sessão. Convites são a única entrada de novas integrantes.
 
 Gestão completa de sessões e rate limiting distribuído são evoluções previstas,
 não recursos já oferecidos pela API Java.

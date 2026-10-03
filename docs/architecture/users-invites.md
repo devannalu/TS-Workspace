@@ -72,16 +72,15 @@ token e memberships complementam os serviços. BCrypt ocorre dentro da
 transação do aceite. O bloqueio global favorece integridade nesta etapa e
 serializa escritas organizacionais; evolução de escala requer desenho próprio.
 
-A regra Prisma protege a última SUPER_ADMIN ativa contra perda de role/status,
+A política protege a última SUPER_ADMIN ativa contra perda de role/status,
 e impede que a própria administradora perca seu acesso. A atualização de equipes
 protege a última Super Admin ativa em Fundadoras. O Java compõe essa proteção
 com a de Teams: mudar role/status também não pode deixar a raiz sem uma
 Super Admin ativa, mesmo se existir outra Super Admin fora de Fundadoras.
 O campo jobTitle novo pode ser atualizado sem mudar acesso administrativo.
 
-O fluxo Prisma combinado exigia users.edit e users.disable. O Java separa PATCH
-(users.edit) de activate/deactivate (users.disable), conforme os contratos desta
-migração. Não existe status arbitrário no PATCH. Role/permissões refletem o
+PATCH exige users.edit; activate/deactivate exigem users.disable.
+Não existe status arbitrário no PATCH. Role/permissões refletem o
 banco nas requisições seguintes; só inativação revoga sessões, como no legado.
 
 SessionRevocationService remove todas as sessões pelo email principal indexado,
@@ -97,14 +96,11 @@ efetivas; não recebe metadados arbitrários. Metadados são nulos nesta fundaç
 e nunca incluem token, hash, senha, cookie ou sessão. Eventos participam da
 mesma transação da operação. Não existe UI/endpoint público de auditoria.
 
-Os clientes técnicos users.ts/invites.ts não substituem `/usuarias`, `/login`,
-`/equipes` ou `/convite/[token]`. O inviteUrl preserva o formato de link para
-o futuro cutover; a página oficial ainda consulta Prisma e não aceita convites
-Java. Nesta etapa, valide/aceite usando o cliente técnico ou a API Java.
-Não há sincronização de identidades, sessões ou convites entre bancos.
+As páginas oficiais usam users.ts/invites.ts. /convite/[token] valida e aceita
+convites Java, com senha confirmada e direcionamento para login.
 
 SMTP, recuperação de senha, gestão visual de sessões, rate limiting distribuído,
-Tasks e cutover permanecem fora deste módulo. Não há Redis ou rate limit
+Tasks permanecem fora deste módulo. Não há Redis ou rate limit
 em memória apresentado como segurança de produção.
 
 ## Verificação

@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { authClient } from "@/lib/auth/client";
+import { logoutJava } from "@/lib/api/auth";
 import { Button } from "./ui/button";
 
 export function LogoutButton() {
@@ -11,8 +11,7 @@ export function LogoutButton() {
   async function logout() {
     setPending(true); setError(false);
     try {
-      const result = await authClient.signOut();
-      if (result.error) throw new Error("Logout recusado");
+      await logoutJava();
       router.replace("/login");
       router.refresh();
     } catch { setError(true); setPending(false); }

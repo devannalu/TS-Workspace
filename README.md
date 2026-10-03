@@ -23,7 +23,7 @@ implementado do que está planejado.
 
 ## Arquitetura e tecnologias
 
-A arquitetura alvo separa apresentação, regras de negócio e persistência:
+A arquitetura oficial separa apresentação, regras de negócio e persistência:
 
 ```mermaid
 flowchart LR
@@ -38,15 +38,14 @@ flowchart LR
 | Persistência Java | Spring Data JPA, Hibernate, Flyway, MySQL |
 | Sessões Java | Spring Session JDBC |
 | Desenvolvimento e testes | Node.js, Maven Wrapper, Docker, Testcontainers, Vitest, ESLint |
-| Implementação em migração | Prisma e Better Auth, usados pelos módulos atuais do Workspace |
 
 A [arquitetura detalhada](docs/architecture/overview.md) explica as responsabilidades
-e a coexistência dos serviços durante a migração.
+e os contratos entre frontend e API.
 
 ## Repositório
 
 ```text
-frontend/            Aplicação Next.js, integrações, Prisma e testes
+frontend/            Aplicação Next.js, clientes REST e testes
 backend/             API Spring Boot, Maven Wrapper, migrations e testes
 docker/              Configuração auxiliar do MySQL
 compose.yaml         Serviços locais de banco de dados
@@ -77,14 +76,13 @@ Prepare os arquivos de ambiente e inicialize o banco/frontend conforme o
 execute a partir da raiz, em terminais separados:
 
 ```powershell
-docker compose up -d mysql mysql-java
+docker compose up -d mysql-java
 powershell -NoProfile -File backend/run-dev.ps1
 ```
 
 ```powershell
 cd frontend
 npm ci
-npm run db:generate
 npm run dev
 ```
 
@@ -115,15 +113,14 @@ Os testes de integração e HTTP usam bancos separados. Consulte
 
 ## Status
 
-Projeto em desenvolvimento. O backend está sendo consolidado em Java/Spring
-Boot enquanto os módulos existentes são migrados gradualmente. O login oficial
-e a gestão organizacional continuam na implementação Next.js/Prisma/Better Auth;
-a API Java oferece autenticação por sessão, RBAC server-side e gestão de equipes
-com hierarquia e integrantes, gestão de usuárias e provisionamento por convites.
+Projeto em desenvolvimento. Login, sessões, RBAC, equipes, usuárias e convites
+são atendidos oficialmente pelo Spring Boot. O Next.js cuida da apresentação
+e da navegação; MySQL persiste os dados e sessões.
 
 ## Roadmap
 
-- Consolidar acesso, autorização e gestão organizacional na API Java.
+- Fundação Java, Auth, RBAC, Teams e Users/Invites concluídos.
+- Próximo módulo: Tasks.
 - Desenvolver produtividade: Tasks, Projetos, reuniões, arquivos e calendário.
 - Ampliar a operação: conteúdo, eventos, parcerias e comunicação interna.
 - Preparar produção: busca, auditoria completa, integrações e qualidade operacional.

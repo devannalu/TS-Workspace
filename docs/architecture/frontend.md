@@ -1,54 +1,42 @@
 # Frontend
 
-## Stack
+A aplicação em frontend/ utiliza Next.js App Router, React, TypeScript estrito
+e Tailwind CSS. As versões estão no package.json e lockfile.
 
-A aplicação em `frontend/` utiliza Next.js App Router, React, TypeScript
-estrito e Tailwind CSS. As versões exatas estão em `package.json` e
-`package-lock.json`; o Node suportado está declarado em `engines`.
+## API oficial
 
-## Responsabilidades
+Todos os módulos usam src/lib/api/. http.ts centraliza base URL, cookies,
+CSRF, parsing de Problem Details e ApiError com status 400/401/403/404/409.
+Mensagens controladas não expõem SQL, stacks ou detalhes de autenticação.
+NEXT_PUBLIC_JAVA_API_URL é incorporada no build e nunca contém segredos.
 
-O frontend organiza rotas, navegação, formulários, feedback e apresentação.
-Componentes devem considerar carregamento, vazio, erro, sucesso e falta de
-permissão. A interface prioriza HTML semântico, labels, contraste e foco visível,
-com adaptação para desktop, tablet e mobile.
+CSRF fica somente em memória, com preparação concorrente deduplicada.
+Login/logout invalidam esse cache para acompanhar a rotação do Spring.
+401/403 também invalidam; a próxima ação explícita prepara novo token.
+Nenhuma mutação é reenviada automaticamente.
 
-`src/app/` contém páginas e ações; `src/components/` contém componentes de
-interface; `src/lib/` contém integrações e serviços. Módulos atuais de gestão
-ainda possuem ações e regras server-side ligadas ao Prisma. Sua migração não
-deve deslocar autorização para o navegador.
+## Sessão e rotas
 
-## Consumo da API Java
+A sessão permanece no cookie HttpOnly TS_SESSION, sem localStorage ou
+sessionStorage. auth/session.ts consulta /auth/me com o cookie da requisição
+e no-store. A ausência de sessão redireciona as páginas protegidas para login.
+SessionBoundary trata loading, authenticated, unauthenticated, forbidden e
+indisponibilidade, revalida no foco e trata expiração recebida pelo cliente.
+A proteção Next é navegação; autorização real pertence ao Spring Boot.
 
-O cliente em `src/lib/api/` concentra chamadas técnicas ao Java.
-`NEXT_PUBLIC_JAVA_API_URL` define a origem da API e é incorporada no build.
-Variáveis públicas nunca podem conter segredos.
+Login/logout usam auth.ts. Dashboard usa me e equipes reais. /equipes preserva
+hierarquia, criação, edição, arquivamento e integrantes; /usuarias usa Users
+e Invites. Editar role/cargo/equipes e ativar/inativar são ações separadas,
+com suas permissões próprias. Menus e botões refletem as keys da sessão.
 
-Chamadas de autenticação usam `credentials: "include"`. Antes de login/logout,
-o cliente obtém CSRF e envia o header exigido pelo backend. A sessão fica em
-cookie HttpOnly; tokens de autenticação não são armazenados em localStorage.
+Server Components fazem somente GET usando server.ts; não encaminham cookies
+para destinos escolhidos pelo usuário. Escritas vão diretamente do browser ao
+Java. /convite/[token] valida por POST com CSRF, pede nome/senha/confirmação
+e direciona para login após aceite, sem sessão automática. Link aparece apenas
+na criação, em estado volátil; a página pública usa referrer no-referrer.
 
-A página `/infra` verifica health e disponibilidade de CSRF. Ela é uma
-ferramenta técnica, não uma segunda página de login.
+/infra oferece health e CSRF. Design, labels e responsividade permanecem
+nos componentes existentes. Os guias da versão instalada ficam em
+frontend/node_modules/next/dist/docs/, conforme AGENTS.md.
 
-## Rotas e autorização
-
-`/login`, `/workspace`, `/usuarias`, `/equipes` e o aceite em
-`/convite/[token]` pertencem ao fluxo oficial atual. Sessão e permissões são
-verificadas no servidor. Esconder uma ação ou item de menu não autoriza nem
-protege uma operação por si só.
-
-O cliente técnico tipa role e permission keys da [API Java](rbac.md).
-`src/lib/api/teams.ts` oferece list/detail/create/edit/archive e memberships da
-[API de equipes](teams.md), com sessão por cookie e CSRF em cada escrita.
-Esse cliente ainda não alimenta a página oficial `/equipes`.
-`users.ts` e `invites.ts` oferecem gestão Java paginada e aceite por convite,
-compartilhando cookies/CSRF em `management.ts`. São clientes técnicos, sem
-nova interface administrativa. Links de convites Java ainda não são consumidos
-pela página oficial `/convite/[token]`, que continua no serviço Prisma.
-A troca do login e dos módulos deve ocorrer somente após a substituição
-correspondente estar validada.
-
-Para APIs do Next, consulte os guias da versão instalada em
-`frontend/node_modules/next/dist/docs/`, conforme `AGENTS.md`.
-Veja [setup](../development/setup.md) e [testes](../development/testing.md).
+Veja [setup](../development/setup.md), [RBAC](rbac.md) e [testes](../development/testing.md).

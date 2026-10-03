@@ -4,15 +4,8 @@
 **PLANEJADO** indica intenção de produto, sem promessa de disponibilidade.
 Ter uma entidade ou uma permissão reservada não torna um módulo completo.
 
-Os módulos implementados de gestão são atendidos pelo Next.js/Prisma/Better Auth.
-A migração para Java é uma mudança de implementação; não equivale a entregar
-novos módulos.
-
-A API Java já atende Auth, RBAC, [Equipes](../architecture/teams.md),
-[Usuárias e Convites](../architecture/users-invites.md), incluindo provisionamento,
-revogação de sessões e auditoria mínima. As páginas oficiais ainda usam Prisma;
-os clientes em `frontend/src/lib/api/` são técnicos. Os bancos permanecem
-separados, sem copiar automaticamente identidades ou memberships do Prisma.
+Os módulos de acesso e gestão são atendidos oficialmente pelo Spring Boot.
+O Next.js apresenta os dados pelas APIs Auth, RBAC, Teams, Users e Invites.
 
 | Módulo | Estado | Escopo e limites |
 | --- | --- | --- |
@@ -30,7 +23,7 @@ separados, sem copiar automaticamente identidades ou memberships do Prisma.
 | Arquivos | PLANEJADO | Organização de materiais associados ao trabalho. |
 | Chat | PLANEJADO | Comunicação interna contextual ao Workspace. |
 | Notificações | PLANEJADO | Avisos relevantes sobre atividades e mudanças. |
-| Auditoria | PLANEJADO — módulo completo | Registros administrativos existem no Prisma e no Java (convites, roles, status e equipes de usuárias). Consulta administrativa completa ainda não está entregue. |
+| Auditoria | PLANEJADO — módulo completo | Registros administrativos existem no Java (convites, roles, status e equipes de usuárias). Consulta administrativa completa ainda não está entregue. |
 | Busca | PLANEJADO | Busca global pelos conteúdos e módulos acessíveis à usuária. |
 
 Notas e comentários também fazem parte da evolução de colaboração.

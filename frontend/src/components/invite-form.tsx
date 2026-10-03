@@ -1,21 +1,24 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { createInviteAction } from "@/app/usuarias/actions";
+import { createInviteAction } from "@/lib/api/ui-actions";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 
 type Option = { id: string; name: string };
 export function InviteForm({ roles, teams }: { roles: Option[]; teams: Option[] }) {
+  const router=useRouter();
   const [pending, start] = useTransition();
   const [message, setMessage] = useState("");
   const [url, setUrl] = useState("");
   async function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault(); setMessage(""); setUrl("");
-    const form = new FormData(event.currentTarget);
+    const element=event.currentTarget;
+    const form = new FormData(element);
     start(async () => {
       const result = await createInviteAction({ email: String(form.get("email")).trim(), roleId: String(form.get("roleId")), teamIds: form.getAll("teamIds").map(String) });
-      if (!result.ok) setMessage(result.error); else { setUrl(result.url); setMessage("Convite criado. Copie o link agora; ele não será exibido novamente."); event.currentTarget.reset(); }
+      if (!result.ok) setMessage(result.error); else { setUrl(result.url); setMessage("Convite criado. Copie o link agora; ele não será exibido novamente."); element.reset(); router.refresh(); }
     });
   }
   return <form onSubmit={submit} className="space-y-4 rounded-2xl border border-border bg-card p-5" aria-busy={pending}>

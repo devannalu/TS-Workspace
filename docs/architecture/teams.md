@@ -8,7 +8,7 @@ TeamMember tem chave composta user/equipe e data de criação. Não existe User.
 Entidades JPA não são serializadas pela API.
 
 A fonte validada é o commit `fabb67294509f89005c9bae0d7713b077f314691`:
-schema Prisma, seed-data, teams/hierarchy, teams/admin-service e testes de
+contratos e testes de
 políticas e provisionamento. A fixture `teams-baseline.json` congela nomes,
 keys, árvore e casos da política antiga para comparação com MySQL real.
 
@@ -26,7 +26,7 @@ arquivadas não podem ser editadas ou receber/remover membros pela API.
 Fundadoras, identificada por key, não pode ser movida ou arquivada. Não há
 endpoint de exclusão física. A raiz também permanece protegida pela estrutura.
 
-Como no Prisma, arquivar uma equipe com filhas ativas é recusado: primeiro
+Arquivar uma equipe com filhas ativas é recusado: primeiro
 mova ou arquive as filhas. Arquivamento repetido é idempotente, e memberships
 históricos permanecem. A listagem omite equipes arquivadas; detalhe por ID
 permite consultar uma equipe arquivada. Contagens e integrantes visíveis
@@ -36,7 +36,7 @@ Adicionar membro exige User existente e Profile ativa. A PK impede duplicação.
 Remoção permite retirar membership de uma usuária inativa de equipe ativa.
 Em Fundadoras, uma integrante com role SUPER_ADMIN não pode ser removida
 quando a contagem de Super Admins ativas é menor ou igual a um. Essa condição,
-inclusive para alvo inativo, é a regra exata do serviço Prisma validado.
+inclusive para alvo inativo, é a regra exata do contrato validado.
 
 Escritas são transacionais e bloqueiam Fundadoras antes de ler a árvore ou
 contar administradoras. Isso impede ciclos causados por movimentos simultâneos
@@ -68,15 +68,14 @@ sessões, SQL ou exceptions de persistência.
 Consultas de listagem usam uma agregação para memberCount; detalhe faz duas
 consultas, sem carregar coleções JPA por equipe. `/auth/me` permanece com o
 contrato anterior. O cliente técnico `frontend/src/lib/api/teams.ts` usa cookies
-e CSRF; a página `/equipes` permanece no Next.js/Prisma. Não há sincronização
-automática entre os bancos. Users e Invites Java possuem clientes técnicos;
+e CSRF; a página oficial /equipes utiliza esse cliente.
 Tasks Java ainda não está implementado.
 
 ## Validação
 
 TeamPolicyTest cobre regras reais de hierarquia, arquivamento e memberships.
 TeamsIntegrationTest usa Testcontainers/MySQL para Flyway, seed idempotente,
-compatibilidade com a fixture Prisma, CRUD, FKs, RBAC, CSRF e concorrência
+compatibilidade com a fixture de compatibilidade, CRUD, FKs, RBAC, CSRF e concorrência
 de memberships, movimentos e remoções da última administradora.
 RbacUpgradeTest também verifica a associação à raiz ao atualizar uma identidade
 preexistente, preservando seu ID, email e hash.

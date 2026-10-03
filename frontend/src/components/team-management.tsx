@@ -1,7 +1,8 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { addTeamMemberAction, archiveTeamAction, createTeamAction, removeTeamMemberAction, updateTeamAction } from "@/app/equipes/actions";
+import { addTeamMemberAction, archiveTeamAction, createTeamAction, removeTeamMemberAction, updateTeamAction } from "@/lib/api/ui-actions";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 
@@ -9,8 +10,9 @@ type Member = { user: { id: string; name: string; email: string } };
 type Team = { id: string; name: string; description: string | null; parentId: string | null; members: Member[] };
 type User = { id: string; name: string; email: string };
 export function TeamManagement({ teams, users, canCreate, canEdit, canArchive, canMembers }: { teams: Team[]; users: User[]; canCreate: boolean; canEdit: boolean; canArchive: boolean; canMembers: boolean }) {
+  const router = useRouter();
   const [pending, start] = useTransition(); const [message, setMessage] = useState("");
-  const run = (work: () => Promise<{ ok: boolean; error?: string }>) => start(async () => { const result = await work(); setMessage(result.ok ? "Alteração salva." : result.error ?? "Não foi possível concluir a operação."); });
+  const run = (work: () => Promise<{ ok: boolean; error?: string }>) => start(async () => { const result = await work(); if(result.ok) router.refresh(); setMessage(result.ok ? "Alteração salva." : result.error ?? "Não foi possível concluir a operação."); });
   const root = teams.find(team => team.parentId === null);
   return <div className="space-y-4">
     {canCreate && <form className="grid gap-4 rounded-2xl border border-border bg-card p-5 md:grid-cols-4" onSubmit={event => { event.preventDefault(); const form = new FormData(event.currentTarget); run(() => createTeamAction({ name: String(form.get("name")), description: String(form.get("description")), parentId: String(form.get("parentId")) })); }}><div><label className="text-sm font-medium" htmlFor="team-name">Nome</label><Input id="team-name" name="name" required disabled={pending} /></div><div><label className="text-sm font-medium" htmlFor="team-description">Descrição</label><Input id="team-description" name="description" disabled={pending} /></div><label className="space-y-2 text-sm"><span>Equipe superior</span><select name="parentId" defaultValue={root?.id} className="min-h-12 w-full rounded-xl border border-border bg-card px-3" disabled={pending}>{teams.map(team => <option key={team.id} value={team.id}>{team.name}</option>)}</select></label><div className="flex items-end"><Button type="submit" disabled={pending}>Criar equipe</Button></div></form>}

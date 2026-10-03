@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { cancelInviteAction } from "@/app/usuarias/actions";
+import { cancelInviteAction } from "@/lib/api/ui-actions";
 import { Button } from "./ui/button";
 
 export function CancelInviteButton({ inviteId }: { inviteId: string }) {

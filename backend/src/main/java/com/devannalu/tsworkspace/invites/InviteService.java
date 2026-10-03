@@ -63,7 +63,7 @@ public class InviteService {
         jdbc.update("INSERT INTO invite (id,email,token_hash,expires_at,invited_by_id,role_id,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?)",id,email,InvitePolicy.hash(token),Timestamp.from(expires),actor,roleId,Timestamp.from(now),Timestamp.from(now));
         for(String team:unique)jdbc.update("INSERT INTO invite_team VALUES (?,?,?)",id,team,Timestamp.from(now));
         audit.record(actor,"invite.created","Invite",id);
-        // Prepared for the future frontend cutover; the preserved Prisma UI does not consume Java invites.
+        // The official frontend accepts this one-time link through the Java invite API.
         return new Created(rows("WHERE i.id=?",id).get(0),token,frontendOrigin.replaceAll("/$","")+"/convite/"+token);
     }
     @Transactional

@@ -29,8 +29,7 @@
     },
     "skipLibCheck": false,
     "types": [
-      "node",
-      "bun-types/sqlite"
+      "node"
     ]
   },
   "include": [

@@ -2,7 +2,7 @@ package com.devannalu.tsworkspace.teams;
 
 import java.util.*;
 
-/** Rules recovered from Prisma baseline fabb672 (teams/hierarchy and admin-service). */
+/** Hierarchy and membership invariants validated against baseline fabb672. */
 public final class TeamPolicy {
     private TeamPolicy() { }
     public record Node(String id, String key, String parentId, boolean archived) { }

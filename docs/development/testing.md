@@ -29,7 +29,7 @@ roles e logout, sem modificar o acesso da identidade de desenvolvimento.
 
 A suíte de [Equipes](../architecture/teams.md) cobre políticas de hierarquia,
 seed, memberships many-to-many, arquivamento, última Super Admin, compatibility
-com o baseline Prisma, RBAC e constraints. Testes concorrentes verificam
+com o baseline de compatibilidade, RBAC e constraints. Testes concorrentes verificam
 duplicação de integrante, movimentos que formariam ciclo e remoção simultânea
 das administradoras. O upgrade valida a membership de identidade preexistente.
 
@@ -62,37 +62,9 @@ npm run build
 ```
 
 Typecheck gera tipos de rotas e executa TypeScript; lint exige zero warnings.
-Os unitários verificam políticas, validações e hierarquia. Build valida a
+Os unitários verificam o cliente Java: cookies, CSRF concorrente/rotação,
+logout sem corpo, status e mensagens seguras, sem reenvio automático. Build valida a
 compilação de produção.
-
-## Integração dos módulos atuais
-
-Prepare o serviço de testes na raiz:
-
-```powershell
-docker compose --profile test up -d mysql-test
-```
-
-Configure `TEST_DATABASE_URL` em `frontend/.env` para o banco separado
-`ts_workspace_test`, na porta 3308. Dentro de `frontend/`:
-
-```powershell
-npm run test:integration
-npm run build
-npm run test:workspace
-npm run auth:schema:check
-```
-
-- `test:integration` valida o destino, aplica migrations versionadas ao banco
-  de teste e executa integração de identidade, seed, RBAC, equipes e convites.
-- `test:workspace` requer build e schema de teste preparados. Inicia um Next
-  real em `127.0.0.1:3101`, exercita acesso protegido, login, sessão, dashboard,
-  inativação e logout, e remove seus dados temporários.
-- `auth:schema:check` verifica compatibilidade da configuração Better Auth com
-  o schema, como apoio à integração.
-
-Os runners recusam destinos incompatíveis com os bancos de teste. Não contorne
-essa proteção. Não use uma conta real externa como identidade automatizada.
 
 ## HTTP e navegador
 
