@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { getJavaHealth } from "@/lib/api/client";
-import { getCsrf } from "@/lib/api/auth";
+import { consultarSaudeJava } from "@/lib/api/http";
+import { obterCsrf } from "@/lib/api/autenticacao";
 
 export default function InfrastructurePage() {
   const [state, setState] = useState<"loading" | "up" | "error">("loading");
@@ -12,11 +12,11 @@ export default function InfrastructurePage() {
 
   useEffect(() => {
     let active = true;
-    getJavaHealth().then(
+    consultarSaudeJava().then(
       () => { if (active) setState("up"); },
       () => { if (active) setState("error"); },
     );
-    getCsrf().then(
+    obterCsrf().then(
       () => { if (active) setAuthState("up"); },
       () => { if (active) setAuthState("error"); },
     );

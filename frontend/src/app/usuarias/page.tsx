@@ -1,46 +1,46 @@
-import { WorkspaceShell } from "@/components/layout/workspace-shell";
+import { ShellWorkspace } from "@/components/layout/shell-workspace";
 import { Card } from "@/components/ui/card";
 import { ErrorState } from "@/components/ui/feedback";
-import { InviteForm } from "@/components/invite-form";
-import { UserManagement } from "@/components/user-management";
-import { InviteList } from "@/components/invite-list";
-import { javaRead } from "@/lib/api/server";
-import { requireAuth } from "@/lib/auth/session";
-import { pageNumber } from "@/lib/ui/format";
-import type { JavaManagedUser } from "@/lib/api/users";
-import type { JavaInvite } from "@/lib/api/invites";
-import type { JavaPage, JavaRoleRef, JavaTeamRef } from "@/lib/api/management";
+import { FormularioConvite } from "@/components/convites/formulario-convite";
+import { GestaoUsuarios } from "@/components/usuarios/gestao-usuarios";
+import { ListaConvites } from "@/components/convites/lista-convites";
+import { lerJava } from "@/lib/api/server";
+import { exigirSessao } from "@/lib/sessao";
+import { normalizarPagina } from "@/lib/ui/formatacao";
+import type { UsuarioGerenciado } from "@/lib/api/usuarios";
+import type { Convite } from "@/lib/api/convites";
+import type { PaginaApi, PerfilAcessoReferencia, EquipeReferencia } from "@/lib/api/contratos";
 export const metadata = { title: "Usuárias" };
-export default async function UsersPage({
+export default async function UsuariosPage({
   searchParams,
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  const user = await requireAuth(),
-    params = await searchParams,
-    has = (key: string) => user.permissions.includes(key);
-  if (!has("users.view"))
+  const usuarioAtual = await exigirSessao(),
+    parametrosBusca = await searchParams,
+    possuiPermissao = (chavePermissao: string) => usuarioAtual.permissions.includes(chavePermissao);
+  if (!possuiPermissao("users.view"))
     return (
-      <WorkspaceShell>
+      <ShellWorkspace>
         <ErrorState message="Você não tem permissão para acessar esta área." />
-      </WorkspaceShell>
+      </ShellWorkspace>
     );
-  const query = new URLSearchParams({
-    page: String(pageNumber(params.page)),
+  const filtrosUsuarios = new URLSearchParams({
+    page: String(normalizarPagina(parametrosBusca.page)),
     size: "20",
   });
   for (const key of ["search", "status", "roleId", "teamId"])
-    if (typeof params[key] === "string" && params[key])
-      query.set(key, params[key]);
-  const [users, options, invites] = await Promise.all([
-    javaRead<JavaPage<JavaManagedUser>>("/users?" + query),
-    javaRead<{ roles: JavaRoleRef[]; teams: JavaTeamRef[] }>("/users/options"),
-    javaRead<JavaPage<JavaInvite>>(
-      "/invites?page=" + pageNumber(params.invitePage) + "&size=10",
+    if (typeof parametrosBusca[key] === "string" && parametrosBusca[key])
+      filtrosUsuarios.set(key, parametrosBusca[key]);
+  const [paginaUsuarios, opcoesUsuarios, paginaConvites] = await Promise.all([
+    lerJava<PaginaApi<UsuarioGerenciado>>("/users?" + filtrosUsuarios),
+    lerJava<{ roles: PerfilAcessoReferencia[]; teams: EquipeReferencia[] }>("/users/options"),
+    lerJava<PaginaApi<Convite>>(
+      "/invites?page=" + normalizarPagina(parametrosBusca.invitePage) + "&size=10",
     ),
   ]);
   return (
-    <WorkspaceShell>
+    <ShellWorkspace>
       <div className="space-y-6">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
@@ -49,23 +49,23 @@ export default async function UsersPage({
               Gerencie integrantes e acessos do Workspace.
             </p>
           </div>
-          {has("users.create") && (
-            <InviteForm
-              roles={options.roles}
-              teams={options.teams}
-              initialOpen={params.convidar === "1"}
+          {possuiPermissao("users.create") && (
+            <FormularioConvite
+              perfisAcesso={opcoesUsuarios.roles}
+              equipes={opcoesUsuarios.teams}
+              inicialmenteAberto={parametrosBusca.convidar === "1"}
             />
           )}
         </div>
         <Card className="p-4 sm:p-6">
           <h2 className="section-title">Integrantes</h2>
           <div className="mt-5">
-            <UserManagement
-              data={users}
-              roles={options.roles}
-              teams={options.teams}
-              canEdit={has("users.edit")}
-              canDisable={has("users.disable")}
+            <GestaoUsuarios
+              paginaUsuarios={paginaUsuarios}
+              perfisAcesso={opcoesUsuarios.roles}
+              equipes={opcoesUsuarios.teams}
+              podeEditar={possuiPermissao("users.edit")}
+              podeInativar={possuiPermissao("users.disable")}
             />
           </div>
         </Card>
@@ -75,10 +75,10 @@ export default async function UsersPage({
             Acompanhe os próximos acessos ao Workspace.
           </p>
           <div className="mt-5">
-            <InviteList data={invites} canCancel={has("users.create")} />
+            <ListaConvites paginaConvites={paginaConvites} podeCancelar={possuiPermissao("users.create")} />
           </div>
         </Card>
       </div>
-    </WorkspaceShell>
+    </ShellWorkspace>
   );
 }

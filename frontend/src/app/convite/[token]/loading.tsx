@@ -1,11 +1,11 @@
-import { PublicShell } from "@/components/layout/public-shell";
+import { ShellPublico } from "@/components/layout/shell-publico";
 export default function Loading() {
   return (
-    <PublicShell>
+    <ShellPublico>
       <p role="status" className="subtle">
         Verificando convite…
       </p>
       <div className="mt-5 h-48 animate-pulse rounded-xl bg-muted" />
-    </PublicShell>
+    </ShellPublico>
   );
 }

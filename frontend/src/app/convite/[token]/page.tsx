@@ -1,5 +1,5 @@
-import { PublicShell } from "@/components/layout/public-shell";
-import { PublicInvite } from "@/components/public-invite";
+import { ShellPublico } from "@/components/layout/shell-publico";
+import { ConvitePublico } from "@/components/convites/convite-publico";
 export const metadata = { title: "Aceitar convite", referrer: "no-referrer" };
 export default async function InvitePage({
   params,
@@ -8,8 +8,8 @@ export default async function InvitePage({
 }) {
   const { token } = await params;
   return (
-    <PublicShell>
-      <PublicInvite key={token} token={token} />
-    </PublicShell>
+    <ShellPublico>
+      <ConvitePublico key={token} token={token} />
+    </ShellPublico>
   );
 }

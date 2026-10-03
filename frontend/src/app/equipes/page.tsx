@@ -1,46 +1,46 @@
-import { WorkspaceShell } from "@/components/layout/workspace-shell";
-import { TeamManagement } from "@/components/team-management";
-import { javaRead } from "@/lib/api/server";
-import { requireAuth } from "@/lib/auth/session";
-import type { JavaTeam } from "@/lib/api/teams";
-import type { JavaManagedUser } from "@/lib/api/users";
-import type { JavaPage } from "@/lib/api/management";
+import { ShellWorkspace } from "@/components/layout/shell-workspace";
+import { GestaoEquipes } from "@/components/equipes/gestao-equipes";
+import { lerJava } from "@/lib/api/server";
+import { exigirSessao } from "@/lib/sessao";
+import type { Equipe } from "@/lib/api/equipes";
+import type { UsuarioGerenciado } from "@/lib/api/usuarios";
+import type { PaginaApi } from "@/lib/api/contratos";
 import { ErrorState } from "@/components/ui/feedback";
 export const metadata = { title: "Equipes" };
-export default async function TeamsPage({
+export default async function EquipesPage({
   searchParams,
 }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
-  const user = await requireAuth(),
-    params = await searchParams,
-    has = (key: string) => user.permissions.includes(key);
-  if (!has("teams.view"))
+  const usuarioAtual = await exigirSessao(),
+    parametrosBusca = await searchParams,
+    possuiPermissao = (chavePermissao: string) => usuarioAtual.permissions.includes(chavePermissao);
+  if (!possuiPermissao("teams.view"))
     return (
-      <WorkspaceShell>
+      <ShellWorkspace>
         <ErrorState message="Você não tem permissão para acessar esta área." />
-      </WorkspaceShell>
+      </ShellWorkspace>
     );
-  const teams = await javaRead<JavaTeam[]>("/teams");
-  const users =
-    has("teams.manage_members") && has("users.view")
+  const equipes = await lerJava<Equipe[]>("/teams");
+  const usuarios =
+    possuiPermissao("teams.manage_members") && possuiPermissao("users.view")
       ? (
-          await javaRead<JavaPage<JavaManagedUser>>(
+          await lerJava<PaginaApi<UsuarioGerenciado>>(
             "/users?status=ACTIVE&size=25",
           )
         ).items
       : [];
   return (
-    <WorkspaceShell>
-      <TeamManagement
-        teams={teams}
-        users={users}
-        canCreate={has("teams.create")}
-        canEdit={has("teams.edit")}
-        canArchive={has("teams.archive")}
-        canMembers={has("teams.manage_members")}
-        initialCreate={params.nova === "1"}
+    <ShellWorkspace>
+      <GestaoEquipes
+        equipes={equipes}
+        usuarios={usuarios}
+        podeCriar={possuiPermissao("teams.create")}
+        podeEditar={possuiPermissao("teams.edit")}
+        podeArquivar={possuiPermissao("teams.archive")}
+        podeGerenciarIntegrantes={possuiPermissao("teams.manage_members")}
+        abrirCriacaoInicial={parametrosBusca.nova === "1"}
       />
-    </WorkspaceShell>
+    </ShellWorkspace>
   );
 }

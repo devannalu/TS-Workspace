@@ -1,12 +1,12 @@
 import { redirect } from "next/navigation";
-import { getCurrentUser } from "@/lib/auth/session";
-import { PublicShell } from "@/components/layout/public-shell";
-import { LoginForm } from "@/components/login-form";
+import { buscarUsuarioDaSessao } from "@/lib/sessao";
+import { ShellPublico } from "@/components/layout/shell-publico";
+import { FormularioLogin } from "@/components/autenticacao/formulario-login";
 export const metadata = { title: "Entrar" };
 export default async function LoginPage() {
-  if (await getCurrentUser()) redirect("/workspace");
+  if (await buscarUsuarioDaSessao()) redirect("/workspace");
   return (
-    <PublicShell>
+    <ShellPublico>
       <p className="text-xs font-medium uppercase tracking-widest text-primary">
         Workspace interno
       </p>
@@ -16,10 +16,10 @@ export default async function LoginPage() {
       <p className="mt-3 subtle">
         Entre para acessar seu espaço na Tech Sisters.
       </p>
-      <LoginForm />
+      <FormularioLogin />
       <p className="mt-6 border-t border-border pt-4 text-xs leading-5 text-muted-foreground">
         Acesso por convite, exclusivo para integrantes da Tech Sisters.
       </p>
-    </PublicShell>
+    </ShellPublico>
   );
 }

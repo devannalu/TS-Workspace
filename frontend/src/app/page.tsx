@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
-import { getCurrentUser } from "@/lib/auth/session";
+import { buscarUsuarioDaSessao } from "@/lib/sessao";
 
 export default async function Home() {
-  redirect(await getCurrentUser() ? "/workspace" : "/login");
+  redirect(await buscarUsuarioDaSessao() ? "/workspace" : "/login");
 }

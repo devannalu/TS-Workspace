@@ -8,58 +8,58 @@ import {
   Sparkles,
   Plus,
 } from "lucide-react";
-import { requireAuth, getMyTeams } from "@/lib/auth/session";
-import { WorkspaceShell } from "@/components/layout/workspace-shell";
+import { exigirSessao, buscarMinhasEquipes } from "@/lib/sessao";
+import { ShellWorkspace } from "@/components/layout/shell-workspace";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/ui/feedback";
-import { javaRead } from "@/lib/api/server";
-import { dashboardTotals } from "@/lib/ui/dashboard";
-import { dashboardAccess } from "@/lib/ui/permissions";
+import { lerJava } from "@/lib/api/server";
+import { buscarTotaisPainel } from "@/lib/ui/painel";
+import { acessosPainel } from "@/lib/ui/permissoes";
 export const metadata = { title: "Início" };
-export default async function WorkspacePage() {
-  const user = await requireAuth(),
-    access = dashboardAccess(user);
-  const [memberships, totals] = await Promise.all([
-    getMyTeams(user),
-    dashboardTotals(user, javaRead),
+export default async function PainelPage() {
+  const usuario = await exigirSessao(),
+    acessos = acessosPainel(usuario);
+  const [minhasEquipes, totais] = await Promise.all([
+    buscarMinhasEquipes(usuario),
+    buscarTotaisPainel(usuario, lerJava),
   ]);
-  const stats = [
+  const indicadores = [
     {
       label: "Minhas equipes",
-      value: memberships.length,
+      value: minhasEquipes.length,
       Icon: Network,
       tone: "bg-lilac",
-      show: access.teams,
+      show: acessos.podeVerEquipes,
     },
     {
       label: "Usuárias ativas",
-      value: totals.activeUsers,
+      value: totais.usuariosAtivos,
       Icon: Users,
       tone: "bg-butter",
-      show: access.users,
+      show: acessos.podeVerUsuarios,
     },
     {
       label: "Convites pendentes",
-      value: totals.pendingInvites,
+      value: totais.convitesPendentes,
       Icon: Mail,
       tone: "bg-peach",
-      show: access.users,
+      show: acessos.podeVerUsuarios,
     },
     {
       label: "Meu acesso",
-      value: user.role.name,
+      value: usuario.role.name,
       Icon: ShieldCheck,
       tone: "bg-accent",
       show: true,
     },
   ].filter((s) => s.show);
   return (
-    <WorkspaceShell>
+    <ShellWorkspace>
       <div className="space-y-7">
         <section className="relative overflow-hidden rounded-2xl border border-border bg-accent p-6 sm:p-8">
           <Badge tone="pink">TECH SISTERS / WORKSPACE</Badge>
-          <h1 className="mt-4 page-title">Olá, {user.name.split(" ")[0]}.</h1>
+          <h1 className="mt-4 page-title">Olá, {usuario.name.split(" ")[0]}.</h1>
           <p className="mt-2 max-w-xl subtle">
             Tudo pronto para mais um dia no TS Workspace. Seu espaço para
             organizar e construir juntas.
@@ -72,9 +72,9 @@ export default async function WorkspacePage() {
         </section>
         <section
           aria-label="Resumo do workspace"
-          className={`grid gap-4 sm:grid-cols-2 ${stats.length === 4 ? "xl:grid-cols-4" : stats.length === 3 ? "xl:grid-cols-3" : stats.length === 2 ? "xl:grid-cols-2" : "sm:grid-cols-1"}`}
+          className={`grid gap-4 sm:grid-cols-2 ${indicadores.length === 4 ? "xl:grid-cols-4" : indicadores.length === 3 ? "xl:grid-cols-3" : indicadores.length === 2 ? "xl:grid-cols-2" : "sm:grid-cols-1"}`}
         >
-          {stats.map(({ label, value, Icon, tone }) => (
+          {indicadores.map(({ label, value, Icon, tone }) => (
             <Card key={label} className="p-5">
               <div className="flex items-center justify-between">
                 <p className="text-sm text-muted-foreground">{label}</p>
@@ -92,7 +92,7 @@ export default async function WorkspacePage() {
           <Card className="p-5 sm:p-6">
             <div className="flex items-center justify-between">
               <h2 className="section-title">Minhas equipes</h2>
-              {access.teams && (
+              {acessos.podeVerEquipes && (
                 <Link
                   href="/equipes"
                   className="text-sm font-medium text-primary"
@@ -102,23 +102,23 @@ export default async function WorkspacePage() {
               )}
             </div>
             <div className="mt-5 space-y-3">
-              {memberships.length ? (
-                memberships.map((team) => (
+              {minhasEquipes.length ? (
+                minhasEquipes.map((equipe) => (
                   <Link
                     href="/equipes"
-                    key={team.id}
+                    key={equipe.id}
                     className="flex items-center gap-4 rounded-xl border border-border p-4 hover:bg-muted"
                   >
                     <span className="rounded-xl bg-lilac p-3">
                       <Network size={20} aria-hidden />
                     </span>
                     <div className="min-w-0">
-                      <p className="font-medium">{team.name}</p>
+                      <p className="font-medium">{equipe.name}</p>
                       <p className="mt-1 subtle">
-                        {team.description || "Sua equipe no Workspace."}
+                        {equipe.description || "Sua equipe no Workspace."}
                       </p>
                       <p className="mt-1 text-xs text-muted-foreground">
-                        {team.parentId
+                        {equipe.parentId
                           ? "Área da Tech Sisters"
                           : "Equipe raiz · Tech Sisters"}
                       </p>
@@ -142,7 +142,7 @@ export default async function WorkspacePage() {
             <h2 className="section-title">Ações rápidas</h2>
             <p className="mt-1 subtle">O que você precisa fazer hoje?</p>
             <div className="mt-5 space-y-2">
-              {access.invite && (
+              {acessos.podeCriarConvite && (
                 <Link
                   className="sidebar-link border-border"
                   href="/usuarias?convidar=1"
@@ -152,7 +152,7 @@ export default async function WorkspacePage() {
                   <ArrowUpRight size={15} aria-hidden className="ml-auto" />
                 </Link>
               )}
-              {access.createTeam && (
+              {acessos.podeCriarEquipe && (
                 <Link
                   className="sidebar-link border-border"
                   href="/equipes?nova=1"
@@ -162,19 +162,19 @@ export default async function WorkspacePage() {
                   <ArrowUpRight size={15} aria-hidden className="ml-auto" />
                 </Link>
               )}
-              {access.users && (
+              {acessos.podeVerUsuarios && (
                 <Link className="sidebar-link" href="/usuarias">
                   <Users size={18} aria-hidden />
                   Ver usuárias
                 </Link>
               )}
-              {access.teams && (
+              {acessos.podeVerEquipes && (
                 <Link className="sidebar-link" href="/equipes">
                   <Network size={18} aria-hidden />
                   Ver equipes
                 </Link>
               )}
-              {!access.users && !access.teams && (
+              {!acessos.podeVerUsuarios && !acessos.podeVerEquipes && (
                 <p className="subtle">
                   Seu acesso está pronto. Procure uma administradora para entrar
                   em uma equipe.
@@ -187,6 +187,6 @@ export default async function WorkspacePage() {
           </Card>
         </div>
       </div>
-    </WorkspaceShell>
+    </ShellWorkspace>
   );
 }
