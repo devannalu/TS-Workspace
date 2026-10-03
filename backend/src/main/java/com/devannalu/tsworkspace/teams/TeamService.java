@@ -28,6 +28,14 @@ public class TeamService {
         return jdbc.query(SUMMARY_SQL + " WHERE t.archived_at IS NULL ORDER BY t.parent_id, t.name", TeamService::summary);
     }
     @Transactional(readOnly = true)
+    public List<Summary> memberships(String userId) {
+        return jdbc.query(SUMMARY_SQL + """
+            WHERE t.archived_at IS NULL AND EXISTS (
+              SELECT 1 FROM team_member own WHERE own.team_id=t.id AND own.user_id=?
+            ) ORDER BY t.parent_id, t.name
+            """, TeamService::summary, userId);
+    }
+    @Transactional(readOnly = true)
     public Detail detail(String id) {
         var teams = jdbc.query(SUMMARY_SQL + " WHERE t.id=?", TeamService::summary, id);
         if (teams.isEmpty()) throw TeamProblem.missing("Equipe não encontrada.");
@@ -37,8 +45,7 @@ public class TeamService {
             """, (rs, row) -> new Member(rs.getString("id"), rs.getString("name"), rs.getString("email")), id);
         return new Detail(teams.get(0), members);
     }
-    // All administrative writes acquire the same root row first. This serializes
-    // tree changes and membership removals across API instances, including last-admin checks.
+    // O mesmo bloqueio protege a árvore e a última administradora entre instâncias.
     private void lockTree() {
         organizationLock.acquire();
     }

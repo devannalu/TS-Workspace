@@ -52,6 +52,7 @@ PermissionGuard e as permissões existentes, consultadas no banco.
 | Método e rota | Permissão | Resposta |
 | --- | --- | --- |
 | GET /api/v1/teams | teams.view | Lista flat ativa, parentId e memberCount agregado |
+| GET /api/v1/teams/mine | teams.view | Resumos das equipes ativas da própria sessão, em uma consulta |
 | GET /api/v1/teams/{id} | teams.view | Team e integrantes ativas (id, nome, email) |
 | POST /api/v1/teams | teams.create | 201, detalhe da equipe criada |
 | PUT /api/v1/teams/{id} | teams.edit | 200, detalhe atualizado |

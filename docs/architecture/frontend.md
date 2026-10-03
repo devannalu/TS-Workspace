@@ -35,8 +35,40 @@ Java. /convite/[token] valida por POST com CSRF, pede nome/senha/confirmação
 e direciona para login após aceite, sem sessão automática. Link aparece apenas
 na criação, em estado volátil; a página pública usa referrer no-referrer.
 
-/infra oferece health e CSRF. Design, labels e responsividade permanecem
-nos componentes existentes. Os guias da versão instalada ficam em
+/infra oferece health e CSRF. Os guias da versão instalada ficam em
 frontend/node_modules/next/dist/docs/, conforme AGENTS.md.
+
+## Shell, páginas e dados
+
+WorkspaceShell é uma composição server-side que exige sessão e entrega a
+identidade Java ao AppShell. A navegação deriva das permissions atuais; o
+SessionBoundary bloqueia a exibição durante bootstrap. Sidebar desktop e drawer
+mobile compartilham os links reais. O header oferece avatar por iniciais,
+contexto da página e menu pessoal com logout. Login e convite usam PublicShell,
+sem navegação autenticada.
+
+O dashboard consulta auth/me e /teams/mine, que deriva as memberships da sessão,
+sem aceitar identificador de outra usuária. Usuárias ativas usam o total da
+consulta /users?status=ACTIVE&size=1. /invites/pending-count devolve a contagem
+agregada de convites não usados, não cancelados e não expirados. Essas duas
+leituras Java evitam percorrer equipes e páginas de convites. Somente
+users.view habilita essas consultas e cards. Ações rápidas também exigem as keys
+de criação correspondentes. AuditLog não tem endpoint de leitura apropriado;
+atividade recente permanece futura.
+
+Usuárias são paginadas no servidor (20 por página), com parâmetros de busca,
+status, role e equipe. Convites têm paginação própria. Integrantes de equipes
+podem ser procuradas pela API em lotes de 25; não é necessário carregar todas.
+A listagem de equipes usa os resumos com memberCount; integrantes são carregadas
+somente ao abrir o diálogo. Componentes de listagem e diálogos ficam próximos,
+com responsabilidades separadas, sem hooks ou estado global artificiais.
+Dialogs nativos fornecem confirmação, foco e Esc; feedback usa toasts locais.
+
+A validação pública de convite mantém o erro genérico Java para links inválidos,
+expirados, cancelados ou usados, sem revelar o estado pelo token. Falhas de
+conexão oferecem nova tentativa. Após aceite, a página mostra sucesso e um
+atalho para login, sem sessão automática.
+
+Veja o [Design System](design-system.md) para tokens, componentes e responsividade.
 
 Veja [setup](../development/setup.md), [RBAC](rbac.md) e [testes](../development/testing.md).

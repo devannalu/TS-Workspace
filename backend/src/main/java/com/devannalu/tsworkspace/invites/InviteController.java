@@ -17,11 +17,13 @@ public class InviteController {
     public record Create(@NotBlank @Email @Size(max=320) String email,@NotNull UUID roleId,@NotNull @Size(min=1,max=20) List<@NotNull UUID> teamIds,@Min(1) @Max(30) Integer expiresInDays) {
         public Create { email=email==null?null:EmailNormalizer.normalize(email); expiresInDays=expiresInDays==null?InvitePolicy.TTL_DAYS:expiresInDays; }
     }
-    // Secret tokens stay in request bodies; no token-bearing lookup URLs or access-log query strings.
+    // Tokens ficam no corpo para não aparecerem nos logs de URLs da API.
     public record Token(@NotBlank @Size(max=64) String token) { }
     public record Accept(@NotBlank @Size(max=64) String token,@NotBlank @Size(min=2,max=100) String name,@NotBlank @Size(min=12,max=128) String password,@NotBlank @Size(max=128) String passwordConfirmation) { }
     @GetMapping @PreAuthorize("@permissionGuard.has(authentication,'users.view')")
     public InviteService.Page list(@RequestParam(defaultValue="0") int page,@RequestParam(defaultValue="25") int size){return invites.list(page,size);}
+    @GetMapping("/pending-count") @PreAuthorize("@permissionGuard.has(authentication,'users.view')")
+    public long pendingCount() { return invites.pendingCount(); }
     @PostMapping @ResponseStatus(HttpStatus.CREATED) @PreAuthorize("@permissionGuard.has(authentication,'users.create')")
     public InviteService.Created create(Authentication auth,@Valid @RequestBody Create input){return invites.create(((AppUserPrincipal)auth.getPrincipal()).id(),input.email(),input.roleId().toString(),input.teamIds().stream().map(UUID::toString).toList(),input.expiresInDays());}
     @PostMapping("/{id}/cancel") @PreAuthorize("@permissionGuard.has(authentication,'users.create')")

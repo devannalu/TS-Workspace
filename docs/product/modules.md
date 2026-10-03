@@ -9,10 +9,10 @@ O Next.js apresenta os dados pelas APIs Auth, RBAC, Teams, Users e Invites.
 
 | Módulo | Estado | Escopo e limites |
 | --- | --- | --- |
-| Dashboard / Início | IMPLEMENTADO — base | Exibe nome, perfil de acesso, cargo e equipes reais da usuária. Indicadores de tarefas, projetos e agenda são planejados. |
-| Usuárias | IMPLEMENTADO | Lista usuárias e permite alterar role, status e equipes conforme permissão. Protege a última Super Admin ativa e revoga sessões na inativação. |
-| Convites | IMPLEMENTADO | Criação, cancelamento, expiração e aceite de uso único. O link é disponibilizado pelo fluxo administrativo; envio automático por SMTP é planejado. |
-| Equipes | IMPLEMENTADO | Hierarquia, criação, edição, arquivamento e integrantes; uma usuária pode participar de várias equipes. Proteções contra ciclos e alterações indevidas da raiz. |
+| Dashboard / Início | IMPLEMENTADO | Equipes pessoais, total de usuárias ativas e convites pendentes conforme permissions, perfil de acesso e ações rápidas. Sem métricas dos módulos futuros. |
+| Usuárias | IMPLEMENTADO | Lista paginada com busca e filtros de status/perfil/equipe; permite editar cargo, role e equipes conforme permissão. Protege a última Super Admin ativa e revoga sessões na inativação. |
+| Convites | IMPLEMENTADO | Criação, cancelamento, expiração e aceite de uso único. O link aparece uma vez no dialog, com cópia e feedback; envio automático por SMTP é planejado. |
+| Equipes | IMPLEMENTADO | Hierarquia visual, criação, edição, arquivamento com confirmação e busca de integrantes; uma usuária pode participar de várias equipes. Proteções contra ciclos e alterações indevidas da raiz. |
 | Tasks | PLANEJADO | Unidade central de trabalho, com responsáveis, acompanhamento, comentários e checklist. |
 | Projetos | PLANEJADO | Organização de iniciativas e suas entregas, relacionadas às Tasks. |
 | Eventos | PLANEJADO | Organização da operação e das atividades de eventos da comunidade. |

@@ -44,6 +44,13 @@ public class InviteService {
         if(page<0||page>100000||size<1||size>100)throw new IllegalArgumentException();
         return new Page(rows("ORDER BY i.created_at DESC,i.id LIMIT ? OFFSET ?",size,page*size),jdbc.queryForObject("SELECT COUNT(*) FROM invite",Long.class),page,size);
     }
+    @Transactional(readOnly = true)
+    public long pendingCount() {
+        return jdbc.queryForObject("""
+            SELECT COUNT(*) FROM invite
+            WHERE used_at IS NULL AND cancelled_at IS NULL AND expires_at>CURRENT_TIMESTAMP(6)
+            """, Long.class);
+    }
     @Transactional
     public Created create(String actor,String email,String roleId,List<String> teams) {
         return create(actor,email,roleId,teams,InvitePolicy.TTL_DAYS);
@@ -63,7 +70,7 @@ public class InviteService {
         jdbc.update("INSERT INTO invite (id,email,token_hash,expires_at,invited_by_id,role_id,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?)",id,email,InvitePolicy.hash(token),Timestamp.from(expires),actor,roleId,Timestamp.from(now),Timestamp.from(now));
         for(String team:unique)jdbc.update("INSERT INTO invite_team VALUES (?,?,?)",id,team,Timestamp.from(now));
         audit.record(actor,"invite.created","Invite",id);
-        // The official frontend accepts this one-time link through the Java invite API.
+        // O link é devolvido uma única vez ao frontend oficial.
         return new Created(rows("WHERE i.id=?",id).get(0),token,frontendOrigin.replaceAll("/$","")+"/convite/"+token);
     }
     @Transactional
@@ -77,7 +84,7 @@ public class InviteService {
         return rows("WHERE i.id=?",id).get(0);
     }
     private State state(String key,String value,boolean locked) {
-        // key is a private constant at the call sites, never supplied by an API client.
+        // A coluna vem de constantes internas, nunca da requisição.
         var found=jdbc.query("SELECT id,email,role_id,expires_at,used_at,cancelled_at FROM invite WHERE "+key+"=?"+(locked?" FOR UPDATE":""),
             (rs,n)->new State(rs.getString("id"),rs.getString("email"),rs.getString("role_id"),instant(rs,"expires_at"),instant(rs,"used_at"),instant(rs,"cancelled_at")),value);
         return found.isEmpty()?null:found.get(0);

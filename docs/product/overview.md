@@ -42,12 +42,12 @@ diferentes da participação em equipes.
 
 ## Visão funcional
 
-O acesso leva a um espaço pessoal com perfil e equipes. Pessoas autorizadas
+O acesso leva a um dashboard com equipes pessoais, indicadores reais e ações por permissão. Pessoas autorizadas
 administram usuárias, convites e a estrutura organizacional. Os módulos
 planejados conectarão atividades a projetos e rotinas da comunidade, incluindo
 eventos, comunicação, reuniões e arquivos.
 
-A identidade visual utiliza bordô, tons de rosa e neutros com efeitos discretos;
+A identidade visual utiliza rosa, creme e pastéis com detalhes de lavanda, manteiga e pêssego;
 a prioridade é tornar a informação organizada e legível.
 
 Próximas leituras: [módulos](modules.md), [roadmap](roadmap.md) e

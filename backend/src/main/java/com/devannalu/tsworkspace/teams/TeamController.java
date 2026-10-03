@@ -1,6 +1,8 @@
 package com.devannalu.tsworkspace.teams;
 
 import jakarta.validation.Valid;
+import com.devannalu.tsworkspace.auth.AppUserPrincipal;
+import org.springframework.security.core.Authentication;
 import jakarta.validation.constraints.*;
 import java.util.List;
 import java.util.UUID;
@@ -19,6 +21,10 @@ public class TeamController {
     public record AddMember(@NotNull UUID userId) { }
     @GetMapping @PreAuthorize("@permissionGuard.has(authentication, 'teams.view')")
     public List<TeamService.Summary> list() { return teams.list(); }
+    @GetMapping("/mine") @PreAuthorize("@permissionGuard.has(authentication, 'teams.view')")
+    public List<TeamService.Summary> mine(Authentication authentication) {
+        return teams.memberships(((AppUserPrincipal) authentication.getPrincipal()).id());
+    }
     @GetMapping("/{id}") @PreAuthorize("@permissionGuard.has(authentication, 'teams.view')")
     public TeamService.Detail detail(@PathVariable UUID id) { return teams.detail(id.toString()); }
     @PostMapping @ResponseStatus(HttpStatus.CREATED) @PreAuthorize("@permissionGuard.has(authentication, 'teams.create')")

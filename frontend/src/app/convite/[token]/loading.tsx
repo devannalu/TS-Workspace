@@ -1,1 +1,11 @@
-export default function Loading() { return <main className="flex min-h-dvh items-center justify-center px-6"><div className="h-72 w-full max-w-xl animate-pulse rounded-3xl bg-muted" role="status" aria-label="Carregando convite" /></main>; }
+import { PublicShell } from "@/components/layout/public-shell";
+export default function Loading() {
+  return (
+    <PublicShell>
+      <p role="status" className="subtle">
+        Verificando convite…
+      </p>
+      <div className="mt-5 h-48 animate-pulse rounded-xl bg-muted" />
+    </PublicShell>
+  );
+}

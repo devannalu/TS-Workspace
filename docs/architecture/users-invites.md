@@ -32,6 +32,7 @@ e permitem novo convite com novo token. Teams arquivadas invalidam o aceite.
 | POST /api/v1/users/{id}/deactivate | users.disable | Profile INACTIVE e revogação de sessões |
 | POST /api/v1/users/{id}/activate | users.disable | Profile ACTIVE, novo login obrigatório |
 | GET /api/v1/invites | users.view | Page de convites, sem token/hash/link |
+| GET /api/v1/invites/pending-count | users.view | Número agregado de convites PENDING; sem lista ou dados pessoais |
 | POST /api/v1/invites | users.create | email, roleId, 1–20 teamIds; expiresInDays opcional |
 | POST /api/v1/invites/{id}/cancel | users.create | Somente convite pendente |
 | POST /api/v1/invites/validate | Pública, com CSRF | Body token; email, label de role, nomes de teams e expiresAt |

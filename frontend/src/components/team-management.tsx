@@ -1,25 +1,181 @@
 "use client";
-
+import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
-import { addTeamMemberAction, archiveTeamAction, createTeamAction, removeTeamMemberAction, updateTeamAction } from "@/lib/api/ui-actions";
+import {
+  Plus,
+  Network,
+  Users,
+  ChevronRight,
+  Pencil,
+  Archive,
+} from "lucide-react";
+import { TeamDialogs, type Team } from "./team-dialogs";
 import { Button } from "./ui/button";
-import { Input } from "./ui/input";
-
-type Member = { user: { id: string; name: string; email: string } };
-type Team = { id: string; name: string; description: string | null; parentId: string | null; members: Member[] };
+import { Badge } from "./ui/badge";
+import { Toast, EmptyState } from "./ui/feedback";
 type User = { id: string; name: string; email: string };
-export function TeamManagement({ teams, users, canCreate, canEdit, canArchive, canMembers }: { teams: Team[]; users: User[]; canCreate: boolean; canEdit: boolean; canArchive: boolean; canMembers: boolean }) {
+export function TeamManagement({
+  teams,
+  users,
+  canCreate,
+  canEdit,
+  canArchive,
+  canMembers,
+  initialCreate = false,
+}: {
+  teams: Team[];
+  users: User[];
+  canCreate: boolean;
+  canEdit: boolean;
+  canArchive: boolean;
+  canMembers: boolean;
+  initialCreate?: boolean;
+}) {
   const router = useRouter();
-  const [pending, start] = useTransition(); const [message, setMessage] = useState("");
-  const run = (work: () => Promise<{ ok: boolean; error?: string }>) => start(async () => { const result = await work(); if(result.ok) router.refresh(); setMessage(result.ok ? "Alteração salva." : result.error ?? "Não foi possível concluir a operação."); });
-  const root = teams.find(team => team.parentId === null);
-  return <div className="space-y-4">
-    {canCreate && <form className="grid gap-4 rounded-2xl border border-border bg-card p-5 md:grid-cols-4" onSubmit={event => { event.preventDefault(); const form = new FormData(event.currentTarget); run(() => createTeamAction({ name: String(form.get("name")), description: String(form.get("description")), parentId: String(form.get("parentId")) })); }}><div><label className="text-sm font-medium" htmlFor="team-name">Nome</label><Input id="team-name" name="name" required disabled={pending} /></div><div><label className="text-sm font-medium" htmlFor="team-description">Descrição</label><Input id="team-description" name="description" disabled={pending} /></div><label className="space-y-2 text-sm"><span>Equipe superior</span><select name="parentId" defaultValue={root?.id} className="min-h-12 w-full rounded-xl border border-border bg-card px-3" disabled={pending}>{teams.map(team => <option key={team.id} value={team.id}>{team.name}</option>)}</select></label><div className="flex items-end"><Button type="submit" disabled={pending}>Criar equipe</Button></div></form>}
-    {teams.map(team => <article key={team.id} className="rounded-2xl border border-border bg-card p-5"><div className="flex flex-wrap items-start justify-between gap-3"><div><h3 className="font-semibold">{team.name}</h3><p className="text-sm text-muted-foreground">{team.description || "Sem descrição"}</p></div>{team.parentId === null ? <span className="rounded-full bg-accent px-3 py-1 text-xs">Estrutural</span> : canArchive && <Button type="button" disabled={pending} className="bg-muted text-foreground hover:bg-border" onClick={() => run(() => archiveTeamAction(team.id))}>Arquivar</Button>}</div>
-      {canEdit && team.parentId !== null && <form className="mt-5 grid gap-3 md:grid-cols-[1fr_1fr_auto]" onSubmit={event => { event.preventDefault(); const form = new FormData(event.currentTarget); run(() => updateTeamAction({ teamId: team.id, name: String(form.get("name")), description: String(form.get("description")), parentId: String(form.get("parentId")) })); }}><Input name="name" defaultValue={team.name} aria-label={`Nome de ${team.name}`} disabled={pending} /><Input name="description" defaultValue={team.description ?? ""} aria-label={`Descrição de ${team.name}`} disabled={pending} /><select name="parentId" defaultValue={team.parentId ?? ""} aria-label={`Equipe superior de ${team.name}`} className="min-h-12 rounded-xl border border-border bg-card px-3" disabled={pending}>{teams.filter(parent => parent.id !== team.id).map(parent => <option key={parent.id} value={parent.id}>{parent.name}</option>)}</select><Button type="submit" disabled={pending} className="md:col-span-3 md:justify-self-start">Salvar equipe</Button></form>}
-      {canMembers && <div className="mt-5 border-t border-border pt-4"><h4 className="text-sm font-semibold">Integrantes</h4><ul className="mt-2 space-y-2">{team.members.map(member => <li key={member.user.id} className="flex flex-wrap items-center justify-between gap-2 text-sm"><span>{member.user.name} <span className="text-muted-foreground">({member.user.email})</span></span><Button type="button" disabled={pending} className="min-h-8 bg-muted px-3 py-1 text-xs text-foreground" onClick={() => run(() => removeTeamMemberAction(member.user.id, team.id))}>Remover</Button></li>)}</ul><form className="mt-3 flex flex-wrap gap-2" onSubmit={event => { event.preventDefault(); const form = new FormData(event.currentTarget); run(() => addTeamMemberAction(String(form.get("userId")), team.id)); }}><select name="userId" required className="min-h-11 flex-1 rounded-xl border border-border bg-card px-3" disabled={pending}><option value="">Adicionar integrante</option>{users.filter(user => !team.members.some(member => member.user.id === user.id)).map(user => <option key={user.id} value={user.id}>{user.name}</option>)}</select><Button type="submit" disabled={pending}>Adicionar</Button></form></div>}
-    </article>)}
-    {message && <p role="status" className="text-sm">{message}</p>}
-  </div>;
+  const [message, setMessage] = useState("");
+  const [mode, setMode] = useState<
+    "create" | "edit" | "members" | "archive" | null
+  >(canCreate && initialCreate ? "create" : null);
+  const [selected, setSelected] = useState<Team | null>(null);
+  const dismiss = useCallback(() => setMessage(""), []);
+  const openTeamDialog = (dialog: typeof mode, team: Team) => {
+    setSelected(team);
+    setMode(dialog);
+  };
+  // A ordem mostra as equipes superiores antes das suas filhas.
+  const order: { team: Team; depth: number }[] = [];
+  const visit = (parent: string | null, depth: number) => {
+    for (const team of teams.filter((t) => t.parentId === parent)) {
+      order.push({ team, depth });
+      visit(team.id, depth + 1);
+    }
+  };
+  visit(null, 0);
+  return (
+    <div className="space-y-5">
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <h1 className="page-title">Equipes</h1>
+          <p className="mt-2 subtle">
+            Organize as áreas que fazem a Tech Sisters acontecer.
+          </p>
+        </div>
+        {canCreate && (
+          <Button
+            onClick={(event) => {
+              event.currentTarget.focus();
+              setMode("create");
+            }}
+          >
+            <Plus size={17} aria-hidden />
+            Nova equipe
+          </Button>
+        )}
+      </div>
+      <div className="rounded-xl bg-lilac px-4 py-3 text-sm">
+        Fundadoras é a raiz estrutural. Cada área tem seu espaço para construir
+        juntas.
+      </div>
+      {!order.length && (
+        <EmptyState
+          title="Nenhuma equipe disponível"
+          description="As equipes ativas aparecerão aqui."
+        />
+      )}
+      <div className="space-y-3">
+        {order.map(({ team, depth }) => (
+          <article
+            key={team.id}
+            className={`workspace-panel p-5 ${depth ? "sm:ml-6" : ""}`}
+          >
+            <div className="flex flex-wrap items-start justify-between gap-4">
+              <div className="flex min-w-0 gap-3">
+                <span className="mt-1 rounded-xl bg-lilac p-2.5">
+                  <Network size={20} aria-hidden />
+                </span>
+                <div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h2 className="font-semibold">{team.name}</h2>
+                    <Badge tone={team.parentId ? "success" : "pink"}>
+                      {team.parentId ? "Ativa" : "Raiz estrutural"}
+                    </Badge>
+                  </div>
+                  <p className="mt-1 subtle">
+                    {team.description || "Sem descrição."}
+                  </p>
+                  <p className="mt-3 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                    <Users size={14} aria-hidden />
+                    {team.memberCount}{" "}
+                    {team.memberCount === 1 ? "integrante" : "integrantes"}
+                    {team.parentId && (
+                      <>
+                        <ChevronRight size={14} aria-hidden />
+                        {teams.find((t) => t.id === team.parentId)?.name}
+                      </>
+                    )}
+                  </p>
+                </div>
+              </div>
+              <div className="flex flex-wrap gap-1">
+                {canEdit && team.parentId && (
+                  <Button
+                    variant="ghost"
+                    aria-label={`Editar ${team.name}`}
+                    onClick={(event) => {
+                      event.currentTarget.focus();
+                      openTeamDialog("edit", team);
+                    }}
+                  >
+                    <Pencil size={15} aria-hidden />
+                    Editar
+                  </Button>
+                )}
+                {canMembers && (
+                  <Button
+                    variant="secondary"
+                    aria-label={`Gerenciar integrantes de ${team.name}`}
+                    onClick={(event) => {
+                      event.currentTarget.focus();
+                      openTeamDialog("members", team);
+                    }}
+                  >
+                    Integrantes
+                  </Button>
+                )}
+                {canArchive && team.parentId && (
+                  <Button
+                    variant="ghost"
+                    aria-label={`Arquivar ${team.name}`}
+                    onClick={(event) => {
+                      event.currentTarget.focus();
+                      openTeamDialog("archive", team);
+                    }}
+                  >
+                    <Archive size={15} aria-hidden />
+                    Arquivar
+                  </Button>
+                )}
+              </div>
+            </div>
+          </article>
+        ))}
+      </div>
+      <TeamDialogs
+        key={`${mode}-${selected?.id ?? "new"}`}
+        mode={mode}
+        selected={selected}
+        teams={teams}
+        users={users}
+        onClose={() => {
+          setMode(null);
+          setSelected(null);
+        }}
+        onSaved={(message) => {
+          setMessage(message);
+          router.refresh();
+        }}
+      />
+      <Toast message={message} onClose={dismiss} />
+    </div>
+  );
 }

@@ -117,7 +117,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/api/v1/health", "/api/v1/auth/csrf").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/v1/auth/login", "/api/v1/auth/logout").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/v1/invites/validate", "/api/v1/invites/accept").permitAll()
-                .requestMatchers(HttpMethod.GET, "/api/v1/users", "/api/v1/users/*", "/api/v1/invites").authenticated()
+                .requestMatchers(HttpMethod.GET, "/api/v1/users", "/api/v1/users/*", "/api/v1/invites", "/api/v1/invites/pending-count").authenticated()
                 .requestMatchers(HttpMethod.PATCH, "/api/v1/users/*").authenticated()
                 .requestMatchers(HttpMethod.POST, "/api/v1/users/*/deactivate", "/api/v1/users/*/activate", "/api/v1/invites", "/api/v1/invites/*/cancel").authenticated()
                 .requestMatchers(HttpMethod.GET, "/api/v1/auth/me").authenticated()

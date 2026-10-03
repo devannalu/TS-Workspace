@@ -67,6 +67,18 @@ class UsersInvitesIntegrationTest {
             }
         }
     }
+    @Test void pendingCountExcludesUsedCancelledExpiredAndRequiresPermission() throws Exception {
+        var pending = invite("pending-count@example.test");
+        var cancelled = invite("cancelled-count@example.test"); invites.cancel(admin, cancelled.invite().id());
+        var expired = invite("expired-count@example.test");
+        jdbc.update("UPDATE invite SET expires_at=DATE_SUB(CURRENT_TIMESTAMP(6),INTERVAL 1 DAY) WHERE id=?", expired.invite().id());
+        String support = accept("used-count@example.test").userId();
+        assertThat(invites.pendingCount()).isEqualTo(1);
+        mvc.perform(get("/api/v1/invites/pending-count").cookie(login(admin))).andExpect(status().isOk()).andExpect(content().string("1"));
+        mvc.perform(get("/api/v1/invites/pending-count").cookie(login(support))).andExpect(status().isForbidden());
+        mvc.perform(get("/api/v1/invites/pending-count")).andExpect(status().isUnauthorized());
+        invites.cancel(admin, pending.invite().id()); assertThat(invites.pendingCount()).isZero();
+    }
     @Test void createsHashedInviteWithSevenDayExpiryAndSafePaginatedDto() throws Exception {
         Instant before=Instant.now();var created=invite(" member@example.test ");
         assertThat(created.invite().email()).isEqualTo("member@example.test");

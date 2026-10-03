@@ -51,7 +51,7 @@ class TeamsIntegrationTest {
         jdbc.update("DELETE FROM SPRING_SESSION_ATTRIBUTES"); jdbc.update("DELETE FROM SPRING_SESSION");
         jdbc.update("DELETE FROM team_member"); jdbc.update("DELETE FROM user_permissions");
         jdbc.update("DELETE FROM app_profile"); jdbc.update("DELETE FROM app_user");
-        // Delete only the ephemeral test tree, leaves before ancestors.
+        // Apenas a árvore temporária é removida, das folhas para a raiz.
         while (jdbc.queryForObject("SELECT COUNT(*) FROM team WHERE team_key<>'fundadoras'",Long.class)>0)
             jdbc.update("DELETE FROM team WHERE id IN (SELECT id FROM (SELECT t.id FROM team t LEFT JOIN team c ON c.parent_id=t.id WHERE t.team_key<>'fundadoras' AND c.id IS NULL) leaves)");
         seed.seed(); admin = user("SUPER_ADMIN"); seed.seed();
@@ -84,6 +84,18 @@ class TeamsIntegrationTest {
         }
         assertThat(teams.detail(root).members()).extracting(TeamService.Member::id).containsExactly(admin);
         assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM app_user",Long.class)).isEqualTo(1);
+    }
+    @Test void ownTeamsRespectMembershipArchiveAndPermission() throws Exception {
+        String support = user("SUPPORT");
+        String own = teams.create("Own team", null, root).team().id();
+        String archived = teams.create("Archived team", null, root).team().id();
+        teams.addMember(own, support); teams.addMember(archived, support); teams.archive(archived);
+        Cookie session = login(support);
+        mvc.perform(get("/api/v1/teams/mine").cookie(session)).andExpect(status().isOk())
+            .andExpect(jsonPath("$.length()").value(1)).andExpect(jsonPath("$[0].id").value(own));
+        mvc.perform(get("/api/v1/teams/mine")).andExpect(status().isUnauthorized());
+        jdbc.update("INSERT INTO user_permissions SELECT ?,id,'DENY' FROM permissions WHERE permission_key='teams.view'", support);
+        mvc.perform(get("/api/v1/teams/mine").cookie(session)).andExpect(status().isForbidden());
     }
     @Test void createEditListDetailAndArchiveWithHistory() {
         String id=teams.create("Teste","description",root).team().id();
@@ -134,7 +146,7 @@ class TeamsIntegrationTest {
         jdbc.update("UPDATE app_profile SET status='INACTIVE' WHERE user_id=?",other);
         assertThat(teams.detail(b).team().memberCount()).isZero(); assertThat(teams.detail(b).members()).isEmpty();
         assertThatThrownBy(()->teams.addMember(a,other)).hasMessageContaining("indisponível");
-        teams.removeMember(b,other); // inactive existing members may be removed, as in Prisma
+        teams.removeMember(b,other); // Remover integrantes inativas preserva a compatibilidade do fluxo.
         assertThatThrownBy(()->teams.removeMember(root,admin)).hasMessageContaining("última");
         String second=user("SUPER_ADMIN"); teams.addMember(root,second); teams.removeMember(root,admin);
         assertThatThrownBy(()->teams.removeMember(root,second)).hasMessageContaining("última");
