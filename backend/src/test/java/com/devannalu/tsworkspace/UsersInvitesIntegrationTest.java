@@ -1,9 +1,10 @@
 package com.devannalu.tsworkspace;
 
 import com.devannalu.tsworkspace.auth.*;
+import com.devannalu.tsworkspace.autenticacao.*;
 import com.devannalu.tsworkspace.common.DomainProblem;
 import com.devannalu.tsworkspace.invites.*;
-import com.devannalu.tsworkspace.teams.TeamSeed;
+import com.devannalu.tsworkspace.equipes.InicializacaoEquipesService;
 import com.devannalu.tsworkspace.users.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.Cookie;
@@ -34,10 +35,10 @@ class UsersInvitesIntegrationTest {
     @Autowired JdbcTemplate jdbc;
     @Autowired InviteService invites;
     @Autowired UserManagementService management;
-    @Autowired BootstrapService bootstrap;
+    @Autowired InicializacaoIdentidadeService bootstrap;
     @Autowired UserRepository users;
     @Autowired PasswordEncoder passwords;
-    @Autowired TeamSeed seed;
+    @Autowired InicializacaoEquipesService seed;
     @Autowired MockMvc mvc;
     @Autowired ObjectMapper mapper;
     @Autowired Flyway flyway;
@@ -236,7 +237,7 @@ class UsersInvitesIntegrationTest {
     }
     private Callable<Boolean> attempt(Runnable run){return ()->{try{run.run();return true;}catch(DomainProblem e){return false;}};}
     private String role(String key){return jdbc.queryForObject("SELECT id FROM roles WHERE role_key=?",String.class,key);}
-    private String identity(String roleKey){String email=UUID.randomUUID()+"@example.test";bootstrap.createFirstIdentity("Test identity",email,PASSWORD);String id=users.findByEmail(email).orElseThrow().getId();jdbc.update("UPDATE app_profile SET role_id=? WHERE user_id=?",role(roleKey),id);return id;}
+    private String identity(String roleKey){String email=UUID.randomUUID()+"@example.test";bootstrap.criarPrimeiraIdentidade("Test identity",email,PASSWORD);String id=users.findByEmail(email).orElseThrow().getId();jdbc.update("UPDATE app_profile SET role_id=? WHERE user_id=?",role(roleKey),id);return id;}
     private InviteService.Created invite(String email){return invites.create(admin,email,role,List.of(root,communication));}
     private InviteService.Accepted accept(String email){return invites.accept(invite(email).token(),"Test invited member",PASSWORD,PASSWORD);}
     private org.springframework.test.web.servlet.ResultActions loginRequest(String id) throws Exception {return mvc.perform(post("/api/v1/auth/login").with(csrf()).contentType(MediaType.APPLICATION_JSON).content(mapper.writeValueAsString(Map.of("email",users.findById(id).orElseThrow().getEmail(),"password",PASSWORD))));}

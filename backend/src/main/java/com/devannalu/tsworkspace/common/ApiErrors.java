@@ -14,8 +14,8 @@ public class ApiErrors {
     ProblemDetail domainProblem(DomainProblem error) {
         return ProblemDetail.forStatusAndDetail(HttpStatus.valueOf(error.status()), error.getMessage());
     }
-    @ExceptionHandler(com.devannalu.tsworkspace.teams.TeamProblem.class)
-    ProblemDetail teamProblem(com.devannalu.tsworkspace.teams.TeamProblem error) {
+    @ExceptionHandler(com.devannalu.tsworkspace.equipes.ProblemaEquipe.class)
+    ProblemDetail teamProblem(com.devannalu.tsworkspace.equipes.ProblemaEquipe error) {
         return ProblemDetail.forStatusAndDetail(HttpStatus.valueOf(error.status()), error.getMessage());
     }
 

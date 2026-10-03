@@ -16,7 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class InviteService {
     public record Actor(String id,String name) { }
-    public record InviteDto(String id,String email,UserManagementService.Role role,List<UserManagementService.TeamRef> teams,Actor invitedBy,Instant createdAt,Instant expiresAt,InvitePolicy.Status status) { }
+    public record InviteDto(String id,String email,UserManagementService.PerfilAcesso role,List<UserManagementService.TeamRef> teams,Actor invitedBy,Instant createdAt,Instant expiresAt,InvitePolicy.Status status) { }
     public record Page(List<InviteDto> items,long total,int page,int size) { }
     public record Created(InviteDto invite,String token,String inviteUrl) { }
     public record PublicInvite(String email,String role,List<String> teams,Instant expiresAt) { }
@@ -32,7 +32,7 @@ public class InviteService {
     }
     private static Instant instant(java.sql.ResultSet rs,String key) throws java.sql.SQLException { var value=rs.getTimestamp(key);return value==null?null:value.toInstant(); }
     private List<InviteDto> rows(String suffix,Object...args) {
-        var result=jdbc.query("SELECT i.*,r.role_key,r.name role_name,u.name actor_name FROM invite i JOIN roles r ON r.id=i.role_id JOIN app_user u ON u.id=i.invited_by_id "+suffix,(rs,n)->new InviteDto(rs.getString("id"),rs.getString("email"),new UserManagementService.Role(rs.getString("role_id"),rs.getString("role_key"),rs.getString("role_name")),List.of(),new Actor(rs.getString("invited_by_id"),rs.getString("actor_name")),instant(rs,"created_at"),instant(rs,"expires_at"),InvitePolicy.status(instant(rs,"used_at"),instant(rs,"cancelled_at"),instant(rs,"expires_at"),Instant.now())),args);
+        var result=jdbc.query("SELECT i.*,r.role_key,r.name role_name,u.name actor_name FROM invite i JOIN roles r ON r.id=i.role_id JOIN app_user u ON u.id=i.invited_by_id "+suffix,(rs,n)->new InviteDto(rs.getString("id"),rs.getString("email"),new UserManagementService.PerfilAcesso(rs.getString("role_id"),rs.getString("role_key"),rs.getString("role_name")),List.of(),new Actor(rs.getString("invited_by_id"),rs.getString("actor_name")),instant(rs,"created_at"),instant(rs,"expires_at"),InvitePolicy.status(instant(rs,"used_at"),instant(rs,"cancelled_at"),instant(rs,"expires_at"),Instant.now())),args);
         if(result.isEmpty())return result;
         Map<String,List<UserManagementService.TeamRef>> byInvite=new HashMap<>();
         jdbc.query("SELECT it.invite_id,t.id,t.name FROM invite_team it JOIN team t ON t.id=it.team_id WHERE it.invite_id IN ("+String.join(",",Collections.nCopies(result.size(),"?"))+") ORDER BY t.name,t.id",

@@ -20,13 +20,13 @@ public class InviteController {
     // Tokens ficam no corpo para não aparecerem nos logs de URLs da API.
     public record Token(@NotBlank @Size(max=64) String token) { }
     public record Accept(@NotBlank @Size(max=64) String token,@NotBlank @Size(min=2,max=100) String name,@NotBlank @Size(min=12,max=128) String password,@NotBlank @Size(max=128) String passwordConfirmation) { }
-    @GetMapping @PreAuthorize("@permissionGuard.has(authentication,'users.view')")
+    @GetMapping @PreAuthorize("@verificadorPermissao.possuiPermissao(authentication,'users.view')")
     public InviteService.Page list(@RequestParam(defaultValue="0") int page,@RequestParam(defaultValue="25") int size){return invites.list(page,size);}
-    @GetMapping("/pending-count") @PreAuthorize("@permissionGuard.has(authentication,'users.view')")
+    @GetMapping("/pending-count") @PreAuthorize("@verificadorPermissao.possuiPermissao(authentication,'users.view')")
     public long pendingCount() { return invites.pendingCount(); }
-    @PostMapping @ResponseStatus(HttpStatus.CREATED) @PreAuthorize("@permissionGuard.has(authentication,'users.create')")
+    @PostMapping @ResponseStatus(HttpStatus.CREATED) @PreAuthorize("@verificadorPermissao.possuiPermissao(authentication,'users.create')")
     public InviteService.Created create(Authentication auth,@Valid @RequestBody Create input){return invites.create(((AppUserPrincipal)auth.getPrincipal()).id(),input.email(),input.roleId().toString(),input.teamIds().stream().map(UUID::toString).toList(),input.expiresInDays());}
-    @PostMapping("/{id}/cancel") @PreAuthorize("@permissionGuard.has(authentication,'users.create')")
+    @PostMapping("/{id}/cancel") @PreAuthorize("@verificadorPermissao.possuiPermissao(authentication,'users.create')")
     public InviteService.InviteDto cancel(Authentication auth,@PathVariable UUID id){return invites.cancel(((AppUserPrincipal)auth.getPrincipal()).id(),id.toString());}
     @PostMapping("/validate")
     public InviteService.PublicInvite inspect(@Valid @RequestBody Token input){return invites.inspect(input.token());}

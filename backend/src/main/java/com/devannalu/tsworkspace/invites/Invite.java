@@ -1,7 +1,7 @@
 package com.devannalu.tsworkspace.invites;
 
 import com.devannalu.tsworkspace.auth.User;
-import com.devannalu.tsworkspace.rbac.Role;
+import com.devannalu.tsworkspace.rbac.PerfilAcesso;
 import jakarta.persistence.*;
 import java.time.Instant;
 
@@ -14,7 +14,7 @@ public class Invite {
     @Column(name="used_at") private Instant usedAt;
     @Column(name="cancelled_at") private Instant cancelledAt;
     @ManyToOne(fetch=FetchType.LAZY,optional=false) @JoinColumn(name="invited_by_id",nullable=false) private User invitedBy;
-    @ManyToOne(fetch=FetchType.LAZY,optional=false) @JoinColumn(name="role_id",nullable=false) private Role role;
+    @ManyToOne(fetch=FetchType.LAZY,optional=false) @JoinColumn(name="role_id",nullable=false) private PerfilAcesso role;
     @Column(name="created_at",nullable=false) private Instant createdAt;
     @Column(name="updated_at",nullable=false) private Instant updatedAt;
     protected Invite() { }

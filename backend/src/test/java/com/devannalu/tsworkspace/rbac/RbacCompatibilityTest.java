@@ -29,7 +29,7 @@ class RbacCompatibilityTest {
     }
     @ParameterizedTest(name = "{0}: {1} = {2}") @MethodSource("baselineMatrix")
     void reproducesEveryLegacyRolePermission(String role, String permission, boolean expected, Set<String> catalog) {
-        var context = new PermissionPolicy.Context(true, role, catalog, Set.copyOf(RbacBaseline.GRANTS.get(role)), Map.of());
-        assertThat(PermissionPolicy.resolve(context, permission)).isEqualTo(expected);
+        var context = new PoliticaPermissao.ContextoPermissao(true, role, catalog, Set.copyOf(CatalogoRbac.CONCESSOES.get(role)), Map.of());
+        assertThat(PoliticaPermissao.resolverPermissao(context, permission)).isEqualTo(expected);
     }
 }

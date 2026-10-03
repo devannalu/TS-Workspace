@@ -1,12 +1,12 @@
 package com.devannalu.tsworkspace;
 
-import com.devannalu.tsworkspace.auth.BootstrapService;
+import com.devannalu.tsworkspace.autenticacao.InicializacaoIdentidadeService;
 import com.devannalu.tsworkspace.auth.Profile;
 import com.devannalu.tsworkspace.auth.ProfileRepository;
 import com.devannalu.tsworkspace.auth.ProfileStatus;
 import com.devannalu.tsworkspace.auth.User;
 import com.devannalu.tsworkspace.auth.UserRepository;
-import com.devannalu.tsworkspace.rbac.RoleRepository;
+import com.devannalu.tsworkspace.rbac.PerfilAcessoRepository;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.Cookie;
@@ -59,8 +59,8 @@ class AuthIntegrationTest {
     @Autowired PasswordEncoder passwordEncoder;
     @Autowired UserRepository users;
     @Autowired ProfileRepository profiles;
-    @Autowired BootstrapService bootstrap;
-    @Autowired RoleRepository roles;
+    @Autowired InicializacaoIdentidadeService bootstrap;
+    @Autowired PerfilAcessoRepository roles;
 
     @BeforeEach
     void resetData() {
@@ -158,13 +158,13 @@ class AuthIntegrationTest {
 
     @Test
     void bootstrapIsIdempotentAndRejectsPartialState() {
-        bootstrap.createFirstIdentity("Bootstrap User", "Bootstrap@Example.COM", "correct horse battery staple");
-        bootstrap.createFirstIdentity("Different Name", "bootstrap@example.com", "another password that is long");
+        bootstrap.criarPrimeiraIdentidade("Bootstrap User", "Bootstrap@Example.COM", "correct horse battery staple");
+        bootstrap.criarPrimeiraIdentidade("Different Name", "bootstrap@example.com", "another password that is long");
         assertThat(users.findByEmail("bootstrap@example.com")).isPresent();
         assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM app_user", Integer.class)).isEqualTo(1);
         assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM app_profile", Integer.class)).isEqualTo(1);
         User partial = users.save(new User("Partial", "partial@example.com", passwordEncoder.encode("correct horse battery staple")));
-        assertThatThrownBy(() -> bootstrap.createFirstIdentity("Partial", "partial@example.com", "correct horse battery staple"))
+        assertThatThrownBy(() -> bootstrap.criarPrimeiraIdentidade("Partial", "partial@example.com", "correct horse battery staple"))
             .isInstanceOf(IllegalStateException.class).hasMessageContaining("parcial");
         assertThat(profiles.findById(partial.getId())).isEmpty();
     }

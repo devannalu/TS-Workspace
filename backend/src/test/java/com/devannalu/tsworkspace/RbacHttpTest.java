@@ -1,6 +1,6 @@
 package com.devannalu.tsworkspace;
 
-import com.devannalu.tsworkspace.auth.BootstrapService;
+import com.devannalu.tsworkspace.autenticacao.InicializacaoIdentidadeService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.net.CookieManager;
 import java.net.CookiePolicy;
@@ -35,14 +35,14 @@ class RbacHttpTest {
         registry.add("spring.datasource.password", MYSQL::getPassword);
     }
     @LocalServerPort int port;
-    @Autowired BootstrapService bootstrap;
+    @Autowired InicializacaoIdentidadeService bootstrap;
     @Autowired JdbcTemplate jdbc;
     @Autowired ObjectMapper mapper;
     private static final String PASSWORD = "HTTP RBAC test password only";
 
     @Test void realHttpEnforcesSessionCsrfRoleAndPermissionAndLogout() throws Exception {
-        bootstrap.createFirstIdentity("HTTP Admin Test", "http-admin@example.test", PASSWORD);
-        bootstrap.createFirstIdentity("HTTP Support Test", "http-support@example.test", PASSWORD);
+        bootstrap.criarPrimeiraIdentidade("HTTP Admin Test", "http-admin@example.test", PASSWORD);
+        bootstrap.criarPrimeiraIdentidade("HTTP Support Test", "http-support@example.test", PASSWORD);
         jdbc.update("UPDATE app_profile SET role_id=(SELECT id FROM roles WHERE role_key='SUPPORT') WHERE user_id=(SELECT id FROM app_user WHERE email='http-support@example.test')");
         HttpClient admin = client();
         assertThat(get(admin, "/api/v1/health").statusCode()).isEqualTo(200);

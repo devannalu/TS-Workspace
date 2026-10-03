@@ -1,7 +1,8 @@
 package com.devannalu.tsworkspace;
 
 import com.devannalu.tsworkspace.auth.*;
-import com.devannalu.tsworkspace.teams.*;
+import com.devannalu.tsworkspace.autenticacao.*;
+import com.devannalu.tsworkspace.equipes.*;
 import com.fasterxml.jackson.databind.*;
 import jakarta.servlet.http.Cookie;
 import java.util.*;
@@ -38,12 +39,12 @@ class TeamsIntegrationTest {
     @Autowired JdbcTemplate jdbc;
     @Autowired MockMvc mvc;
     @Autowired ObjectMapper mapper;
-    @Autowired TeamService teams;
-    @Autowired TeamSeed seed;
-    @Autowired TeamController controller;
-    @Autowired BootstrapService bootstrap;
+    @Autowired EquipeService teams;
+    @Autowired InicializacaoEquipesService seed;
+    @Autowired EquipeController controller;
+    @Autowired InicializacaoIdentidadeService bootstrap;
     @Autowired UserRepository users;
-    @Autowired AppUserDetailsService details;
+    @Autowired AutenticacaoUsuarioService details;
     @Autowired Flyway flyway;
     private String admin, root;
     private static final String PASSWORD = "Teams integration test password";
@@ -63,33 +64,33 @@ class TeamsIntegrationTest {
         seed.seed(); seed.seed();
         try(var input=getClass().getResourceAsStream("/teams-baseline.json")) {
             JsonNode baseline=mapper.readTree(input);
-            assertThat(teams.list()).hasSize(5);
-            var rootTeam=teams.detail(root).team();
+            assertThat(teams.listarEquipes()).hasSize(5);
+            var rootTeam=teams.buscarDetalheEquipe(root).team();
             assertThat(rootTeam.key()).isEqualTo(baseline.get("root").get("key").asText());
             assertThat(rootTeam.name()).isEqualTo(baseline.get("root").get("name").asText());
             assertThat(rootTeam.parentId()).isNull();
             var children=baseline.get("children").fields();
             while(children.hasNext()) {
                 var entry=children.next();
-                var team=teams.list().stream().filter(t->t.key().equals(entry.getKey())).findFirst().orElseThrow();
+                var team=teams.listarEquipes().stream().filter(t->t.key().equals(entry.getKey())).findFirst().orElseThrow();
                 assertThat(team.name()).isEqualTo(entry.getValue().asText()); assertThat(team.parentId()).isEqualTo(root);
             }
-            var tree=List.of(new TeamPolicy.Node("root","fundadoras",null,false),new TeamPolicy.Node("a","a","root",false),new TeamPolicy.Node("b","b","a",false),new TeamPolicy.Node("c","c","b",false),new TeamPolicy.Node("archived","archived","root",true));
+            var tree=List.of(new PoliticaEquipe.NoHierarquia("root","fundadoras",null,false),new PoliticaEquipe.NoHierarquia("a","a","root",false),new PoliticaEquipe.NoHierarquia("b","b","a",false),new PoliticaEquipe.NoHierarquia("c","c","b",false),new PoliticaEquipe.NoHierarquia("archived","archived","root",true));
             for(var test:baseline.get("parentCases")) {
                 String parent=test.get("parent").isNull()?null:test.get("parent").asText();
                 boolean allowed;
-                try { TeamPolicy.parent(tree,test.get("id").asText(),parent); allowed=true; } catch(TeamProblem e) { allowed=false; }
+                try { PoliticaEquipe.validarEquipeMae(tree,test.get("id").asText(),parent); allowed=true; } catch(ProblemaEquipe e) { allowed=false; }
                 assertThat(allowed).isEqualTo(test.get("allowed").asBoolean());
             }
         }
-        assertThat(teams.detail(root).members()).extracting(TeamService.Member::id).containsExactly(admin);
+        assertThat(teams.buscarDetalheEquipe(root).members()).extracting(EquipeService.IntegranteEquipe::id).containsExactly(admin);
         assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM app_user",Long.class)).isEqualTo(1);
     }
     @Test void ownTeamsRespectMembershipArchiveAndPermission() throws Exception {
         String support = user("SUPPORT");
-        String own = teams.create("Own team", null, root).team().id();
-        String archived = teams.create("Archived team", null, root).team().id();
-        teams.addMember(own, support); teams.addMember(archived, support); teams.archive(archived);
+        String own = teams.criarEquipe("Own team", null, root).team().id();
+        String archived = teams.criarEquipe("Archived team", null, root).team().id();
+        teams.adicionarIntegrante(own, support); teams.adicionarIntegrante(archived, support); teams.arquivarEquipe(archived);
         Cookie session = login(support);
         mvc.perform(get("/api/v1/teams/mine").cookie(session)).andExpect(status().isOk())
             .andExpect(jsonPath("$.length()").value(1)).andExpect(jsonPath("$[0].id").value(own));
@@ -98,58 +99,58 @@ class TeamsIntegrationTest {
         mvc.perform(get("/api/v1/teams/mine").cookie(session)).andExpect(status().isForbidden());
     }
     @Test void createEditListDetailAndArchiveWithHistory() {
-        String id=teams.create("Teste","description",root).team().id();
-        String child=teams.create("Child",null,id).team().id();
-        assertThatThrownBy(()->teams.archive(id)).hasMessageContaining("subequipes");
-        teams.edit(child,"Moved",null,root);
-        teams.addMember(id,admin);
-        assertThat(teams.detail(id).team().memberCount()).isEqualTo(1);
-        assertThat(teams.archive(id).team().archived()).isTrue();
-        assertThat(teams.archive(id).team().archived()).isTrue();
-        assertThat(teams.list()).extracting(TeamService.Summary::id).doesNotContain(id);
-        assertThat(teams.detail(id).members()).hasSize(1);
-        assertThatThrownBy(()->teams.edit(id,"No",null,root)).isInstanceOf(TeamProblem.class);
-        assertThatThrownBy(()->teams.addMember(id,admin)).isInstanceOf(TeamProblem.class);
-        assertThatThrownBy(()->teams.removeMember(id,admin)).isInstanceOf(TeamProblem.class);
+        String id=teams.criarEquipe("Teste","description",root).team().id();
+        String child=teams.criarEquipe("Child",null,id).team().id();
+        assertThatThrownBy(()->teams.arquivarEquipe(id)).hasMessageContaining("subequipes");
+        teams.editarEquipe(child,"Moved",null,root);
+        teams.adicionarIntegrante(id,admin);
+        assertThat(teams.buscarDetalheEquipe(id).team().memberCount()).isEqualTo(1);
+        assertThat(teams.arquivarEquipe(id).team().archived()).isTrue();
+        assertThat(teams.arquivarEquipe(id).team().archived()).isTrue();
+        assertThat(teams.listarEquipes()).extracting(EquipeService.ResumoEquipe::id).doesNotContain(id);
+        assertThat(teams.buscarDetalheEquipe(id).members()).hasSize(1);
+        assertThatThrownBy(()->teams.editarEquipe(id,"No",null,root)).isInstanceOf(ProblemaEquipe.class);
+        assertThatThrownBy(()->teams.adicionarIntegrante(id,admin)).isInstanceOf(ProblemaEquipe.class);
+        assertThatThrownBy(()->teams.removerIntegrante(id,admin)).isInstanceOf(ProblemaEquipe.class);
     }
     @Test void seedPreservesAdministrativeChangesAndRejectsInvalidRoot() {
         String events=jdbc.queryForObject("SELECT id FROM team WHERE team_key='eventos'",String.class);
-        teams.edit(events,"Eventos personalizados","Preserved",root);
-        teams.archive(events);
-        String custom=teams.create("Custom team",null,root).team().id();
+        teams.editarEquipe(events,"Eventos personalizados","Preserved",root);
+        teams.arquivarEquipe(events);
+        String custom=teams.criarEquipe("Custom team",null,root).team().id();
         seed.seed(); seed.seed();
-        assertThat(teams.detail(events).team().name()).isEqualTo("Eventos personalizados");
-        assertThat(teams.detail(events).team().archived()).isTrue();
-        assertThat(teams.detail(custom).team().name()).isEqualTo("Custom team");
+        assertThat(teams.buscarDetalheEquipe(events).team().name()).isEqualTo("Eventos personalizados");
+        assertThat(teams.buscarDetalheEquipe(events).team().archived()).isTrue();
+        assertThat(teams.buscarDetalheEquipe(custom).team().name()).isEqualTo("Custom team");
         jdbc.update("UPDATE team SET archived_at=CURRENT_TIMESTAMP(6) WHERE id=?",root);
         try { assertThatThrownBy(()->seed.seed()).hasMessageContaining("estado inválido"); }
         finally { jdbc.update("UPDATE team SET archived_at=NULL WHERE id=?",root); }
     }
     @Test void hierarchyAndRootProtections() {
-        String a=teams.create("Parent",null,root).team().id(), b=teams.create("Child",null,a).team().id(), c=teams.create("Grandchild",null,b).team().id();
-        assertThatThrownBy(()->teams.create("Second root",null,null)).isInstanceOf(TeamProblem.class);
-        assertThatThrownBy(()->teams.edit(a,"Parent",null,a)).isInstanceOf(TeamProblem.class);
-        assertThatThrownBy(()->teams.edit(a,"Parent",null,b)).isInstanceOf(TeamProblem.class);
-        assertThatThrownBy(()->teams.edit(a,"Parent",null,c)).isInstanceOf(TeamProblem.class);
-        assertThatThrownBy(()->teams.edit(a,"Parent",null,null)).isInstanceOf(TeamProblem.class);
-        assertThatThrownBy(()->teams.edit(root,"Fundadoras",null,a)).isInstanceOf(TeamProblem.class);
-        assertThatThrownBy(()->teams.archive(root)).isInstanceOf(TeamProblem.class);
-        teams.archive(c);
-        assertThatThrownBy(()->teams.create("Invalid",null,c)).isInstanceOf(TeamProblem.class);
-        assertThatThrownBy(()->teams.create("Invalid",null,UUID.randomUUID().toString())).isInstanceOfSatisfying(TeamProblem.class,e->assertThat(e.status()).isEqualTo(404));
+        String a=teams.criarEquipe("Parent",null,root).team().id(), b=teams.criarEquipe("Child",null,a).team().id(), c=teams.criarEquipe("Grandchild",null,b).team().id();
+        assertThatThrownBy(()->teams.criarEquipe("Second root",null,null)).isInstanceOf(ProblemaEquipe.class);
+        assertThatThrownBy(()->teams.editarEquipe(a,"Parent",null,a)).isInstanceOf(ProblemaEquipe.class);
+        assertThatThrownBy(()->teams.editarEquipe(a,"Parent",null,b)).isInstanceOf(ProblemaEquipe.class);
+        assertThatThrownBy(()->teams.editarEquipe(a,"Parent",null,c)).isInstanceOf(ProblemaEquipe.class);
+        assertThatThrownBy(()->teams.editarEquipe(a,"Parent",null,null)).isInstanceOf(ProblemaEquipe.class);
+        assertThatThrownBy(()->teams.editarEquipe(root,"Fundadoras",null,a)).isInstanceOf(ProblemaEquipe.class);
+        assertThatThrownBy(()->teams.arquivarEquipe(root)).isInstanceOf(ProblemaEquipe.class);
+        teams.arquivarEquipe(c);
+        assertThatThrownBy(()->teams.criarEquipe("Invalid",null,c)).isInstanceOf(ProblemaEquipe.class);
+        assertThatThrownBy(()->teams.criarEquipe("Invalid",null,UUID.randomUUID().toString())).isInstanceOfSatisfying(ProblemaEquipe.class,e->assertThat(e.status()).isEqualTo(404));
     }
     @Test void manyToManyDuplicateInactiveMembersAndLastAdmin() {
-        String other=user("SUPPORT"), a=teams.create("A team",null,root).team().id(), b=teams.create("B team",null,root).team().id();
-        teams.addMember(a,other); teams.addMember(b,other);
-        assertThatThrownBy(()->teams.addMember(a,other)).hasMessageContaining("já");
-        teams.removeMember(a,other); assertThat(teams.detail(b).members()).hasSize(1);
+        String other=user("SUPPORT"), a=teams.criarEquipe("A team",null,root).team().id(), b=teams.criarEquipe("B team",null,root).team().id();
+        teams.adicionarIntegrante(a,other); teams.adicionarIntegrante(b,other);
+        assertThatThrownBy(()->teams.adicionarIntegrante(a,other)).hasMessageContaining("já");
+        teams.removerIntegrante(a,other); assertThat(teams.buscarDetalheEquipe(b).members()).hasSize(1);
         jdbc.update("UPDATE app_profile SET status='INACTIVE' WHERE user_id=?",other);
-        assertThat(teams.detail(b).team().memberCount()).isZero(); assertThat(teams.detail(b).members()).isEmpty();
-        assertThatThrownBy(()->teams.addMember(a,other)).hasMessageContaining("indisponível");
-        teams.removeMember(b,other); // Remover integrantes inativas preserva a compatibilidade do fluxo.
-        assertThatThrownBy(()->teams.removeMember(root,admin)).hasMessageContaining("última");
-        String second=user("SUPER_ADMIN"); teams.addMember(root,second); teams.removeMember(root,admin);
-        assertThatThrownBy(()->teams.removeMember(root,second)).hasMessageContaining("última");
+        assertThat(teams.buscarDetalheEquipe(b).team().memberCount()).isZero(); assertThat(teams.buscarDetalheEquipe(b).members()).isEmpty();
+        assertThatThrownBy(()->teams.adicionarIntegrante(a,other)).hasMessageContaining("indisponível");
+        teams.removerIntegrante(b,other); // Remover integrantes inativas preserva a compatibilidade do fluxo.
+        assertThatThrownBy(()->teams.removerIntegrante(root,admin)).hasMessageContaining("última");
+        String second=user("SUPER_ADMIN"); teams.adicionarIntegrante(root,second); teams.removerIntegrante(root,admin);
+        assertThatThrownBy(()->teams.removerIntegrante(root,second)).hasMessageContaining("última");
     }
     @Test void databaseConstraintsRejectDuplicateMembershipSecondRootAndMissingForeignKeys() {
         assertThatThrownBy(()->jdbc.update("INSERT INTO team_member VALUES (?,?,CURRENT_TIMESTAMP(6))",admin,root)).isInstanceOf(org.springframework.dao.DataIntegrityViolationException.class);
@@ -157,19 +158,19 @@ class TeamsIntegrationTest {
         assertThatThrownBy(()->jdbc.update("INSERT INTO team_member VALUES (?,?,CURRENT_TIMESTAMP(6))",UUID.randomUUID().toString(),root)).isInstanceOf(org.springframework.dao.DataIntegrityViolationException.class);
     }
     @Test void concurrentMembershipAndHierarchyMutationsSerialize() throws Exception {
-        String member=user("SUPPORT"), a=teams.create("Concurrent A",null,root).team().id(), b=teams.create("Concurrent B",null,root).team().id();
+        String member=user("SUPPORT"), a=teams.criarEquipe("Concurrent A",null,root).team().id(), b=teams.criarEquipe("Concurrent B",null,root).team().id();
         var pool=Executors.newFixedThreadPool(2);
         try {
-            var duplicate=pool.invokeAll(List.of(attempt(()->teams.addMember(a,member)),attempt(()->teams.addMember(a,member))));
+            var duplicate=pool.invokeAll(List.of(attempt(()->teams.adicionarIntegrante(a,member)),attempt(()->teams.adicionarIntegrante(a,member))));
             assertThat(List.of(duplicate.get(0).get(),duplicate.get(1).get())).containsExactlyInAnyOrder(true,false);
-            var cycle=pool.invokeAll(List.of(attempt(()->teams.edit(a,"Concurrent A",null,b)),attempt(()->teams.edit(b,"Concurrent B",null,a))));
+            var cycle=pool.invokeAll(List.of(attempt(()->teams.editarEquipe(a,"Concurrent A",null,b)),attempt(()->teams.editarEquipe(b,"Concurrent B",null,a))));
             assertThat(List.of(cycle.get(0).get(),cycle.get(1).get())).containsExactlyInAnyOrder(true,false);
-            String second=user("SUPER_ADMIN"); teams.addMember(root,second);
-            var removal=pool.invokeAll(List.of(attempt(()->teams.removeMember(root,admin)),attempt(()->teams.removeMember(root,second))));
+            String second=user("SUPER_ADMIN"); teams.adicionarIntegrante(root,second);
+            var removal=pool.invokeAll(List.of(attempt(()->teams.removerIntegrante(root,admin)),attempt(()->teams.removerIntegrante(root,second))));
             assertThat(List.of(removal.get(0).get(),removal.get(1).get())).containsExactlyInAnyOrder(true,false);
         } finally { pool.shutdownNow(); }
     }
-    private Callable<Boolean> attempt(Runnable run) { return () -> { try { run.run(); return true; } catch(TeamProblem e) { return false; } }; }
+    private Callable<Boolean> attempt(Runnable run) { return () -> { try { run.run(); return true; } catch(ProblemaEquipe e) { return false; } }; }
     @Test void apiRbacValidationErrorsCsrfAndCrud() throws Exception {
         mvc.perform(get("/api/v1/teams")).andExpect(status().isUnauthorized());
         Cookie session=login(admin);
@@ -202,12 +203,12 @@ class TeamsIntegrationTest {
         mvc.perform(delete("/api/v1/teams/"+root+"/members/"+support).cookie(session).with(org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf())).andExpect(status().isForbidden());
         var principal=details.loadUserByUsername(users.findById(support).orElseThrow().getEmail());
         SecurityContextHolder.getContext().setAuthentication(UsernamePasswordAuthenticationToken.authenticated(principal,null,principal.getAuthorities()));
-        try { assertThatThrownBy(()->controller.list()).isInstanceOf(AccessDeniedException.class); }
+        try { assertThatThrownBy(()->controller.listarEquipes()).isInstanceOf(AccessDeniedException.class); }
         finally { SecurityContextHolder.clearContext(); }
     }
     private String user(String role) {
         String email=UUID.randomUUID()+"@example.test";
-        bootstrap.createFirstIdentity("Teams Test",email,PASSWORD);
+        bootstrap.criarPrimeiraIdentidade("Teams Test",email,PASSWORD);
         String id=users.findByEmail(email).orElseThrow().getId();
         jdbc.update("UPDATE app_profile SET role_id=(SELECT id FROM roles WHERE role_key=?) WHERE user_id=?",role,id);
         return id;

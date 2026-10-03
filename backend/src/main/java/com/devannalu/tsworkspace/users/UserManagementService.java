@@ -1,7 +1,7 @@
 package com.devannalu.tsworkspace.users;
 
 import com.devannalu.tsworkspace.audit.AuditService;
-import com.devannalu.tsworkspace.auth.SessionRevocationService;
+import com.devannalu.tsworkspace.autenticacao.RevogacaoSessaoService;
 import com.devannalu.tsworkspace.common.*;
 import java.time.Instant;
 import java.util.*;
@@ -11,22 +11,22 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class UserManagementService {
-    public record Role(String id,String key,String name) { }
+    public record PerfilAcesso(String id,String key,String name) { }
     public record TeamRef(String id,String name) { }
-    public record UserDto(String id,String name,String email,String jobTitle,String status,Role role,List<TeamRef> teams,Instant createdAt) { }
+    public record UserDto(String id,String name,String email,String jobTitle,String status,PerfilAcesso role,List<TeamRef> teams,Instant createdAt) { }
     public record Page(List<UserDto> items,long total,int page,int size) { }
-    public record Options(List<Role> roles,List<TeamRef> teams) { }
+    public record Options(List<PerfilAcesso> roles,List<TeamRef> teams) { }
     private final JdbcTemplate jdbc;
     private final OrganizationLock lock;
     private final AuditService audit;
-    private final SessionRevocationService sessions;
-    public UserManagementService(JdbcTemplate jdbc,OrganizationLock lock,AuditService audit,SessionRevocationService sessions) {
+    private final RevogacaoSessaoService sessions;
+    public UserManagementService(JdbcTemplate jdbc,OrganizationLock lock,AuditService audit,RevogacaoSessaoService sessions) {
         this.jdbc=jdbc; this.lock=lock; this.audit=audit; this.sessions=sessions;
     }
     private static final String SELECT="SELECT u.id,u.name,u.email,u.created_at,p.job_title,p.status,r.id role_id,r.role_key,r.name role_name FROM app_user u JOIN app_profile p ON p.user_id=u.id JOIN roles r ON r.id=p.role_id";
     private static UserDto row(java.sql.ResultSet rs,int n) throws java.sql.SQLException {
         return new UserDto(rs.getString("id"),rs.getString("name"),rs.getString("email"),rs.getString("job_title"),rs.getString("status"),
-            new Role(rs.getString("role_id"),rs.getString("role_key"),rs.getString("role_name")),List.of(),rs.getTimestamp("created_at").toInstant());
+            new PerfilAcesso(rs.getString("role_id"),rs.getString("role_key"),rs.getString("role_name")),List.of(),rs.getTimestamp("created_at").toInstant());
     }
     private List<UserDto> withTeams(List<UserDto> users) {
         if(users.isEmpty())return users;
@@ -50,7 +50,7 @@ public class UserManagementService {
     }
     @Transactional(readOnly=true)
     public Options options() {
-        return new Options(jdbc.query("SELECT id,role_key,name FROM roles ORDER BY name",(rs,n)->new Role(rs.getString("id"),rs.getString("role_key"),rs.getString("name"))),
+        return new Options(jdbc.query("SELECT id,role_key,name FROM roles ORDER BY name",(rs,n)->new PerfilAcesso(rs.getString("id"),rs.getString("role_key"),rs.getString("name"))),
             jdbc.query("SELECT id,name FROM team WHERE archived_at IS NULL ORDER BY name",(rs,n)->new TeamRef(rs.getString("id"),rs.getString("name"))));
     }
     @Transactional(readOnly=true)
@@ -63,7 +63,7 @@ public class UserManagementService {
     public UserDto edit(String actor,String id,String jobTitle,String roleId,List<String> teamIds) {
         lock.acquire(); var before=detail(id);
         String nextRole=roleId==null?before.role().id():roleId;
-        var roles=jdbc.query("SELECT id,role_key,name FROM roles WHERE id=?",(rs,n)->new Role(rs.getString("id"),rs.getString("role_key"),rs.getString("name")),nextRole);
+        var roles=jdbc.query("SELECT id,role_key,name FROM roles WHERE id=?",(rs,n)->new PerfilAcesso(rs.getString("id"),rs.getString("role_key"),rs.getString("name")),nextRole);
         if(roles.isEmpty())throw DomainProblem.missing("Cargo não encontrado.");
         if(roleId!=null||teamIds!=null)protect(actor,before,roles.get(0).key(),before.status().equals("ACTIVE"),teamIds);
         if(teamIds!=null){
@@ -92,7 +92,7 @@ public class UserManagementService {
             jdbc.update("UPDATE app_profile SET status=?,updated_at=CURRENT_TIMESTAMP(6) WHERE user_id=?",next,id);
             audit.record(actor,"user.status_changed","User",id);
         }
-        if(!active)sessions.revokeAll(id);
+        if(!active)sessions.revogarSessoesDoUsuario(id);
         return detail(id);
     }
     private void protect(String actor,UserDto before,String nextRole,boolean nextActive,List<String> nextTeams) {

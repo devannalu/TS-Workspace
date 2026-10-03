@@ -9,7 +9,7 @@ import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import java.time.Instant;
-import com.devannalu.tsworkspace.rbac.Role;
+import com.devannalu.tsworkspace.rbac.PerfilAcesso;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -26,7 +26,7 @@ public class Profile {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "role_id", nullable = false)
-    private Role role;
+    private PerfilAcesso role;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 16)
@@ -40,7 +40,7 @@ public class Profile {
 
     protected Profile() { }
 
-    public Profile(String userId, ProfileStatus status, Role role) {
+    public Profile(String userId, ProfileStatus status, PerfilAcesso role) {
         this.userId = userId;
         this.status = status;
         this.role = java.util.Objects.requireNonNull(role);
@@ -59,5 +59,5 @@ public class Profile {
     public String getUserId() { return userId; }
     public String getJobTitle() { return jobTitle; }
     public ProfileStatus getStatus() { return status; }
-    public Role getRole() { return role; }
+    public PerfilAcesso getRole() { return role; }
 }

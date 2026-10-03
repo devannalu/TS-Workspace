@@ -1,6 +1,7 @@
 package com.devannalu.tsworkspace;
 
 import com.devannalu.tsworkspace.auth.*;
+import com.devannalu.tsworkspace.autenticacao.*;
 import com.devannalu.tsworkspace.rbac.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.Cookie;
@@ -47,11 +48,11 @@ class RbacIntegrationTest {
     @Autowired ObjectMapper mapper;
     @Autowired JdbcTemplate jdbc;
     @Autowired RbacSeed seed;
-    @Autowired BootstrapService bootstrap;
+    @Autowired InicializacaoIdentidadeService bootstrap;
     @Autowired UserRepository users;
-    @Autowired PermissionService permissions;
-    @Autowired PermissionController controller;
-    @Autowired AppUserDetailsService details;
+    @Autowired PermissaoService permissions;
+    @Autowired PermissaoController controller;
+    @Autowired AutenticacaoUsuarioService details;
     @Autowired Flyway flyway;
     private static final String TEST_PASSWORD = "RBAC test password only 2026";
 
@@ -83,7 +84,7 @@ class RbacIntegrationTest {
                 entry.getValue().forEach(p -> expectedGrants.add(p.asText()));
                 assertThat(jdbc.queryForList("SELECT p.permission_key FROM role_permissions rp JOIN permissions p ON p.id=rp.permission_id JOIN roles r ON r.id=rp.role_id WHERE r.role_key=?", String.class, entry.getKey())).containsExactlyInAnyOrderElementsOf(expectedGrants);
                 String id = createUser(entry.getKey());
-                for (String key : expectedCatalog) assertThat(permissions.hasPermission(id, key)).as(entry.getKey()+": "+key).isEqualTo(expectedGrants.contains(key));
+                for (String key : expectedCatalog) assertThat(permissions.possuiPermissao(id, key)).as(entry.getKey()+": "+key).isEqualTo(expectedGrants.contains(key));
             }
         }
     }
@@ -96,8 +97,8 @@ class RbacIntegrationTest {
         assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM roles", Integer.class)).isEqualTo(4);
         assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM permissions", Integer.class)).isEqualTo(14);
         assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM role_permissions", Integer.class)).isEqualTo(33);
-        assertThat(permissions.hasPermission(id, "audit.view")).isTrue();
-        assertThat(permissions.hasPermission(id, "teams.view")).isFalse();
+        assertThat(permissions.possuiPermissao(id, "audit.view")).isTrue();
+        assertThat(permissions.possuiPermissao(id, "teams.view")).isFalse();
     }
 
     @Test void endpointUses401ForAnonymousAnd403ForInsufficientPermission() throws Exception {
@@ -127,14 +128,14 @@ class RbacIntegrationTest {
         String id = createUser("ADMIN");
         override(id, "permissions.view", "DENY");
         mvc.perform(get("/api/v1/permissions").cookie(login(id))).andExpect(status().isForbidden());
-        assertThatThrownBy(() -> permissions.requirePermission(id, "permissions.view")).isInstanceOf(AccessDeniedException.class);
+        assertThatThrownBy(() -> permissions.exigirPermissao(id, "permissions.view")).isInstanceOf(AccessDeniedException.class);
     }
     @Test void superAdminBypassesDenyWithoutRoleGrantButNotUnknownPermissions() throws Exception {
         String id = createUser("SUPER_ADMIN");
         override(id, "permissions.view", "DENY");
         jdbc.update("DELETE rp FROM role_permissions rp JOIN roles r ON r.id=rp.role_id WHERE r.role_key='SUPER_ADMIN'");
         mvc.perform(get("/api/v1/permissions").cookie(login(id))).andExpect(status().isOk());
-        assertThat(permissions.hasPermission(id, "unknown.permission")).isFalse();
+        assertThat(permissions.possuiPermissao(id, "unknown.permission")).isFalse();
     }
     @Test void changedRoleIsReadFromDatabaseInsteadOfStalePrincipal() throws Exception {
         String id = createUser("ADMIN");
@@ -149,7 +150,7 @@ class RbacIntegrationTest {
         jdbc.update("UPDATE app_profile SET status='INACTIVE' WHERE user_id=?", id);
         mvc.perform(get("/api/v1/permissions").cookie(session)).andExpect(status().isForbidden());
         mvc.perform(get("/api/v1/auth/me").cookie(session)).andExpect(status().isUnauthorized());
-        assertThat(permissions.hasPermission(id, "permissions.view")).isFalse();
+        assertThat(permissions.possuiPermissao(id, "permissions.view")).isFalse();
     }
     @Test void databaseEnforcesOverrideUniquenessRoleNotNullAndForeignKeys() {
         String id = createUser("SUPPORT");
@@ -164,29 +165,29 @@ class RbacIntegrationTest {
                 .getSQLException().getErrorCode()).isEqualTo(3819));
     }
     @Test void bootstrapIsIdempotentWithoutChangingIdentityCredentialsAndRejectsPartialRole() {
-        bootstrap.createFirstIdentity("Test Bootstrap", "bootstrap-rbac@example.test", TEST_PASSWORD);
+        bootstrap.criarPrimeiraIdentidade("Test Bootstrap", "bootstrap-rbac@example.test", TEST_PASSWORD);
         User user = users.findByEmail("bootstrap-rbac@example.test").orElseThrow();
         String originalHash = user.getPasswordHash();
-        bootstrap.createFirstIdentity("Ignored Name", "bootstrap-rbac@example.test", "different test password");
+        bootstrap.criarPrimeiraIdentidade("Ignored Name", "bootstrap-rbac@example.test", "different test password");
         User after = users.findByEmail("bootstrap-rbac@example.test").orElseThrow();
         assertThat(after.getId()).isEqualTo(user.getId());
         assertThat(after.getName()).isEqualTo("Test Bootstrap");
         assertThat(after.getPasswordHash().equals(originalHash)).isTrue();
-        assertThat(permissions.getUserPermissions(user.getId()).role().key()).isEqualTo("SUPER_ADMIN");
+        assertThat(permissions.buscarPermissoesUsuario(user.getId()).role().key()).isEqualTo("SUPER_ADMIN");
         jdbc.update("UPDATE app_profile SET role_id=(SELECT id FROM roles WHERE role_key='SUPPORT') WHERE user_id=?", user.getId());
-        assertThatThrownBy(() -> bootstrap.createFirstIdentity("Test", "bootstrap-rbac@example.test", TEST_PASSWORD)).isInstanceOf(IllegalStateException.class);
+        assertThatThrownBy(() -> bootstrap.criarPrimeiraIdentidade("Test", "bootstrap-rbac@example.test", TEST_PASSWORD)).isInstanceOf(IllegalStateException.class);
     }
     @Test void methodSecurityProtectsDirectBeanInvocation() {
         String id = createUser("SUPPORT");
         var principal = details.loadUserByUsername(users.findById(id).orElseThrow().getEmail());
         SecurityContextHolder.getContext().setAuthentication(UsernamePasswordAuthenticationToken.authenticated(principal, null, principal.getAuthorities()));
-        try { assertThatThrownBy(() -> controller.list()).isInstanceOf(AccessDeniedException.class); }
+        try { assertThatThrownBy(() -> controller.listarPermissoes()).isInstanceOf(AccessDeniedException.class); }
         finally { SecurityContextHolder.clearContext(); }
     }
 
     private String createUser(String role) {
         String email = UUID.randomUUID()+"@example.test";
-        bootstrap.createFirstIdentity("RBAC Test", email, TEST_PASSWORD);
+        bootstrap.criarPrimeiraIdentidade("RBAC Test", email, TEST_PASSWORD);
         String id = users.findByEmail(email).orElseThrow().getId();
         jdbc.update("UPDATE app_profile SET role_id=(SELECT id FROM roles WHERE role_key=?) WHERE user_id=?", role, id);
         return id;

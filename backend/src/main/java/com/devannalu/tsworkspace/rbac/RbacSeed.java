@@ -13,16 +13,16 @@ public class RbacSeed {
     @Transactional
     public void seed() { seed(jdbc); }
 
-    // Also used before JPA initialization by Flyway, on Flyway's own connection.
+    // Flyway usa sua própria conexão antes de inicializar o JPA.
     public static void seed(JdbcTemplate jdbc) {
-        for (String key : RbacBaseline.PERMISSIONS) {
+        for (String key : CatalogoRbac.PERMISSOES) {
             jdbc.update("INSERT INTO permissions (id, permission_key, name, created_at, updated_at) VALUES (?, ?, ?, CURRENT_TIMESTAMP(6), CURRENT_TIMESTAMP(6)) ON DUPLICATE KEY UPDATE permission_key=permission_key",
                 UUID.randomUUID().toString(), key, key);
         }
-        RbacBaseline.ROLES.forEach((key, name) -> {
+        CatalogoRbac.PERFIS_ACESSO.forEach((key, name) -> {
             jdbc.update("INSERT INTO roles (id, role_key, name, created_at, updated_at) VALUES (?, ?, ?, CURRENT_TIMESTAMP(6), CURRENT_TIMESTAMP(6)) ON DUPLICATE KEY UPDATE role_key=role_key",
                 UUID.randomUUID().toString(), key, name);
-            for (String permission : RbacBaseline.GRANTS.get(key)) {
+            for (String permission : CatalogoRbac.CONCESSOES.get(key)) {
                 jdbc.update("INSERT INTO role_permissions (role_id, permission_id) SELECT r.id, p.id FROM roles r CROSS JOIN permissions p WHERE r.role_key=? AND p.permission_key=? ON DUPLICATE KEY UPDATE role_id=role_id", key, permission);
             }
         });
