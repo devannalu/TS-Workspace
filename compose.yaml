@@ -1,5 +1,27 @@
 name: ts-workspace
 services:
+  garage:
+    image: dxflrs/garage:v2.4.1
+    container_name: ts-workspace-garage
+    command: ["/garage", "server", "--single-node", "--default-bucket"]
+    environment:
+      GARAGE_RPC_SECRET: ${STORAGE_LOCAL_RPC_SECRET:?Configure STORAGE_LOCAL_RPC_SECRET}
+      GARAGE_DEFAULT_ACCESS_KEY: ${STORAGE_ACCESS_KEY:?Configure STORAGE_ACCESS_KEY}
+      GARAGE_DEFAULT_SECRET_KEY: ${STORAGE_SECRET_KEY:?Configure STORAGE_SECRET_KEY}
+      GARAGE_DEFAULT_BUCKET: ${STORAGE_BUCKET:-ts-workspace-dev}
+    ports:
+      - "127.0.0.1:3900:3900"
+    volumes:
+      - ./docker/garage/garage.toml:/etc/garage.toml:ro
+      - garage-meta:/var/lib/garage/meta
+      - garage-data:/var/lib/garage/data
+    networks: [java-network]
+    healthcheck:
+      test: ["CMD", "/garage", "status"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
   mysql-java:
     image: mysql:8.4.11
     container_name: ts-workspace-mysql-java
@@ -59,6 +81,10 @@ services:
       retries: 30
       start_period: 30s
 volumes:
+  garage-meta:
+    name: ts_workspace_garage_meta
+  garage-data:
+    name: ts_workspace_garage_data
   mysql-java-data:
     name: ts_workspace_mysql_java_data
   mysql-data:

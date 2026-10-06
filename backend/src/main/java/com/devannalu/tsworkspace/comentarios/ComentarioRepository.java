@@ -66,17 +66,19 @@ public class ComentarioRepository {
             : "'project.created','project.updated','project.status_changed','project.responsibles_changed','project.archived'";
         return "((a.entity_type=? AND a.entity_id=? AND a.action IN (" + eventos + ")) OR "
             + "(a.entity_type='Comment' AND a.action IN ('comment.created','comment.updated','comment.removed') "
-            + "AND EXISTS (SELECT 1 FROM workspace_comment c WHERE c.id=a.entity_id AND c." + recurso.coluna + "=?)))";
+            + "AND EXISTS (SELECT 1 FROM workspace_comment c WHERE c.id=a.entity_id AND c." + recurso.coluna + "=?)) OR "
+            + "(a.entity_type='Attachment' AND a.action IN ('attachment.created','attachment.removed') "
+            + "AND EXISTS(SELECT 1 FROM attachment x WHERE x.id=a.entity_id AND x." + recurso.coluna + "=?)))";
     }
     public List<Evento> listarAtividade(Recurso recurso, String id, int pagina, int tamanho) {
         return jdbc.query("SELECT a.id,a.action,a.actor_id,u.name,a.created_at FROM audit_log a LEFT JOIN app_user u ON u.id=a.actor_id WHERE "
             + filtroAtividade(recurso) + " ORDER BY a.created_at DESC,a.id DESC LIMIT ? OFFSET ?",
             (r, linha) -> new Evento(r.getString("id"), r.getString("action"),
                 r.getString("actor_id") == null ? null : new Pessoa(r.getString("actor_id"), r.getString("name")),
-                r.getTimestamp("created_at").toInstant()), recurso.entidade, id, id, tamanho, pagina * tamanho);
+                r.getTimestamp("created_at").toInstant()), recurso.entidade, id, id, id, tamanho, pagina * tamanho);
     }
     public long contarAtividade(Recurso recurso, String id) {
         return jdbc.queryForObject("SELECT COUNT(*) FROM audit_log a WHERE " + filtroAtividade(recurso),
-            Long.class, recurso.entidade, id, id);
+            Long.class, recurso.entidade, id, id, id);
     }
 }

@@ -33,3 +33,5 @@ Use a documentação viva para orientação atual:
 [Voltar ao README do projeto](../../README.md).
 
 - [Fase 10 — Comentários e atividade](fase-10-comentarios-atividade.md).
+
+- [Fase 11 — Anexos e storage](fase-11-anexos-storage.md).

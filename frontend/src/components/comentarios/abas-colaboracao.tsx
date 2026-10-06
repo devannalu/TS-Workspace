@@ -1,6 +1,7 @@
 "use client";
 import { useId, useRef, useState, type ReactNode } from "react";
 import type { RecursoComentario } from "@/lib/api/comentarios";
+import { Anexos } from "@/components/anexos/anexos";
 import { Comentarios } from "./comentarios";
 import { LinhaAtividade } from "./linha-atividade";
 
@@ -23,7 +24,7 @@ export function AbasColaboracao({
         aria-label="Informações do recurso"
         className="flex gap-1 border-b border-border"
       >
-        {["Detalhes", "Comentários", "Atividade"].map((nome, indice) => (
+        {["Detalhes", "Comentários", "Anexos", "Atividade"].map((nome, indice) => (
           <button
             key={nome}
             ref={(el) => {
@@ -35,14 +36,14 @@ export function AbasColaboracao({
             aria-controls={`${id}-painel-${indice}`}
             aria-selected={aba === indice}
             tabIndex={aba === indice ? 0 : -1}
-            className={`min-h-11 min-w-0 flex-1 rounded-t-lg px-2 text-sm font-medium ${aba === indice ? "border-b-2 border-primary bg-muted" : "subtle"}`}
+            className={`min-h-11 min-w-0 flex-auto rounded-t-lg px-1 text-xs font-medium sm:px-2 sm:text-sm ${aba === indice ? "border-b-2 border-primary bg-muted" : "subtle"}`}
             onClick={() => definirAba(indice)}
             onKeyDown={(e) => {
               let proxima: number;
-              if (e.key === "ArrowRight") proxima = (indice + 1) % 3;
-              else if (e.key === "ArrowLeft") proxima = (indice + 2) % 3;
+              if (e.key === "ArrowRight") proxima = (indice + 1) % 4;
+              else if (e.key === "ArrowLeft") proxima = (indice + 3) % 4;
               else if (e.key === "Home") proxima = 0;
-              else if (e.key === "End") proxima = 2;
+              else if (e.key === "End") proxima = 3;
               else return;
               e.preventDefault();
               definirAba(proxima);
@@ -64,6 +65,8 @@ export function AbasColaboracao({
           children
         ) : aba === 1 ? (
           <Comentarios recurso={recurso} recursoId={recursoId} />
+        ) : aba === 2 ? (
+          <Anexos recurso={recurso} recursoId={recursoId} />
         ) : (
           <LinhaAtividade recurso={recurso} recursoId={recursoId} />
         )}

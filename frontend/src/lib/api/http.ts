@@ -20,6 +20,14 @@ export async function lerResposta<T>(response: Response): Promise<T> {
     // Detalhes técnicos do servidor não devem chegar à interface.
     const problema = await response.json().catch(() => null);
     const conflitosConhecidos = [
+      "Este tipo de arquivo não é permitido.",
+      "O arquivo ultrapassa o limite de 10 MB.",
+      "A autorização de upload expirou.",
+      "A autorização de upload expirou ou já foi concluída.",
+      "A solicitação de upload não corresponde ao arquivo original.",
+      "O tamanho do arquivo não corresponde ao upload autorizado.",
+      "O conteúdo do arquivo não corresponde ao tipo permitido.",
+      "O upload ainda não foi encontrado. Tente novamente.",
       "Este comentário foi alterado. Atualize os dados e tente novamente.",
       "Este projeto foi atualizado por outra pessoa. Atualize os dados e tente novamente.",
       "Esta tarefa foi atualizada por outra pessoa. Atualize os dados e tente novamente.",

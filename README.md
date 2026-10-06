@@ -138,3 +138,6 @@ Veja o [roadmap do produto](docs/product/roadmap.md).
 - **Arquitetura:** [visão geral](docs/architecture/overview.md) · [backend](docs/architecture/backend.md) · [frontend](docs/architecture/frontend.md) · [banco](docs/architecture/database.md) · [autenticação](docs/architecture/authentication.md) · [RBAC](docs/architecture/rbac.md)
 - **Desenvolvimento:** [setup](docs/development/setup.md) · [testes](docs/development/testing.md) · [convenções](docs/development/conventions.md)
 - **Histórico:** [registros de engenharia](docs/history/README.md)
+
+
+Anexos usam storage S3 privado: Garage local e R2/S3 configurável em produção. Consulte [configuração e limites](docs/development/storage.md).

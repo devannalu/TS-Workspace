@@ -52,7 +52,7 @@ permission para a mesma usuária. ALLOW e DENY não podem coexistir nesse par.
 | projects.manage_members | sim | sim | sim | não |
 | projects.archive | sim | sim | não | não |
 
-São 4 roles, 27 keys e 73 grants padrão. A existência de uma key não significa
+São 4 roles, 30 keys e 82 grants padrão. A existência de uma key não significa
 que sua tela ou módulo já foi entregue. O seed completa grants padrão
 faltantes sem apagar ajustes administrativos extras.
 
@@ -129,4 +129,15 @@ Visualização herda tasks.view/projects.view e escopo do recurso, sem comments.
 Responsabilidade não amplia acesso. Autora edita/remove com grant atual e recurso
 ativo; moderação remove, nunca edita fala alheia. Em histórico arquivado apenas
 ADMIN/SUPER_ADMIN com comments.moderate removem. SUPPORT não altera conversa de
-Projeto. Catálogo atual: 27 keys e 73 grants padrão; seed idempotente.
+Projeto. Catálogo atual: 30 keys e 82 grants padrão; seed idempotente.
+
+
+## Anexos — V11
+
+| Permission | SUPER_ADMIN | ADMIN | SUPERVISOR | SUPPORT |
+| --- | --- | --- | --- | --- |
+| tasks.attach | Sim | Sim | Sim | Sim |
+| projects.attach | Sim | Sim | Sim | Não |
+| attachments.remove | Sim | Sim | Não | Não |
+
+Visualização e download herdam view/escopo do recurso. Remoção própria exige attach e acesso atual, com recurso/equipe não arquivados; moderação permite remoção administrativa em histórico arquivado. SUPPORT mantém Projetos somente para leitura mesmo com override. Não existe attachments.view.

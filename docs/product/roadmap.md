@@ -13,8 +13,8 @@ O frontend oficial utiliza Spring Boot com MySQL.
 Tarefas já oferecem Kanban, responsáveis, prioridades, prazo, filtros e arquivamento,
 com autorização no Java e resumo real no Dashboard. Projetos organizam objetivos
 por equipe, com período, responsáveis e progresso derivado das tarefas, sem exigir
-vínculo para tarefas independentes. Comentários e atividade contextual já atendem os dois recursos. A próxima evolução poderá conectar
-Talks/Reuniões, checklist, arquivos, calendário e
+vínculo para tarefas independentes. Comentários, anexos e atividade contextual já atendem os dois recursos. A próxima evolução poderá conectar
+Talks/Reuniões, checklist, calendário e
 notificações. Esses recursos ainda não estão implementados.
 
 ## 3. Operação da comunidade
@@ -39,3 +39,8 @@ Ao substituir um domínio existente, preservar seu funcionamento até a
 validação da nova implementação e planejar a retirada da anterior.
 Os resultados de cada execução pertencem ao [histórico](../history/README.md);
 mudanças de comportamento atualizam a documentação viva.
+
+
+## Anexos e armazenamento
+
+Anexos contextuais utilizam storage S3 compatível, Garage local e R2 configurável em produção. Sem preview, avatar, integração externa ou anexos em comentários.

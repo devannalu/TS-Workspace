@@ -158,3 +158,8 @@ sem HTML/Markdown. Rascunho permanece na falha/409 e refresh exige ação explí
 Estado é local, sem localStorage. Capacidades do servidor determinam ações;
 401/403 e CSRF seguem o cliente Java central. Atividade paginada usa mensagens
 seguras e data humana, sem conteúdo duplicado. Sem realtime/mentions/notificações.
+
+
+## Anexos e armazenamento
+
+Aba contextual Anexos nos diálogos de Tarefas e Projetos: seleção nativa, envio direto sem cookies, confirmação via Java com CSRF, download temporário via fetch sem cookies e Blob local, e remoção autorizada. Retentar preserva o ID autorizado e não reenvia bytes depois de upload concluído.

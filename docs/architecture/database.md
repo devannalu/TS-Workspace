@@ -119,3 +119,8 @@ FKs RESTRICT preservam recurso/autoria/histórico. Índices por tarefa/data/id,
 projeto/data/id e autora; FK de remoção mantém integridade administrativa.
 V1–V9 não mudam. V10 adiciona três permissions e nove grants, preservando antigos.
 Audit_log não muda: atividade é leitura contextual, sem persistência duplicada.
+
+
+## Anexos e armazenamento
+
+V11 adiciona attachment: vínculo exclusivo task_id/project_id, uploader_id, original_name, object_key único, MIME, size_bytes limitado a 10 MiB, state PENDENTE/DISPONIVEL/REMOVIDO e timestamps. Nenhum binário ou URL assinada no MySQL.

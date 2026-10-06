@@ -136,6 +136,10 @@ public class SegurancaConfig {
                     "/api/v1/tasks/*/activity", "/api/v1/projects/*/activity").authenticated()
                 .requestMatchers(HttpMethod.POST, "/api/v1/tasks/*/comments", "/api/v1/projects/*/comments", "/api/v1/comments/*/remove").authenticated()
                 .requestMatchers(HttpMethod.PATCH, "/api/v1/comments/*").authenticated()
+                .requestMatchers(HttpMethod.GET, "/api/v1/tasks/*/attachments", "/api/v1/projects/*/attachments").authenticated()
+                .requestMatchers(HttpMethod.POST, "/api/v1/tasks/*/attachments/upload", "/api/v1/projects/*/attachments/upload",
+                    "/api/v1/tasks/*/attachments/*/confirm", "/api/v1/projects/*/attachments/*/confirm",
+                    "/api/v1/attachments/*/download", "/api/v1/attachments/*/remove").authenticated()
                 .anyRequest().denyAll())
             .addFilterAfter(new UsuarioAtivoFilter(profiles, logoutHandler), org.springframework.security.web.context.SecurityContextHolderFilter.class)
             .build();

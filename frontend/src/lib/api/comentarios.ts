@@ -84,6 +84,8 @@ export const mensagensAtividade: Record<string, string> = {
   "project.status_changed": "alterou o status do projeto.",
   "project.responsibles_changed": "atualizou as responsáveis do projeto.",
   "project.archived": "arquivou o projeto.",
+  "attachment.created": "anexou um arquivo.",
+  "attachment.removed": "removeu um arquivo.",
   "comment.created": "adicionou um comentário.",
   "comment.updated": "editou um comentário.",
   "comment.removed": "removeu um comentário.",

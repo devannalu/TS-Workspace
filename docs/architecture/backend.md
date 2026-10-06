@@ -158,3 +158,8 @@ pelo registro persistido workspace_comment. Allowlist exclui ações técnicas,
 eventos desconhecidos e associações sem vínculo exato. Não expõe metadata_json,
 conteúdo nem identificador de quem removeu. Actor é carregado em JOIN.
 Comentários e atividade têm paginação limitada, padrão 25; sem N+1.
+
+
+## Anexos e armazenamento
+
+Anexos ficam no domínio `anexos`: serviço valida acesso herdado, grants e arquivamento; repository persiste somente metadados; ArmazenamentoArquivo usa protocolo S3 com URLs temporárias. V11 adiciona attachment e três permissões. Ver configuração e consistência em [storage](../development/storage.md).

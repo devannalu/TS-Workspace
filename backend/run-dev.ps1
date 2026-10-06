@@ -3,7 +3,7 @@ $ErrorActionPreference = 'Stop'
 $envPath = Join-Path $PSScriptRoot '../.env'
 if (Test-Path -LiteralPath $envPath) {
     foreach ($line in Get-Content -LiteralPath $envPath) {
-        if ($line -match '^\s*(JAVA_DATABASE_URL|JAVA_MYSQL_USER|JAVA_MYSQL_PASSWORD|FRONTEND_ORIGIN|SERVER_PORT|SERVER_ADDRESS)\s*=\s*(.*?)\s*$') {
+        if ($line -match '^\s*(JAVA_DATABASE_URL|JAVA_MYSQL_USER|JAVA_MYSQL_PASSWORD|FRONTEND_ORIGIN|SERVER_PORT|SERVER_ADDRESS|STORAGE_ENDPOINT|STORAGE_REGION|STORAGE_BUCKET|STORAGE_ACCESS_KEY|STORAGE_SECRET_KEY|STORAGE_URL_SECONDS)\s*=\s*(.*?)\s*$') {
             $settingName = $Matches[1]
             $settingValue = $Matches[2].Trim('"', "'")
             if (-not [Environment]::GetEnvironmentVariable($settingName, 'Process')) {

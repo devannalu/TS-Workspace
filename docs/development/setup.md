@@ -71,3 +71,6 @@ Dentro de frontend/: npm run typecheck, npm run lint, npm test e npm run build.
 Use npm run start depois do build. Dev e start não devem ocupar a mesma porta.
 Consulte [testes](testing.md), [convenções](conventions.md) e
 [histórico operacional](../history/fase-java-5-cutover.md).
+
+
+Uploads locais usam Garage: configure as variáveis STORAGE no `.env` ignorado e execute `python docker/garage/inicializar.py`. Veja [storage](storage.md) para credenciais, CORS e smoke real.
