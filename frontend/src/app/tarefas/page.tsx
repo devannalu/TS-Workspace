@@ -26,6 +26,11 @@ export default async function TarefasPage({
         permissoes={usuario.permissions}
         opcoesIniciais={opcoes}
         minhasInicial={parametros.minhas === "1"}
+        projetoInicial={
+          typeof parametros.projetoId === "string"
+            ? parametros.projetoId
+            : undefined
+        }
       />
     </ShellWorkspace>
   );

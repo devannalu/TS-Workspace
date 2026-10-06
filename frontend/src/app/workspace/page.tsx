@@ -17,15 +17,19 @@ import { lerJava } from "@/lib/api/server";
 import { buscarTotaisPainel } from "@/lib/ui/painel";
 import { acessosPainel } from "@/lib/ui/permissoes";
 import type { ResumoTarefas } from "@/lib/api/tarefas";
+import type { ResumoProjetos } from "@/lib/api/projetos";
 export const metadata = { title: "Início" };
 export default async function PainelPage() {
   const usuario = await exigirSessao(),
     acessos = acessosPainel(usuario);
-  const [minhasEquipes, totais, tarefas] = await Promise.all([
+  const [minhasEquipes, totais, tarefas, projetos] = await Promise.all([
     buscarMinhasEquipes(usuario),
     buscarTotaisPainel(usuario, lerJava),
     usuario.permissions.includes("tasks.view")
       ? lerJava<ResumoTarefas>("/tasks/summary")
+      : null,
+    usuario.permissions.includes("projects.view")
+      ? lerJava<ResumoProjetos>("/projects/summary")
       : null,
   ]);
   const indicadores = [
@@ -118,6 +122,35 @@ export default async function PainelPage() {
                 </Card>
               ))}
             </div>
+          </section>
+        )}
+        {projetos && (
+          <section aria-label="Resumo dos projetos" className="space-y-3">
+            <div className="flex items-center justify-between">
+              <h2 className="section-title">Projetos</h2>
+              <Link
+                href="/projetos"
+                className="text-sm font-medium text-primary"
+              >
+                Ver projetos
+              </Link>
+            </div>
+            <div className="grid gap-4 sm:grid-cols-3">
+              {[
+                ["Projetos ativos", projetos.projetosAtivos],
+                ["Em andamento", projetos.emAndamento],
+                ["Prazo próximo", projetos.comPrazoProximo],
+              ].map(([texto, valor]) => (
+                <Card key={texto} className="p-5">
+                  <p className="subtle">{texto}</p>
+                  <p className="mt-3 text-2xl font-semibold">{valor}</p>
+                </Card>
+              ))}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Prazo próximo: projetos não concluídos com data final de hoje até
+              os próximos 7 dias.
+            </p>
           </section>
         )}
         <div className="grid items-start gap-5 xl:grid-cols-[1.5fr_1fr]">

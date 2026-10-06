@@ -87,9 +87,14 @@ nenhum código, configuração, migration ou dependência mudou.
 
 ## Verificação de refatorações
 
-Cada módulo é validado antes do próximo. Após a Fase 8, a suíte
-Java contém 181 testes; o frontend possui 50 testes em `tests/unit`, distribuídos
-entre cliente Java, falhas da API, painel, interface e tarefas. Nomes de testes descrevem
+Cada módulo é validado antes do próximo. A suíte Java contém 205 testes;
+o frontend possui 71 testes em `tests/unit`, distribuídos entre cliente Java,
+falhas da API, painel, interface, tarefas e projetos. Projetos cobrem progresso
+derivado, conclusão/arquivo com pendências, vínculo entre equipes, histórico de
+primeiro vínculo, permissões/escopo, filtros, responsáveis, auditoria e concorrência
+real. Frontend cobre cards, formulários, detalhe, leitura sem mutação, conflitos
+contextuais, paginação das opções, Task com projeto e Dashboard condicionado à permissão.
+Nomes de testes descrevem
 comportamento em PT-BR. Uma renomeação não altera fixtures, endpoints ou o banco.
 
 A verificação final inclui `mvnw.cmd -B test`, `mvnw.cmd -B package`, typecheck,

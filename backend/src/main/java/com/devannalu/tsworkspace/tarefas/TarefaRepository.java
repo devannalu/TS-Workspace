@@ -18,12 +18,14 @@ public class TarefaRepository {
     public record Referencia(String id, String nome) { }
     public record EstadoTarefa(String id, String titulo, String descricao, Tarefa.Status status,
         Tarefa.Prioridade prioridade, Referencia equipe, boolean equipeArquivada, Referencia criadaPor,
-        LocalDate prazo, int ordem, long versao, Instant arquivadaEm, Instant criadaEm, Instant atualizadaEm) { }
+        LocalDate prazo, int ordem, long versao, Instant arquivadaEm, Instant criadaEm, Instant atualizadaEm,
+        Referencia projeto, boolean projetoArquivado) { }
     public record Consulta(String sql, List<Object> parametros) { }
 
     private static final String SQL_TAREFA = """
-        SELECT t.*, e.name equipe_nome, e.archived_at equipe_arquivada, u.name criadora_nome
+        SELECT t.*, e.name equipe_nome, e.archived_at equipe_arquivada, u.name criadora_nome, p.title projeto_titulo, p.archived_at projeto_arquivado
         FROM task t JOIN team e ON e.id=t.team_id JOIN app_user u ON u.id=t.created_by_id
+        LEFT JOIN project p ON p.id=t.project_id
         """;
 
     private static Instant instante(ResultSet linha, String campo) throws SQLException {
@@ -39,7 +41,9 @@ public class TarefaRepository {
             linha.getTimestamp("equipe_arquivada") != null,
             new Referencia(linha.getString("created_by_id"), linha.getString("criadora_nome")),
             prazo == null ? null : prazo.toLocalDate(), linha.getInt("position"), linha.getLong("version"),
-            instante(linha, "archived_at"), instante(linha, "created_at"), instante(linha, "updated_at"));
+            instante(linha, "archived_at"), instante(linha, "created_at"), instante(linha, "updated_at"),
+            linha.getString("project_id") == null ? null : new Referencia(linha.getString("project_id"), linha.getString("projeto_titulo")),
+            linha.getTimestamp("projeto_arquivado") != null);
     }
 
     private void limitarEscopo(StringBuilder sql, List<Object> parametros, Acesso acesso) {
@@ -54,6 +58,7 @@ public class TarefaRepository {
         List<Object> parametros = new ArrayList<>();
         limitarEscopo(sql, parametros, acesso);
         if (filtros.equipeId() != null) { sql.append(" AND t.team_id=?"); parametros.add(filtros.equipeId()); }
+        if (filtros.projetoId() != null) { sql.append(" AND t.project_id=?"); parametros.add(filtros.projetoId()); }
         if (filtros.status() != null) { sql.append(" AND t.status=?"); parametros.add(filtros.status().name()); }
         if (filtros.prioridade() != null) { sql.append(" AND t.priority=?"); parametros.add(filtros.prioridade().name()); }
         if (filtros.responsavelId() != null) {
@@ -135,20 +140,20 @@ public class TarefaRepository {
     }
 
     public void inserir(String id, String titulo, String descricao, Tarefa.Prioridade prioridade, String equipeId,
-        String criadoraId, LocalDate prazo) {
+        String criadoraId, LocalDate prazo, String projetoId) {
         int ordem = jdbc.queryForObject("SELECT COALESCE(MAX(position),-1)+1 FROM task WHERE status='A_FAZER' AND archived_at IS NULL", Integer.class);
         jdbc.update("""
-            INSERT INTO task (id,title,description,status,priority,team_id,created_by_id,due_date,position,version,created_at,updated_at)
-            VALUES (?,?,?,'A_FAZER',?,?,?,?,?,0,CURRENT_TIMESTAMP(6),CURRENT_TIMESTAMP(6))
-            """, id, titulo, descricao, prioridade.name(), equipeId, criadoraId, prazo, ordem);
+            INSERT INTO task (id,title,description,status,priority,team_id,created_by_id,due_date,position,project_id,version,created_at,updated_at)
+            VALUES (?,?,?,'A_FAZER',?,?,?,?,?,?,0,CURRENT_TIMESTAMP(6),CURRENT_TIMESTAMP(6))
+            """, id, titulo, descricao, prioridade.name(), equipeId, criadoraId, prazo, ordem, projetoId);
     }
 
     public int atualizar(EstadoTarefa atual, String titulo, String descricao, Tarefa.Prioridade prioridade,
-        String equipeId, LocalDate prazo) {
+        String equipeId, LocalDate prazo, String projetoId) {
         return jdbc.update("""
-            UPDATE task SET title=?,description=?,priority=?,team_id=?,due_date=?,version=version+1,
+            UPDATE task SET title=?,description=?,priority=?,team_id=?,due_date=?,project_id=?,version=version+1,
             updated_at=CURRENT_TIMESTAMP(6) WHERE id=? AND version=?
-            """, titulo, descricao, prioridade.name(), equipeId, prazo, atual.id(), atual.versao());
+            """, titulo, descricao, prioridade.name(), equipeId, prazo, projetoId, atual.id(), atual.versao());
     }
 
     public void substituirResponsaveis(String tarefaId, Set<String> ids) {

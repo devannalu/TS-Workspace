@@ -18,6 +18,7 @@ completa do estado presente do produto.
 | [Fase 6](fase-6-frontend-shell-dashboard.md) | Identidade pastel, shell, login, dashboard real e interfaces administrativas |
 | [Fase 7](fase-7-padronizacao-codigo.md) | Nomes PT-BR, responsabilidades de persistência, organização compacta e contratos preservados |
 | [Fase 8](fase-8-tarefas.md) | Tarefas Java, Kanban, responsáveis, concorrência, escopo e Dashboard agregado |
+| [Fase 9](fase-9-projetos.md) | Projetos Java, progresso derivado, vínculos com Tarefas, histórico de equipe, escopo e interface |
 
 Os registros foram preservados ao reorganizar a documentação. Caminhos citados
 nas primeiras fases refletem a raiz usada na época; código Next.js, scripts,

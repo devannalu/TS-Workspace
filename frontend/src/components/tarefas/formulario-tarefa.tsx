@@ -11,6 +11,7 @@ import {
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { ErrorState } from "../ui/feedback";
+import { SeletorProjeto } from "../projetos/seletor-projeto";
 
 export function FormularioTarefa({
   tarefa,
@@ -18,6 +19,7 @@ export function FormularioTarefa({
   podeAtribuir,
   ocupada,
   bloqueada = false,
+  podeVerProjetos = false,
   aoSalvar,
 }: {
   tarefa?: Tarefa;
@@ -25,6 +27,7 @@ export function FormularioTarefa({
   podeAtribuir: boolean;
   ocupada: boolean;
   bloqueada?: boolean;
+  podeVerProjetos?: boolean;
   aoSalvar: (dados: DadosTarefa) => Promise<void>;
 }) {
   const [equipeId, definirEquipe] = useState(tarefa?.equipe.id ?? "");
@@ -35,6 +38,8 @@ export function FormularioTarefa({
     OpcoesTarefas["responsaveis"]
   >([]);
   const [erro, definirErro] = useState("");
+  const [projetoId, definirProjeto] = useState(tarefa?.projeto?.id ?? "");
+  const [avisoProjeto, definirAvisoProjeto] = useState("");
   const [carregando, definirCarregando] = useState(false);
   useEffect(() => {
     if (!equipeId) return;
@@ -66,6 +71,7 @@ export function FormularioTarefa({
       prioridade: dados.get("prioridade") as PrioridadeTarefa,
       equipeId,
       prazo: String(dados.get("prazo")) || null,
+      projetoId: projetoId || null,
       ...(podeAtribuir ? { responsavelIds: responsaveis } : {}),
     });
   }
@@ -101,6 +107,11 @@ export function FormularioTarefa({
               value={equipeId}
               onChange={(evento) => {
                 definirEquipe(evento.target.value);
+                if (projetoId)
+                  definirAvisoProjeto(
+                    "O projeto foi removido porque pertence a outra equipe.",
+                  );
+                definirProjeto("");
                 definirIntegrantes([]);
                 definirResponsaveis([]);
                 definirCarregando(!!evento.target.value);
@@ -136,6 +147,21 @@ export function FormularioTarefa({
           <span>Prazo</span>
           <Input name="prazo" type="date" defaultValue={tarefa?.prazo ?? ""} />
         </label>
+        {podeVerProjetos && (
+          <SeletorProjeto
+            key={equipeId}
+            equipeId={equipeId}
+            valor={projetoId}
+            atual={tarefa?.projeto}
+            somenteElegiveis
+            aoSelecionar={definirProjeto}
+          />
+        )}
+        {avisoProjeto && (
+          <p role="status" className="subtle">
+            {avisoProjeto}
+          </p>
+        )}
         {podeAtribuir && (
           <fieldset className="space-y-2 rounded-xl border border-border p-3">
             <legend className="px-1 text-sm font-medium">Responsáveis</legend>
@@ -176,7 +202,10 @@ export function FormularioTarefa({
         )}
       </fieldset>
       {erro && <ErrorState message={erro} />}
-      <Button type="submit" disabled={ocupada || bloqueada || carregando || !!erro}>
+      <Button
+        type="submit"
+        disabled={ocupada || bloqueada || carregando || !!erro}
+      >
         {ocupada ? "Salvando…" : tarefa ? "Salvar alterações" : "Criar tarefa"}
       </Button>
     </form>

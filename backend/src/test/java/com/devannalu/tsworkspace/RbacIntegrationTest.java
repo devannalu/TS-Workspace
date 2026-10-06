@@ -68,22 +68,22 @@ class RbacIntegrationTest {
     }
 
     @Test void devePreservarCatalogoEPermissoesDoCheckpoint() throws Exception {
-        assertThat(flyway.info().current().getVersion().getVersion()).isEqualTo("8");
+        assertThat(flyway.info().current().getVersion().getVersion()).isEqualTo("9");
         assertThat(flyway.migrate().migrationsExecuted).isZero();
         assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM roles", Integer.class)).isEqualTo(4);
-        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM permissions", Integer.class)).isEqualTo(19);
-        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM role_permissions", Integer.class)).isEqualTo(49);
+        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM permissions", Integer.class)).isEqualTo(24);
+        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM role_permissions", Integer.class)).isEqualTo(64);
         try (var input = getClass().getResourceAsStream("/rbac-baseline.json")) {
             var baseline = mapper.readTree(input);
             var expectedCatalog = new HashSet<String>();
             baseline.get("permissions").forEach(p -> expectedCatalog.add(p.asText()));
-            assertThat(jdbc.queryForList("SELECT permission_key FROM permissions WHERE permission_key NOT LIKE 'tasks.%'", String.class)).containsExactlyInAnyOrderElementsOf(expectedCatalog);
+            assertThat(jdbc.queryForList("SELECT permission_key FROM permissions WHERE permission_key NOT LIKE 'tasks.%' AND permission_key NOT LIKE 'projects.%'", String.class)).containsExactlyInAnyOrderElementsOf(expectedCatalog);
             var entries = baseline.get("roles").fields();
             while (entries.hasNext()) {
                 var entry = entries.next();
                 var expectedGrants = new HashSet<String>();
                 entry.getValue().forEach(p -> expectedGrants.add(p.asText()));
-                assertThat(jdbc.queryForList("SELECT p.permission_key FROM role_permissions rp JOIN permissions p ON p.id=rp.permission_id JOIN roles r ON r.id=rp.role_id WHERE r.role_key=? AND p.permission_key NOT LIKE 'tasks.%'", String.class, entry.getKey())).containsExactlyInAnyOrderElementsOf(expectedGrants);
+                assertThat(jdbc.queryForList("SELECT p.permission_key FROM role_permissions rp JOIN permissions p ON p.id=rp.permission_id JOIN roles r ON r.id=rp.role_id WHERE r.role_key=? AND p.permission_key NOT LIKE 'tasks.%' AND p.permission_key NOT LIKE 'projects.%'", String.class, entry.getKey())).containsExactlyInAnyOrderElementsOf(expectedGrants);
                 String id = createUser(entry.getKey());
                 for (String key : expectedCatalog) assertThat(permissions.possuiPermissao(id, key)).as(entry.getKey()+": "+key).isEqualTo(expectedGrants.contains(key));
             }
@@ -96,8 +96,8 @@ class RbacIntegrationTest {
         jdbc.update("INSERT INTO role_permissions SELECT r.id, p.id FROM roles r CROSS JOIN permissions p WHERE r.role_key='SUPPORT' AND p.permission_key='audit.view'");
         seed.seed(); seed.seed();
         assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM roles", Integer.class)).isEqualTo(4);
-        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM permissions", Integer.class)).isEqualTo(19);
-        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM role_permissions", Integer.class)).isEqualTo(50);
+        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM permissions", Integer.class)).isEqualTo(24);
+        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM role_permissions", Integer.class)).isEqualTo(65);
         assertThat(permissions.possuiPermissao(id, "audit.view")).isTrue();
         assertThat(permissions.possuiPermissao(id, "teams.view")).isFalse();
     }
@@ -110,10 +110,10 @@ class RbacIntegrationTest {
     @Test void deveListarCatalogoEExporApenasPermissoesEfetivas() throws Exception {
         String id = createUser("ADMIN");
         Cookie session = login(id);
-        mvc.perform(get("/api/v1/permissions").cookie(session)).andExpect(status().isOk()).andExpect(jsonPath("$.length()").value(19));
+        mvc.perform(get("/api/v1/permissions").cookie(session)).andExpect(status().isOk()).andExpect(jsonPath("$.length()").value(24));
         mvc.perform(get("/api/v1/auth/me").cookie(session)).andExpect(status().isOk())
             .andExpect(jsonPath("$.role.key").value("ADMIN"))
-            .andExpect(jsonPath("$.permissions.length()").value(18))
+            .andExpect(jsonPath("$.permissions.length()").value(23))
             .andExpect(jsonPath("$.passwordHash").doesNotExist()).andExpect(jsonPath("$.sessionId").doesNotExist());
     }
     @Test void deveAplicarConcessoesENegacoesNaSessaoExistente() throws Exception {

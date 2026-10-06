@@ -33,6 +33,7 @@ export type Tarefa = {
   arquivada: boolean;
   atrasada: boolean;
   capacidades: { editar: boolean; atribuir: boolean; arquivar: boolean };
+  projeto?: ReferenciaTarefa | null;
 };
 export type DadosTarefa = {
   titulo: string;
@@ -41,6 +42,7 @@ export type DadosTarefa = {
   equipeId: string;
   prazo: string | null;
   responsavelIds?: string[];
+  projetoId?: string | null;
 };
 export type OpcoesTarefas = {
   equipes: ReferenciaTarefa[];
@@ -61,6 +63,7 @@ export type FiltrosTarefas = {
   dueFrom?: string;
   dueTo?: string;
   archived?: boolean;
+  projectId?: string;
 };
 export const mensagemConflitoTarefa =
   "Esta tarefa foi atualizada por outra pessoa. Atualize os dados e tente novamente.";
@@ -72,7 +75,11 @@ async function alterarTarefa<T>(
   try {
     return await requisitarJava<T>(caminho, metodo, dados);
   } catch (erro) {
-    if (erro instanceof ErroApi && erro.status === 409)
+    if (
+      erro instanceof ErroApi &&
+      erro.status === 409 &&
+      erro.message === "A operação conflita com o estado atual do workspace."
+    )
       throw new ErroApi(409, mensagemConflitoTarefa);
     throw erro;
   }

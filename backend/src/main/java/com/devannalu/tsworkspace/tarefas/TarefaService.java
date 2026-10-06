@@ -19,19 +19,27 @@ public class TarefaService {
     private final PermissaoService permissoes;
     private final BloqueioOrganizacao bloqueio;
     private final AuditoriaRepository auditoria;
+    private final com.devannalu.tsworkspace.projetos.ProjetoRepository projetos;
     public TarefaService(TarefaRepository tarefas, PermissaoService permissoes, BloqueioOrganizacao bloqueio,
-        AuditoriaRepository auditoria) {
+        AuditoriaRepository auditoria, com.devannalu.tsworkspace.projetos.ProjetoRepository projetos) {
         this.tarefas = tarefas; this.permissoes = permissoes; this.bloqueio = bloqueio; this.auditoria = auditoria;
+        this.projetos = projetos;
     }
 
     public record Capacidades(boolean editar, boolean atribuir, boolean arquivar) { }
     public record TarefaResponse(String id, String titulo, String descricao, Tarefa.Status status,
         Tarefa.Prioridade prioridade, LocalDate prazo, int ordem, long versao, Referencia equipe, Referencia criadaPor,
         List<Referencia> responsaveis, Instant criadaEm, Instant atualizadaEm, boolean arquivada,
-        boolean atrasada, Capacidades capacidades) { }
+        boolean atrasada, Capacidades capacidades, Referencia projeto) { }
     public record PaginaTarefas(List<TarefaResponse> items, long total, int page, int size) { }
     public record FiltrosTarefas(String equipeId, Tarefa.Status status, Tarefa.Prioridade prioridade,
-        String responsavelId, String busca, LocalDate prazoDe, LocalDate prazoAte, boolean arquivadas, int pagina, int tamanho) { }
+        String responsavelId, String busca, LocalDate prazoDe, LocalDate prazoAte, boolean arquivadas, int pagina, int tamanho,
+        String projetoId) {
+        public FiltrosTarefas(String equipeId, Tarefa.Status status, Tarefa.Prioridade prioridade, String responsavelId,
+            String busca, LocalDate prazoDe, LocalDate prazoAte, boolean arquivadas, int pagina, int tamanho) {
+            this(equipeId,status,prioridade,responsavelId,busca,prazoDe,prazoAte,arquivadas,pagina,tamanho,null);
+        }
+    }
     public record ResumoTarefas(long minhasTarefas, long emAndamento, long vencendoHoje, long atrasadas) { }
     public record OpcoesTarefas(List<Referencia> equipes, List<Referencia> responsaveis) { }
 
@@ -60,14 +68,14 @@ public class TarefaService {
 
     private TarefaResponse montarResposta(Acesso acesso, EstadoTarefa tarefa, List<Referencia> responsaveis) {
         boolean responsavel = responsaveis.stream().anyMatch(pessoa -> pessoa.id().equals(acesso.usuarioId()));
-        boolean alteravel = tarefa.arquivadaEm() == null && !tarefa.equipeArquivada();
+        boolean alteravel = tarefa.arquivadaEm() == null && !tarefa.equipeArquivada() && !tarefa.projetoArquivado();
         boolean editar = alteravel && PoliticaTarefa.podeEditar(acesso, tarefa.criadaPor().id(), responsavel);
         return new TarefaResponse(tarefa.id(), tarefa.titulo(), tarefa.descricao(), tarefa.status(), tarefa.prioridade(),
             tarefa.prazo(), tarefa.ordem(), tarefa.versao(), tarefa.equipe(), tarefa.criadaPor(), responsaveis,
             tarefa.criadaEm(), tarefa.atualizadaEm(), tarefa.arquivadaEm() != null,
             PoliticaTarefa.atrasada(tarefa.prazo(), tarefa.status(), hoje()),
             new Capacidades(editar, editar && acesso.permissoes().contains("tasks.assign"),
-                tarefa.arquivadaEm() == null && acesso.permissoes().contains("tasks.archive")));
+                tarefa.arquivadaEm() == null && !tarefa.projetoArquivado() && acesso.permissoes().contains("tasks.archive")), tarefa.projeto());
     }
 
     private List<Referencia> responsaveis(String id) {
@@ -120,13 +128,21 @@ public class TarefaService {
     @Transactional
     public TarefaResponse criarTarefa(String usuarioId, String titulo, String descricao, Tarefa.Prioridade prioridade,
         String equipeId, LocalDate prazo, List<String> responsavelIds) {
+        return criarTarefa(usuarioId,titulo,descricao,prioridade,equipeId,prazo,responsavelIds,null);
+    }
+
+    @Transactional
+    public TarefaResponse criarTarefa(String usuarioId, String titulo, String descricao, Tarefa.Prioridade prioridade,
+        String equipeId, LocalDate prazo, List<String> responsavelIds, String projetoId) {
         bloqueio.adquirir();
         var acesso = exigirAcesso(usuarioId, "tasks.create");
         exigirEquipe(acesso, equipeId, true);
+        validarVinculoProjeto(acesso, projetoId, equipeId, true);
         var novos = validarResponsaveis(acesso, equipeId, responsavelIds, Set.of());
         String id = UUID.randomUUID().toString();
         tarefas.inserir(id, PoliticaTarefa.validarTitulo(titulo), PoliticaTarefa.validarDescricao(descricao),
-            PoliticaTarefa.prioridadeInicial(prioridade), equipeId, usuarioId, prazo);
+            PoliticaTarefa.prioridadeInicial(prioridade), equipeId, usuarioId, prazo, projetoId);
+        if (projetoId != null) projetos.registrarPrimeiroVinculo(projetoId);
         tarefas.substituirResponsaveis(id, novos);
         auditoria.registrar(usuarioId, "task.created", "Task", id);
         if (!novos.isEmpty()) auditoria.registrar(usuarioId, "task.assignees_changed", "Task", id);
@@ -146,14 +162,24 @@ public class TarefaService {
     @Transactional
     public TarefaResponse editarTarefa(String usuarioId, String id, String titulo, String descricao,
         Tarefa.Prioridade prioridade, String equipeId, LocalDate prazo, List<String> responsavelIds, long versao) {
+        return editarTarefa(usuarioId,id,titulo,descricao,prioridade,equipeId,prazo,responsavelIds,versao,null);
+    }
+
+    @Transactional
+    public TarefaResponse editarTarefa(String usuarioId, String id, String titulo, String descricao,
+        Tarefa.Prioridade prioridade, String equipeId, LocalDate prazo, List<String> responsavelIds, long versao, String projetoId) {
         bloqueio.adquirir();
         var acesso = exigirAcesso(usuarioId, "tasks.edit");
         var atual = exigirEdicao(acesso, id, versao);
+        String anterior = atual.projeto() == null ? null : atual.projeto().id();
+        if (anterior != null) validarProjetoAlteravel(acesso, anterior);
+        validarVinculoProjeto(acesso, projetoId, equipeId, !Objects.equals(anterior, projetoId));
         exigirEquipe(acesso, equipeId, true);
         var anteriores = new HashSet<>(responsaveis(id).stream().map(Referencia::id).toList());
         var novos = validarResponsaveis(acesso, equipeId, responsavelIds, anteriores);
         if (tarefas.atualizar(atual, PoliticaTarefa.validarTitulo(titulo), PoliticaTarefa.validarDescricao(descricao),
-            PoliticaTarefa.prioridadeInicial(prioridade), equipeId, prazo) != 1) PoliticaTarefa.exigirVersao(-1, versao);
+            PoliticaTarefa.prioridadeInicial(prioridade), equipeId, prazo, projetoId) != 1) PoliticaTarefa.exigirVersao(-1, versao);
+        if (projetoId != null) projetos.registrarPrimeiroVinculo(projetoId);
         if (!novos.equals(anteriores)) {
             tarefas.substituirResponsaveis(id, novos);
             auditoria.registrar(usuarioId, "task.assignees_changed", "Task", id);
@@ -168,6 +194,12 @@ public class TarefaService {
         var acesso = exigirAcesso(usuarioId, "tasks.edit");
         var atual = exigirEdicao(acesso, id, versao);
         if (status == null || id.equals(antesDeId)) throw new IllegalArgumentException();
+        if (atual.projeto() != null) {
+            var projeto = validarProjetoAlteravel(acesso, atual.projeto().id());
+            if (atual.status() == Tarefa.Status.CONCLUIDA && status != Tarefa.Status.CONCLUIDA
+                && projeto.status() == com.devannalu.tsworkspace.projetos.Projeto.Status.CONCLUIDO)
+                throw ProblemaDominio.conflito("Reabra o projeto antes de reabrir esta tarefa.");
+        }
         if (antesDeId != null) {
             var destino = buscarNoEscopo(acesso, antesDeId);
             if (destino.status() != status || destino.arquivadaEm() != null) throw new IllegalArgumentException();
@@ -189,6 +221,7 @@ public class TarefaService {
         bloqueio.adquirir();
         var acesso = exigirAcesso(usuarioId, "tasks.archive");
         var atual = buscarNoEscopo(acesso, id);
+        if (atual.projeto() != null) validarProjetoAlteravel(acesso, atual.projeto().id());
         PoliticaTarefa.exigirVersao(atual.versao(), versao);
         if (atual.arquivadaEm() == null) {
             if (tarefas.arquivar(atual) != 1) PoliticaTarefa.exigirVersao(-1, versao);
@@ -196,5 +229,22 @@ public class TarefaService {
             auditoria.registrar(usuarioId, "task.archived", "Task", id);
         }
         return montarResposta(acesso, buscarNoEscopo(acesso, id), responsaveis(id));
+    }
+
+    private com.devannalu.tsworkspace.projetos.ProjetoRepository.EstadoProjeto validarProjetoAlteravel(Acesso acesso, String id) {
+        var projeto = projetos.buscar(id).orElseThrow(() -> ProblemaDominio.naoEncontrado("Projeto não encontrado."));
+        PoliticaTarefa.exigirEquipe(acesso, tarefas.integrante(projeto.equipe().id(), acesso.usuarioId()));
+        if (projeto.arquivadaEm() != null) throw ProblemaDominio.conflito("Projeto arquivado: somente leitura.");
+        PoliticaTarefa.exigirEquipeAtiva(projeto.equipeArquivada());
+        return projeto;
+    }
+
+    private void validarVinculoProjeto(Acesso acesso, String id, String equipeId, boolean novo) {
+        if (id == null) return;
+        if (!acesso.permissoes().contains("projects.view")) throw new AccessDeniedException("Acesso negado.");
+        var projeto = validarProjetoAlteravel(acesso, id);
+        if (!projeto.equipe().id().equals(equipeId)) throw ProblemaDominio.conflito("A tarefa e o projeto devem pertencer à mesma equipe.");
+        if (novo && projeto.status() == com.devannalu.tsworkspace.projetos.Projeto.Status.CONCLUIDO)
+            throw ProblemaDominio.conflito("Reabra o projeto antes de vincular novas tarefas.");
     }
 }

@@ -62,6 +62,22 @@ uma tarefa histórica ainda é permitido com `tasks.archive`. Remover membership
 com responsabilidade em tarefa ativa retorna 409; primeiro retire a atribuição
 ou arquive a tarefa. Tarefas arquivadas não bloqueiam essa remoção.
 
+`V9__projects.sql` adiciona `project` e `project_responsible`; acrescenta
+`task.project_id` nullable, com FK restrict e índice por projeto/arquivo/status.
+As tarefas anteriores mantêm null. Project guarda título (200), descrição (5000
+validado na API), status, equipe obrigatória, criadora, datas DATE opcionais,
+versão e timestamps. Checks garantem status e período não invertido. Responsáveis
+usam PK `(project_id,user_id)`, FK de projeto cascade e de usuária restrict.
+Índices atendem equipe, status, prazo e responsável. Não há coluna de progresso.
+
+`first_task_linked_at` registra uma única vez o primeiro vínculo de tarefa. Não
+é métrica nem antecipação de funcionalidade: impede trocar a equipe de um projeto
+que já teve tarefas, mesmo após desvincular todas. O marco permanece; atualizá-lo
+incrementa a versão. Serviço serializa vínculos, status, troca de equipe e arquivo
+com o bloqueio transacional existente. V9 também acrescenta cinco permissions e
+15 grants, sem alterar V1–V8 ou concessões anteriores. Arquivar projeto mantém
+tarefas concluídas e vínculos históricos, sem autoarquivar tarefas.
+
 Flyway controla o schema Java em `backend/src/main/resources/db/migration/`;
 migrations Java, quando usadas, são registradas explicitamente. Hibernate
 mantém `ddl-auto=validate`, e Flyway possui `clean-disabled=true`.

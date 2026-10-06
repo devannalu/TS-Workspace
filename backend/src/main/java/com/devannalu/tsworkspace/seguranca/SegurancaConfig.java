@@ -129,6 +129,9 @@ public class SegurancaConfig {
                 .requestMatchers(HttpMethod.GET, "/api/v1/tasks", "/api/v1/tasks/*").authenticated()
                 .requestMatchers(HttpMethod.POST, "/api/v1/tasks", "/api/v1/tasks/*/archive").authenticated()
                 .requestMatchers(HttpMethod.PATCH, "/api/v1/tasks/*", "/api/v1/tasks/*/position").authenticated()
+                .requestMatchers(HttpMethod.GET, "/api/v1/projects", "/api/v1/projects/*").authenticated()
+                .requestMatchers(HttpMethod.POST, "/api/v1/projects", "/api/v1/projects/*/archive").authenticated()
+                .requestMatchers(HttpMethod.PATCH, "/api/v1/projects/*").authenticated()
                 .anyRequest().denyAll())
             .addFilterAfter(new UsuarioAtivoFilter(profiles, logoutHandler), org.springframework.security.web.context.SecurityContextHolderFilter.class)
             .build();

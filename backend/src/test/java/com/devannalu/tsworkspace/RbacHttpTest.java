@@ -58,7 +58,7 @@ class RbacHttpTest {
         assertThat(mapper.readTree(me.body()).has("passwordHash")).isFalse();
         var catalog = get(admin, "/api/v1/permissions");
         assertThat(catalog.statusCode()).isEqualTo(200);
-        assertThat(mapper.readTree(catalog.body()).size()).isEqualTo(19);
+        assertThat(mapper.readTree(catalog.body()).size()).isEqualTo(24);
         HttpClient support = client();
         assertThat(post(support, "/api/v1/auth/login", csrf(support), "http-support@example.test").statusCode()).isEqualTo(200);
         assertThat(get(support, "/api/v1/permissions").statusCode()).isEqualTo(403);

@@ -16,6 +16,7 @@ O pacote base é `com.devannalu.tsworkspace`. A organização acompanha o domín
 - `usuarios`: identidade, perfil e gestão paginada;
 - `convites`: criação, validação e provisionamento atômico;
 - `tarefas`: regras, escopo, responsáveis, consulta paginada e ordenação do trabalho;
+- `projetos`: objetivos, período, escopo, responsáveis e progresso derivado das tarefas;
 - `auditoria`: persistência de eventos mínimos;
 - `compartilhado`: bloqueio de Fundadoras e erros de domínio;
 - `infraestrutura`: verificação de saúde e marcador do schema.
@@ -79,6 +80,40 @@ tarefa ou metadados sensíveis; ordenação isolada não gera evento.
 | Testcontainers | Infraestrutura real e isolada para integração |
 
 ## Fluxo de requisição
+
+Projetos usam `ProjetoController`, `ProjetoService`, `PoliticaProjeto` e
+`ProjetoRepository`, com entidades `Projeto` e `ResponsavelProjeto` validadas pelo
+Hibernate. DTOs permanecem junto ao serviço/controller. Listagem paginada agrega
+contagens de tarefas em SQL e carrega responsáveis em lote, sem consultas por card.
+
+API `/api/v1/projects`: GET lista, GET `/{id}`, POST criação, PATCH `/{id}` edição,
+POST `/{id}/archive`, GET `/options?teamId` e GET `/summary`. Filtros:
+`teamId/status/responsibleId/search/startFrom/startTo/dueFrom/dueTo/archived/page/size`.
+Os payloads usam `titulo/descricao/equipeId/responsavelIds/dataInicio/dataFim/status/versao`.
+Criação sempre começa PLANEJADO; criadora vem da sessão. Status adicionais são
+EM_ANDAMENTO, PAUSADO e CONCLUIDO. Arquivamento é um timestamp separado.
+
+Conclusão e arquivamento exigem que toda tarefa ativa esteja CONCLUIDA; projeto
+vazio pode ser concluído explicitamente. Progresso não conclui automaticamente.
+Projeto concluído bloqueia novos vínculos/criação de tarefas e reabertura de
+tarefas concluídas; reabra o projeto antes. PAUSADO não bloqueia movimentos.
+Projeto/equipe arquivados são somente leitura. Equipe só muda antes do primeiro
+vínculo, com revalidação explícita das responsáveis. Remover integrante responsável
+por projeto não arquivado é bloqueado, tanto em Equipes como em Usuárias.
+
+Tarefas recebem `projetoId` opcional no formulário completo de criação/edição;
+null remove o vínculo. `projectId` filtra a lista HTTP. Vínculo exige mesma equipe,
+projeto acessível e não arquivado; tarefas sem projeto continuam funcionando.
+Todas as mutações compartilham o bloqueio de Fundadoras antes de ler invariantes.
+Projetos também fazem CAS por versão; primeiro vínculo incrementa sua versão.
+409 de versão é diferente de conclusão/arquivo pendente e vínculo incompatível.
+
+Progresso é tarefas concluídas / tarefas ativas, arredondado ao inteiro mais
+próximo; sem tarefas, percentual é null. Resumo conta projetos não arquivados no
+escopo. Prazo próximo inclui data final de hoje até hoje + 7 dias, inclusive,
+excluindo CONCLUIDO, no fuso America/Bahia. Auditoria registra `project.created`,
+`project.updated`, `project.status_changed`, `project.responsibles_changed` e
+`project.archived`; mudança de vínculo reutiliza `task.updated`.
 
 A cadeia de segurança valida a requisição e recupera a sessão. O controller
 recebe um DTO, aplica validação e chama os serviços necessários. Serviços

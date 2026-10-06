@@ -8,6 +8,7 @@ import {
   formatarPrazoTarefa,
   prioridadesTarefa,
   statusTarefa,
+  mensagemConflitoTarefa,
   type DadosTarefa,
   type OpcoesTarefas,
   type Tarefa,
@@ -22,12 +23,14 @@ export function DetalheTarefa({
   inicial,
   opcoes,
   podeAtribuir,
+  podeVerProjetos = false,
   aoFechar,
   aoConcluir,
 }: {
   inicial: Tarefa | null;
   opcoes: OpcoesTarefas;
   podeAtribuir: boolean;
+  podeVerProjetos?: boolean;
   aoFechar: () => void;
   aoConcluir: (mensagem: string) => void;
 }) {
@@ -50,7 +53,11 @@ export function DetalheTarefa({
           ? erro.message
           : "Não foi possível concluir a operação.",
       );
-      definirConflito(erro instanceof ErroApi && erro.status === 409);
+      definirConflito(
+        erro instanceof ErroApi &&
+          erro.status === 409 &&
+          erro.message === mensagemConflitoTarefa,
+      );
     } finally {
       definirOcupada(false);
     }
@@ -111,6 +118,7 @@ export function DetalheTarefa({
           tarefa={tarefa ?? undefined}
           opcoes={opcoes}
           podeAtribuir={tarefa ? tarefa.capacidades.atribuir : podeAtribuir}
+          podeVerProjetos={podeVerProjetos}
           ocupada={ocupada}
           bloqueada={conflito}
           aoSalvar={salvar}

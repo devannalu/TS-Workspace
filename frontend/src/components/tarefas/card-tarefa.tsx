@@ -19,6 +19,11 @@ export function ConteudoCardTarefa({ tarefa }: { tarefa: Tarefa }) {
         Prioridade {prioridadesTarefa[tarefa.prioridade]}
       </span>
       <h3 className="mt-3 break-words font-semibold">{tarefa.titulo}</h3>
+      {tarefa.projeto && (
+        <p className="mt-1 break-words text-xs text-primary">
+          Projeto · {tarefa.projeto.nome}
+        </p>
+      )}
       <p className="mt-2 break-words text-xs text-muted-foreground">
         {tarefa.equipe.nome}
       </p>

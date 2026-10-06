@@ -2,14 +2,28 @@
 import { useState, useRef, useEffect, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { House, Users, Network, Menu, ChevronDown, ClipboardList } from "lucide-react";
+import {
+  House,
+  Users,
+  Network,
+  Menu,
+  ChevronDown,
+  ClipboardList,
+  FolderKanban,
+} from "lucide-react";
 import type { UsuarioAtual } from "@/lib/api/autenticacao";
 import { navegacaoPermitida } from "@/lib/ui/permissoes";
 import { Avatar } from "../ui/avatar";
 import { Dialog } from "../ui/dialog";
 import { MarcaWorkspace } from "./shell-publico";
 import { SairButton } from "../autenticacao/sair-button";
-const icones = { Início: House, Tarefas: ClipboardList, Equipes: Network, Usuárias: Users };
+const icones = {
+  Início: House,
+  Tarefas: ClipboardList,
+  Projetos: FolderKanban,
+  Equipes: Network,
+  Usuárias: Users,
+};
 export function ShellAplicacao({
   usuario,
   children,
@@ -22,7 +36,9 @@ export function ShellAplicacao({
     referenciaMenu = useRef<HTMLDetailsElement>(null);
   const navegacao = navegacaoPermitida(usuario.permissions),
     tituloPagina =
-      navegacao.find((linkNavegacao) => caminhoAtual.startsWith(linkNavegacao.href))?.label ?? "Workspace";
+      navegacao.find((linkNavegacao) =>
+        caminhoAtual.startsWith(linkNavegacao.href),
+      )?.label ?? "Workspace";
   useEffect(() => {
     const fecharMenuComEscape = (event: KeyboardEvent) => {
       if (event.key === "Escape" && referenciaMenu.current?.open) {
@@ -31,7 +47,10 @@ export function ShellAplicacao({
       }
     };
     const fecharMenuAoClicarFora = (event: PointerEvent) => {
-      if (referenciaMenu.current && !referenciaMenu.current.contains(event.target as Node))
+      if (
+        referenciaMenu.current &&
+        !referenciaMenu.current.contains(event.target as Node)
+      )
         referenciaMenu.current.open = false;
     };
     document.addEventListener("keydown", fecharMenuComEscape);
@@ -44,12 +63,15 @@ export function ShellAplicacao({
   const linksNavegacao = (
     <nav aria-label="Navegação principal" className="space-y-1">
       {navegacao.map((linkNavegacao) => {
-        const IconeNavegacao = icones[linkNavegacao.label as keyof typeof icones];
+        const IconeNavegacao =
+          icones[linkNavegacao.label as keyof typeof icones];
         return (
           <Link
             key={linkNavegacao.href}
             href={linkNavegacao.href}
-            aria-current={caminhoAtual === linkNavegacao.href ? "page" : undefined}
+            aria-current={
+              caminhoAtual === linkNavegacao.href ? "page" : undefined
+            }
             className="sidebar-link"
             onClick={() => definirMenuMobileAberto(false)}
           >

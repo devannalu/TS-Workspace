@@ -17,11 +17,13 @@ public class UsuarioService {
     public record OpcoesUsuarios(List<PerfilAcesso> roles,List<EquipeReferencia> teams) { }
     private final GestaoUsuariosRepository gestaoUsuarios;
     private final com.devannalu.tsworkspace.tarefas.TarefaRepository tarefas;
+    private final com.devannalu.tsworkspace.projetos.ProjetoRepository projetos;
     private final BloqueioOrganizacao bloqueioOrganizacao;
     private final AuditoriaRepository auditoria;
     private final RevogacaoSessaoService sessoes;
-    public UsuarioService(GestaoUsuariosRepository gestaoUsuarios,BloqueioOrganizacao bloqueioOrganizacao,AuditoriaRepository auditoria,RevogacaoSessaoService sessoes,com.devannalu.tsworkspace.tarefas.TarefaRepository tarefas) {
+    public UsuarioService(GestaoUsuariosRepository gestaoUsuarios,BloqueioOrganizacao bloqueioOrganizacao,AuditoriaRepository auditoria,RevogacaoSessaoService sessoes,com.devannalu.tsworkspace.tarefas.TarefaRepository tarefas,com.devannalu.tsworkspace.projetos.ProjetoRepository projetos) {
         this.gestaoUsuarios=gestaoUsuarios; this.bloqueioOrganizacao=bloqueioOrganizacao; this.auditoria=auditoria; this.sessoes=sessoes; this.tarefas=tarefas;
+        this.projetos=projetos;
     }
 
     @Transactional(readOnly=true)
@@ -55,6 +57,7 @@ public class UsuarioService {
             if(!equipesAnteriores.equals(equipesSolicitadas)){
                 for(String equipe:equipesAnteriores)if(!equipesSolicitadas.contains(equipe)){
                     if(tarefas.possuiResponsabilidadeAtiva(id,equipe))throw ProblemaDominio.conflito("Retire a responsabilidade das tarefas ativas antes de remover a integrante.");
+                    if(projetos.possuiResponsabilidadeAtiva(id,equipe))throw ProblemaDominio.conflito("Retire a responsabilidade dos projetos ativos antes de remover a integrante.");
                     gestaoUsuarios.removerIntegrante(id, equipe);
                 }
                 for(String equipe:equipesSolicitadas)if(!equipesAnteriores.contains(equipe))gestaoUsuarios.inserirIntegrante(id, equipe);

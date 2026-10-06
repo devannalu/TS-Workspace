@@ -46,8 +46,13 @@ permission para a mesma usuária. ALLOW e DENY não podem coexistir nesse par.
 | tasks.edit | sim | sim | sim | sim |
 | tasks.assign | sim | sim | sim | não |
 | tasks.archive | sim | sim | não | não |
+| projects.view | sim | sim | sim | sim |
+| projects.create | sim | sim | sim | não |
+| projects.edit | sim | sim | sim | não |
+| projects.manage_members | sim | sim | sim | não |
+| projects.archive | sim | sim | não | não |
 
-São 4 roles, 19 keys e 49 grants padrão. A existência de uma key não significa
+São 4 roles, 24 keys e 64 grants padrão. A existência de uma key não significa
 que sua tela ou módulo já foi entregue. O seed completa grants padrão
 faltantes sem apagar ajustes administrativos extras.
 
@@ -58,6 +63,15 @@ tarefas que criou ou que lhe foram atribuídas. Override ALLOW não amplia o
 escopo de equipe. DENY continua prevalecendo fora do bypass SUPER_ADMIN.
 
 ## Resolução e precedência
+
+Projetos centralizam política em `PoliticaProjeto` e escopo SQL em
+`ProjetoRepository`. ADMIN/SUPER_ADMIN têm escopo global; SUPERVISOR e SUPPORT
+somente suas equipes. Responsabilidade não amplia acesso nem concede permissions.
+SUPPORT permanece somente leitura neste domínio, inclusive diante de ALLOW de
+escrita. Equipe arquivada mantém leitura histórica, sem mutações. Criar/editar/
+gerenciar responsáveis/arquivar são capacidades separadas; mudar responsáveis
+exige `projects.manage_members`, além da permissão da operação. V9 e seed
+acrescentam grants sem alterar Users, Teams, Tasks ou Invites.
 
 A política central do sistema atual aplica:
 

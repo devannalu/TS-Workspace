@@ -36,6 +36,7 @@ import { Input } from "../ui/input";
 import { EmptyState, ErrorState, Skeleton, Toast } from "../ui/feedback";
 import { CardTarefa, ConteudoCardTarefa } from "./card-tarefa";
 import { DetalheTarefa } from "./detalhe-tarefa";
+import { SeletorProjeto } from "../projetos/seletor-projeto";
 
 const estados = Object.keys(statusTarefa) as StatusTarefa[];
 type Colunas = Partial<Record<StatusTarefa, PaginaApi<Tarefa>>>;
@@ -112,15 +113,18 @@ export function QuadroTarefas({
   permissoes,
   opcoesIniciais,
   minhasInicial = false,
+  projetoInicial,
 }: {
   usuarioId: string;
   permissoes: string[];
   opcoesIniciais: OpcoesTarefas;
   minhasInicial?: boolean;
+  projetoInicial?: string;
 }) {
-  const [filtros, definirFiltros] = useState<FiltrosTarefas>(
-    minhasInicial ? { assigneeId: usuarioId } : {},
-  );
+  const [filtros, definirFiltros] = useState<FiltrosTarefas>({
+    ...(minhasInicial ? { assigneeId: usuarioId } : {}),
+    ...(projetoInicial ? { projectId: projetoInicial } : {}),
+  });
   const [colunas, definirColunas] = useState<Colunas>({});
   const [opcoes, definirOpcoes] = useState(opcoesIniciais);
   const [carregando, definirCarregando] = useState(true);
@@ -363,6 +367,14 @@ export function QuadroTarefas({
                 ))}
           </select>
         </label>
+        {permissoes.includes("projects.view") && (
+          <SeletorProjeto
+            key={filtros.teamId ?? "todas"}
+            equipeId={filtros.teamId}
+            valor={filtros.projectId ?? ""}
+            aoSelecionar={(id) => filtrar("projectId", id)}
+          />
+        )}
         <label>
           Prioridade
           <select
@@ -533,6 +545,7 @@ export function QuadroTarefas({
           inicial={detalhe}
           opcoes={opcoesIniciais}
           podeAtribuir={permissoes.includes("tasks.assign")}
+          podeVerProjetos={permissoes.includes("projects.view")}
           aoFechar={() => {
             definirDetalhe(undefined);
             void carregar(false);

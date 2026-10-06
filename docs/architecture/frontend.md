@@ -92,14 +92,43 @@ segmentos e uma coluna vertical. Cartões têm prioridade textual, prazo sem
 conversão de fuso, equipe e iniciais com nomes acessíveis.
 
 Criação, edição, detalhe e confirmação de arquivo compartilham Dialog nativo.
-409 mantém o formulário e pede atualização explícita antes de outra tentativa;
+409 de versão mantém o formulário e pede atualização explícita antes de outra tentativa;
 400/401/403/404 e conexão continuam no tratamento central. Respostas são
 reconsultadas após escrita para obter versões/posições atuais. O Dashboard usa
 `/tasks/summary`, sem baixar tarefas para contar, e preserva seus indicadores anteriores.
 
 Veja [setup](../development/setup.md), [RBAC](rbac.md) e [testes](../development/testing.md).
 
-## Organização do código
+## Projetos
+
+`/projetos` exige `projects.view`, com navegação real no shell. A feature fica em
+`components/projetos`: lista paginada, card/progresso, formulário, detalhe e
+seletor reutilizado por Tarefas. `lib/api/projetos.ts` concentra os contratos.
+Não há Kanban de projetos nem rota de detalhe adicional. O diálogo apresenta
+objetivo, responsáveis, período e resumo agregado das tarefas, com “Ver tarefas”
+para `/tarefas?projetoId=<id>` no Kanban existente.
+
+Cards mostram percentual acompanhado de contagem e barra acessível; projetos
+vazios exibem “Sem tarefas”. Filtros ficam em seção recolhível, com equipe,
+status, responsável, busca, “Sou responsável” e arquivados. Lista usa 24 itens
+por página, digitação agrupada e descarte de respostas obsoletas. Celular usa
+uma coluna, tablet duas e desktop três. Formulários têm labels, limites de texto,
+datas opcionais e responsáveis da equipe, com seleção revisável ao trocar equipe.
+
+Capacidades vêm do Java. SUPPORT não recebe controles de edição/arquivo. Conflito
+de versão mantém rascunho e exige atualização explícita; conflitos de pendências
+ou vínculos mostram instrução contextual sem bloquear como versão. O cliente
+aceita somente mensagens 409 conhecidas; detalhes técnicos desconhecidos continuam
+ocultos. Não há retry automático de escritas.
+
+Tarefas têm seletor opcional de projeto por equipe e filtro que interpreta a query
+string. Opções são pesquisáveis e paginadas; não baixam todos os projetos de uma
+vez. Projetos concluídos não são elegíveis para novos vínculos. Ao trocar equipe,
+o formulário limpa o projeto incompatível e avisa explicitamente. Cards de tarefas
+mostram uma referência discreta. O Dashboard consulta `/projects/summary` somente
+com `projects.view`, sem espaço reservado ou contagens fictícias para quem não pode ver.
+
+## Organização por feature
 
 `components/autenticacao`, `components/equipes`, `components/usuarios` e
 `components/convites` reúnem apresentação por domínio. `components/layout`

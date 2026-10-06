@@ -18,10 +18,10 @@ public class TarefaController {
 
     public record CriarTarefaRequest(@NotBlank @Size(max=200) String titulo, @Size(max=5000) String descricao,
         Tarefa.Prioridade prioridade, @NotNull UUID equipeId, LocalDate prazo,
-        @Size(max=50) List<@NotNull UUID> responsavelIds) { }
+        @Size(max=50) List<@NotNull UUID> responsavelIds, UUID projetoId) { }
     public record AtualizarTarefaRequest(@NotBlank @Size(max=200) String titulo, @Size(max=5000) String descricao,
         @NotNull Tarefa.Prioridade prioridade, @NotNull UUID equipeId, LocalDate prazo,
-        @Size(max=50) List<@NotNull UUID> responsavelIds, @NotNull @Min(0) Long versao) { }
+        @Size(max=50) List<@NotNull UUID> responsavelIds, @NotNull @Min(0) Long versao, UUID projetoId) { }
     public record MoverTarefaRequest(@NotNull Tarefa.Status status, UUID antesDeId, @NotNull @Min(0) Long versao) { }
     public record ArquivarTarefaRequest(@NotNull @Min(0) Long versao) { }
 
@@ -34,9 +34,10 @@ public class TarefaController {
         @RequestParam(required=false) Tarefa.Prioridade priority, @RequestParam(required=false) UUID assigneeId,
         @RequestParam(required=false) String search, @RequestParam(required=false) LocalDate dueFrom,
         @RequestParam(required=false) LocalDate dueTo, @RequestParam(defaultValue="false") boolean archived,
-        @RequestParam(defaultValue="0") int page, @RequestParam(defaultValue="25") int size) {
+        @RequestParam(defaultValue="0") int page, @RequestParam(defaultValue="25") int size,
+        @RequestParam(required=false) UUID projectId) {
         return tarefas.listarTarefas(usuario.id(), new TarefaService.FiltrosTarefas(id(teamId), status, priority,
-            id(assigneeId), search, dueFrom, dueTo, archived, page, size));
+            id(assigneeId), search, dueFrom, dueTo, archived, page, size, id(projectId)));
     }
 
     @GetMapping("/summary")
@@ -59,14 +60,14 @@ public class TarefaController {
     @ResponseStatus(HttpStatus.CREATED)
     public TarefaService.TarefaResponse criar(@AuthenticationPrincipal AppUserPrincipal usuario, @Valid @RequestBody CriarTarefaRequest dados) {
         return tarefas.criarTarefa(usuario.id(), dados.titulo(), dados.descricao(), dados.prioridade(), id(dados.equipeId()),
-            dados.prazo(), ids(dados.responsavelIds()));
+            dados.prazo(), ids(dados.responsavelIds()), id(dados.projetoId()));
     }
 
     @PatchMapping("/{id}")
     public TarefaService.TarefaResponse editar(@AuthenticationPrincipal AppUserPrincipal usuario, @PathVariable UUID id,
         @Valid @RequestBody AtualizarTarefaRequest dados) {
         return tarefas.editarTarefa(usuario.id(), id.toString(), dados.titulo(), dados.descricao(), dados.prioridade(),
-            id(dados.equipeId()), dados.prazo(), ids(dados.responsavelIds()), dados.versao());
+            id(dados.equipeId()), dados.prazo(), ids(dados.responsavelIds()), dados.versao(), id(dados.projetoId()));
     }
 
     @PatchMapping("/{id}/position")

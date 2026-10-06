@@ -9,8 +9,9 @@ import org.springframework.transaction.annotation.Transactional;
 public class EquipeService {
     private final EquipeRepository equipes;
     private final com.devannalu.tsworkspace.tarefas.TarefaRepository tarefas;
+    private final com.devannalu.tsworkspace.projetos.ProjetoRepository projetos;
     private final com.devannalu.tsworkspace.compartilhado.BloqueioOrganizacao bloqueioOrganizacao;
-    public EquipeService(EquipeRepository equipes, com.devannalu.tsworkspace.compartilhado.BloqueioOrganizacao bloqueioOrganizacao, com.devannalu.tsworkspace.tarefas.TarefaRepository tarefas) { this.equipes = equipes; this.bloqueioOrganizacao = bloqueioOrganizacao; this.tarefas = tarefas; }
+    public EquipeService(EquipeRepository equipes, com.devannalu.tsworkspace.compartilhado.BloqueioOrganizacao bloqueioOrganizacao, com.devannalu.tsworkspace.tarefas.TarefaRepository tarefas, com.devannalu.tsworkspace.projetos.ProjetoRepository projetos) { this.equipes = equipes; this.bloqueioOrganizacao = bloqueioOrganizacao; this.tarefas = tarefas; this.projetos = projetos; }
     public record ResumoEquipe(String id, String key, String name, String description, String parentId, boolean archived, long memberCount) { }
     public record IntegranteEquipe(String id, String name, String email) { }
     public record DetalheEquipe(ResumoEquipe team, List<IntegranteEquipe> members) { }
@@ -88,6 +89,8 @@ public class EquipeService {
         PoliticaEquipe.removerIntegrante(equipe.key(), (String) perfis.get(0).get("role_key"), superAdminsAtivas);
         if (tarefas.possuiResponsabilidadeAtiva(usuarioId, equipeId))
             throw ProblemaDominio.conflito("Retire a responsabilidade das tarefas ativas antes de remover a integrante.");
+        if (projetos.possuiResponsabilidadeAtiva(usuarioId, equipeId))
+            throw ProblemaDominio.conflito("Retire a responsabilidade dos projetos ativos antes de remover a integrante.");
         equipes.removerIntegrante(usuarioId, equipeId);
     }
 }

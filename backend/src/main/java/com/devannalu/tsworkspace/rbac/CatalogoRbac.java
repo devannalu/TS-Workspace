@@ -10,7 +10,8 @@ public final class CatalogoRbac {
         "users.view", "users.create", "users.edit", "users.disable", "users.manage",
         "teams.view", "teams.create", "teams.edit", "teams.archive", "teams.manage_members",
         "permissions.view", "permissions.manage", "settings.view", "audit.view",
-        "tasks.view", "tasks.create", "tasks.edit", "tasks.assign", "tasks.archive"
+        "tasks.view", "tasks.create", "tasks.edit", "tasks.assign", "tasks.archive",
+        "projects.view", "projects.create", "projects.edit", "projects.manage_members", "projects.archive"
     );
     public static final Map<String, String> PERFIS_ACESSO = Map.of(
         "SUPER_ADMIN", "Super Admin", "ADMIN", "Admin", "SUPERVISOR", "Supervisora", "SUPPORT", "Suporte"
@@ -18,7 +19,8 @@ public final class CatalogoRbac {
     public static final Map<String, List<String>> CONCESSOES = Map.of(
         "SUPER_ADMIN", PERMISSOES,
         "ADMIN", PERMISSOES.stream().filter(key -> !key.equals("permissions.manage")).toList(),
-        "SUPERVISOR", List.of("users.view", "teams.view", "settings.view", "tasks.view", "tasks.create", "tasks.edit", "tasks.assign"),
-        "SUPPORT", List.of("teams.view", "settings.view", "tasks.view", "tasks.create", "tasks.edit")
+        "SUPERVISOR", List.of("users.view", "teams.view", "settings.view", "tasks.view", "tasks.create", "tasks.edit", "tasks.assign",
+            "projects.view", "projects.create", "projects.edit", "projects.manage_members"),
+        "SUPPORT", List.of("teams.view", "settings.view", "tasks.view", "tasks.create", "tasks.edit", "projects.view")
     );
 }

@@ -11,8 +11,10 @@ O frontend oficial utiliza Spring Boot com MySQL.
 ## 2. Produtividade
 
 Tarefas já oferecem Kanban, responsáveis, prioridades, prazo, filtros e arquivamento,
-com autorização no Java e resumo real no Dashboard. A próxima evolução poderá
-conectar Projetos, Talks/Reuniões, comentários, checklist, arquivos, calendário e
+com autorização no Java e resumo real no Dashboard. Projetos organizam objetivos
+por equipe, com período, responsáveis e progresso derivado das tarefas, sem exigir
+vínculo para tarefas independentes. A próxima evolução poderá conectar
+Talks/Reuniões, comentários, checklist, arquivos, calendário e
 notificações. Esses recursos ainda não estão implementados.
 
 ## 3. Operação da comunidade

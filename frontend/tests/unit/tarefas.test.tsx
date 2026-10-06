@@ -238,6 +238,7 @@ it("envia formulário sem prazo ou descrição e restringe responsáveis à equi
       prazo: null,
       prioridade: "MEDIA",
       responsavelIds: ["eu"],
+      projetoId: null,
     }),
   );
 });
