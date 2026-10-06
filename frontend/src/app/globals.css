@@ -163,3 +163,30 @@
     scroll-behavior: auto !important;
   }
 }
+/* As colunas ficam contidas no quadro; no celular, uma etapa por vez preserva a leitura. */
+.task-select { min-height: 44px; border: 1px solid var(--border-strong); border-radius: 12px; padding: 10px 12px; background: var(--card); color: var(--foreground); font-size: 14px; }
+.task-filters { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 12px; padding: 16px; background: var(--card); border: 1px solid var(--border); border-radius: 16px; }
+.task-filters > label { display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: var(--muted-foreground); }
+.task-filters > label:has(input[type=checkbox]) { flex-direction: row; }
+.task-board { display: grid; grid-template-columns: repeat(4,minmax(230px,1fr)); gap: 16px; overflow-x: auto; padding: 3px 3px 12px; align-items: start; }
+.task-column { min-height: 280px; padding: 14px; border: 1px solid var(--border); border-radius: 16px; background: var(--muted); }
+.column-a_fazer { background: var(--accent-lilac); }
+.column-em_andamento { background: var(--accent-peach); }
+.column-em_revisao { background: var(--accent-butter); }
+.column-concluida { background: var(--accent); }
+.task-card { position: relative; border: 1px solid var(--border); border-radius: 12px; background: var(--card); padding: 14px; box-shadow: 0 2px 5px #24162b08; }
+.task-drag { display: flex; position: absolute; top: 4px; right: 3px; width: 36px; height: 36px; align-items: center; justify-content: center; color: var(--muted-foreground); cursor: grab; }
+.task-priority { display: inline-block; max-width: calc(100% - 20px); padding: 3px 7px; border-radius: 6px; font-size: 11px; background: var(--muted); }
+.priority-alta { background: var(--accent-peach); }
+.priority-urgente { background: var(--accent); color: var(--danger); font-weight: 600; }
+.task-segments { display: none; }
+@media (max-width: 1000px) { .task-filters { grid-template-columns: repeat(2,minmax(0,1fr)); } }
+@media (max-width: 639px) {
+  .task-filters { grid-template-columns: minmax(0,1fr); }
+  .task-board { display: block; overflow: visible; }
+  .task-column { display: none; }
+  .task-column.mobile-visible { display: block; }
+  .task-segments { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 6px; }
+  .task-segments button { min-height: 44px; border: 1px solid var(--border); border-radius: 10px; font-size: 12px; background: var(--card); }
+  .task-segments button[aria-pressed=true] { background: var(--accent-lilac); border-color: var(--primary); }
+}

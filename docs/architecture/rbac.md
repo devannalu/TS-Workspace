@@ -41,10 +41,21 @@ permission para a mesma usuária. ALLOW e DENY não podem coexistir nesse par.
 | permissions.manage | sim | não | não | não |
 | settings.view | sim | sim | sim | sim |
 | audit.view | sim | sim | não | não |
+| tasks.view | sim | sim | sim | sim |
+| tasks.create | sim | sim | sim | sim |
+| tasks.edit | sim | sim | sim | sim |
+| tasks.assign | sim | sim | sim | não |
+| tasks.archive | sim | sim | não | não |
 
-São 4 roles, 14 keys e 32 grants padrão. A existência de uma key não significa
+São 4 roles, 19 keys e 49 grants padrão. A existência de uma key não significa
 que sua tela ou módulo já foi entregue. O seed completa grants padrão
 faltantes sem apagar ajustes administrativos extras.
+
+Tarefas centralizam escopo em PoliticaTarefa/TarefaRepository: SUPER_ADMIN e
+ADMIN têm escopo global condicionado às permissions; SUPERVISOR e SUPPORT
+acessam somente equipes das quais participam. SUPPORT edita/move somente as
+tarefas que criou ou que lhe foram atribuídas. Override ALLOW não amplia o
+escopo de equipe. DENY continua prevalecendo fora do bypass SUPER_ADMIN.
 
 ## Resolução e precedência
 

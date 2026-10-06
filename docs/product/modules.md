@@ -5,15 +5,15 @@
 Ter uma entidade ou uma permissão reservada não torna um módulo completo.
 
 Os módulos de acesso e gestão são atendidos oficialmente pelo Spring Boot.
-O Next.js apresenta os dados pelas APIs Auth, RBAC, Teams, Users e Invites.
+O Next.js apresenta os dados pelas APIs Auth, RBAC, Teams, Users, Invites e Tasks.
 
 | Módulo | Estado | Escopo e limites |
 | --- | --- | --- |
-| Dashboard / Início | IMPLEMENTADO | Equipes pessoais, total de usuárias ativas e convites pendentes conforme permissions, perfil de acesso e ações rápidas. Sem métricas dos módulos futuros. |
+| Dashboard / Início | IMPLEMENTADO | Equipes pessoais, usuárias ativas, convites pendentes e resumo agregado das tarefas atribuídas à usuária: em andamento, vencendo hoje e atrasadas. |
 | Usuárias | IMPLEMENTADO | Lista paginada com busca e filtros de status/perfil/equipe; permite editar cargo, role e equipes conforme permissão. Protege a última Super Admin ativa e revoga sessões na inativação. |
 | Convites | IMPLEMENTADO | Criação, cancelamento, expiração e aceite de uso único. O link aparece uma vez no dialog, com cópia e feedback; envio automático por SMTP é planejado. |
 | Equipes | IMPLEMENTADO | Hierarquia visual, criação, edição, arquivamento com confirmação e busca de integrantes; uma usuária pode participar de várias equipes. Proteções contra ciclos e alterações indevidas da raiz. |
-| Tasks | PLANEJADO | Unidade central de trabalho, com responsáveis, acompanhamento, comentários e checklist. |
+| Tarefas | IMPLEMENTADO | Kanban em quatro etapas, prioridades, prazo, equipe, múltiplas responsáveis, criação/edição/detalhe, movimentação e ordenação, filtros e arquivamento. Escopo por equipe e acesso. Comentários, checklist e arquivos permanecem futuros. |
 | Projetos | PLANEJADO | Organização de iniciativas e suas entregas, relacionadas às Tasks. |
 | Eventos | PLANEJADO | Organização da operação e das atividades de eventos da comunidade. |
 | Comunicação / Conteúdo | PLANEJADO | Organização de conteúdo e campanhas, articulando as frentes de Comunicação. |

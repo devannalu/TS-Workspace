@@ -17,6 +17,7 @@ completa do estado presente do produto.
 | [Fase Java 5](fase-java-5-cutover.md) | Cutover oficial, inventário e preservação do banco anterior |
 | [Fase 6](fase-6-frontend-shell-dashboard.md) | Identidade pastel, shell, login, dashboard real e interfaces administrativas |
 | [Fase 7](fase-7-padronizacao-codigo.md) | Nomes PT-BR, responsabilidades de persistência, organização compacta e contratos preservados |
+| [Fase 8](fase-8-tarefas.md) | Tarefas Java, Kanban, responsáveis, concorrência, escopo e Dashboard agregado |
 
 Os registros foram preservados ao reorganizar a documentação. Caminhos citados
 nas primeiras fases refletem a raiz usada na época; código Next.js, scripts,

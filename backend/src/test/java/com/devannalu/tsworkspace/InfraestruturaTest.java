@@ -39,7 +39,7 @@ class InfraestruturaTest {
 
     @Test
     void deveAplicarMigrationsEValidarMysqlReal() {
-        assertThat(flyway.info().current().getVersion().getVersion()).isEqualTo("7");
+        assertThat(flyway.info().current().getVersion().getVersion()).isEqualTo("8");
         assertThat(jdbc.queryForObject("SELECT name FROM schema_marker WHERE id = 1", String.class)).isEqualTo("java-foundation");
         assertThat(flyway.migrate().migrationsExecuted).isZero();
         assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM schema_marker", Integer.class)).isEqualTo(1);

@@ -10,9 +10,10 @@ O frontend oficial utiliza Spring Boot com MySQL.
 
 ## 2. Produtividade
 
-Introduzir Tasks como unidade central do trabalho, conectadas a Projetos,
-Talks/Reuniões, comentários, checklist, arquivos, calendário e notificações.
-A organização de responsabilidades e acompanhamento orienta essa evolução.
+Tarefas já oferecem Kanban, responsáveis, prioridades, prazo, filtros e arquivamento,
+com autorização no Java e resumo real no Dashboard. A próxima evolução poderá
+conectar Projetos, Talks/Reuniões, comentários, checklist, arquivos, calendário e
+notificações. Esses recursos ainda não estão implementados.
 
 ## 3. Operação da comunidade
 

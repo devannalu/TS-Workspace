@@ -71,6 +71,32 @@ atalho para login, sem sessão automática.
 
 Veja o [Design System](design-system.md) para tokens, componentes e responsividade.
 
+## Tarefas
+
+`/tarefas` usa `tasks.view` e a navegação real do shell. `lib/api/tarefas.ts`
+concentra contratos, filtros e escritas Java com CSRF central. Componentes ficam
+juntos em `components/tarefas`: quadro, cartão, formulário e detalhe. O backend
+devolve capacidades efetivas; não há cópia das regras de SUPPORT no React.
+
+O quadro carrega 25 tarefas por coluna, com total e botão para mais páginas.
+Busca/filtros são aplicados no servidor; digitação é agrupada em 300 ms e respostas
+obsoletas são descartadas. “Minhas tarefas” usa o mesmo quadro. Arquivadas são
+uma consulta separada, somente leitura. Nenhuma requisição por cartão na listagem.
+
+`@dnd-kit/core` 6.3.1 e `@dnd-kit/sortable` 10.0.0 oferecem mouse, touch com atraso
+e teclado (espaço/setas/Escape), overlay e anúncios em PT-BR. A ponte de tipos
+`dnd-kit.d.ts` adapta JSX global ao namespace React.JSX do React 19 sem desativar
+checagem de bibliotecas. “Mover para…” funciona sem arraste e permanece no celular.
+Desktop mostra quatro colunas; tablet limita scroll ao quadro; celular usa
+segmentos e uma coluna vertical. Cartões têm prioridade textual, prazo sem
+conversão de fuso, equipe e iniciais com nomes acessíveis.
+
+Criação, edição, detalhe e confirmação de arquivo compartilham Dialog nativo.
+409 mantém o formulário e pede atualização explícita antes de outra tentativa;
+400/401/403/404 e conexão continuam no tratamento central. Respostas são
+reconsultadas após escrita para obter versões/posições atuais. O Dashboard usa
+`/tasks/summary`, sem baixar tarefas para contar, e preserva seus indicadores anteriores.
+
 Veja [setup](../development/setup.md), [RBAC](rbac.md) e [testes](../development/testing.md).
 
 ## Organização do código

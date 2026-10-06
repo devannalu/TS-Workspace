@@ -3,13 +3,14 @@ package com.devannalu.tsworkspace.rbac;
 import java.util.List;
 import java.util.Map;
 
-// Catálogo congelado no checkpoint fabb672 para manter a compatibilidade.
+// Novas permissões ampliam o catálogo sem substituir os grants anteriores.
 public final class CatalogoRbac {
     private CatalogoRbac() { }
     public static final List<String> PERMISSOES = List.of(
         "users.view", "users.create", "users.edit", "users.disable", "users.manage",
         "teams.view", "teams.create", "teams.edit", "teams.archive", "teams.manage_members",
-        "permissions.view", "permissions.manage", "settings.view", "audit.view"
+        "permissions.view", "permissions.manage", "settings.view", "audit.view",
+        "tasks.view", "tasks.create", "tasks.edit", "tasks.assign", "tasks.archive"
     );
     public static final Map<String, String> PERFIS_ACESSO = Map.of(
         "SUPER_ADMIN", "Super Admin", "ADMIN", "Admin", "SUPERVISOR", "Supervisora", "SUPPORT", "Suporte"
@@ -17,7 +18,7 @@ public final class CatalogoRbac {
     public static final Map<String, List<String>> CONCESSOES = Map.of(
         "SUPER_ADMIN", PERMISSOES,
         "ADMIN", PERMISSOES.stream().filter(key -> !key.equals("permissions.manage")).toList(),
-        "SUPERVISOR", List.of("users.view", "teams.view", "settings.view"),
-        "SUPPORT", List.of("teams.view", "settings.view")
+        "SUPERVISOR", List.of("users.view", "teams.view", "settings.view", "tasks.view", "tasks.create", "tasks.edit", "tasks.assign"),
+        "SUPPORT", List.of("teams.view", "settings.view", "tasks.view", "tasks.create", "tasks.edit")
     );
 }

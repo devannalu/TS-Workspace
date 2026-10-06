@@ -2,14 +2,14 @@
 import { useState, useRef, useEffect, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { House, Users, Network, Menu, ChevronDown } from "lucide-react";
+import { House, Users, Network, Menu, ChevronDown, ClipboardList } from "lucide-react";
 import type { UsuarioAtual } from "@/lib/api/autenticacao";
 import { navegacaoPermitida } from "@/lib/ui/permissoes";
 import { Avatar } from "../ui/avatar";
 import { Dialog } from "../ui/dialog";
 import { MarcaWorkspace } from "./shell-publico";
 import { SairButton } from "../autenticacao/sair-button";
-const icones = { Início: House, Equipes: Network, Usuárias: Users };
+const icones = { Início: House, Tarefas: ClipboardList, Equipes: Network, Usuárias: Users };
 export function ShellAplicacao({
   usuario,
   children,

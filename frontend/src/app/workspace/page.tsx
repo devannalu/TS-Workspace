@@ -16,13 +16,17 @@ import { EmptyState } from "@/components/ui/feedback";
 import { lerJava } from "@/lib/api/server";
 import { buscarTotaisPainel } from "@/lib/ui/painel";
 import { acessosPainel } from "@/lib/ui/permissoes";
+import type { ResumoTarefas } from "@/lib/api/tarefas";
 export const metadata = { title: "Início" };
 export default async function PainelPage() {
   const usuario = await exigirSessao(),
     acessos = acessosPainel(usuario);
-  const [minhasEquipes, totais] = await Promise.all([
+  const [minhasEquipes, totais, tarefas] = await Promise.all([
     buscarMinhasEquipes(usuario),
     buscarTotaisPainel(usuario, lerJava),
+    usuario.permissions.includes("tasks.view")
+      ? lerJava<ResumoTarefas>("/tasks/summary")
+      : null,
   ]);
   const indicadores = [
     {
@@ -59,7 +63,9 @@ export default async function PainelPage() {
       <div className="space-y-7">
         <section className="relative overflow-hidden rounded-2xl border border-border bg-accent p-6 sm:p-8">
           <Badge tone="pink">TECH SISTERS / WORKSPACE</Badge>
-          <h1 className="mt-4 page-title">Olá, {usuario.name.split(" ")[0]}.</h1>
+          <h1 className="mt-4 page-title">
+            Olá, {usuario.name.split(" ")[0]}.
+          </h1>
           <p className="mt-2 max-w-xl subtle">
             Tudo pronto para mais um dia no TS Workspace. Seu espaço para
             organizar e construir juntas.
@@ -88,6 +94,32 @@ export default async function PainelPage() {
             </Card>
           ))}
         </section>
+        {tarefas && (
+          <section aria-label="Resumo das minhas tarefas" className="space-y-3">
+            <div className="flex items-center justify-between">
+              <h2 className="section-title">Minhas tarefas</h2>
+              <Link
+                href="/tarefas?minhas=1"
+                className="text-sm font-medium text-primary"
+              >
+                Ver minhas tarefas
+              </Link>
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+              {[
+                ["Atribuídas a mim", tarefas.minhasTarefas],
+                ["Em andamento", tarefas.emAndamento],
+                ["Vencendo hoje", tarefas.vencendoHoje],
+                ["Atrasadas", tarefas.atrasadas],
+              ].map(([texto, valor]) => (
+                <Card key={texto} className="p-5">
+                  <p className="subtle">{texto}</p>
+                  <p className="mt-3 text-2xl font-semibold">{valor}</p>
+                </Card>
+              ))}
+            </div>
+          </section>
+        )}
         <div className="grid items-start gap-5 xl:grid-cols-[1.5fr_1fr]">
           <Card className="p-5 sm:p-6">
             <div className="flex items-center justify-between">

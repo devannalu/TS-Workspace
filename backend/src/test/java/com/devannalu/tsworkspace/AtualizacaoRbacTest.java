@@ -46,7 +46,7 @@ class AtualizacaoRbacTest {
         }
         Flyway upgrade = Flyway.configure().dataSource(source)
             .javaMigrations(new V5__provision_rbac(true, "upgrade@example.test", password)).load();
-        assertThat(upgrade.migrate().migrationsExecuted).isEqualTo(3);
+        assertThat(upgrade.migrate().migrationsExecuted).isEqualTo(4);
         assertThat(upgrade.migrate().migrationsExecuted).isZero();
         assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM app_user", Integer.class)).isEqualTo(1);
         assertThat(jdbc.queryForObject("SELECT id FROM app_user", String.class)).isEqualTo(id);

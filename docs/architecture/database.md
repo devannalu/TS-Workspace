@@ -47,6 +47,21 @@ V1–V6 permanecem intactas; Hibernate continua em validate.
 
 ## Migrations
 
+`V8__tasks.sql` adiciona `task` e `task_assignee`, sem editar V1–V7. Task contém
+title/description/status/priority/team_id/created_by_id/due_date/position/version
+e timestamps de criação, alteração e arquivamento. Prazo é DATE; timestamps são
+TIMESTAMP(6). Checks restringem quatro status, quatro prioridades e posição não
+negativa. FKs de equipe/criadora impedem exclusões indevidas; assignee tem PK
+`(task_id,user_id)`, FK da tarefa com cascade e da usuária com restrict.
+Índices cobrem quadro ativo por status/posição, equipe, prazo e responsável.
+V8 também completa cinco permissions e seus grants, preservando concessões antigas.
+
+Arquivamento mantém conteúdo, vínculos e auditoria. Equipe arquivada mantém
+tarefas históricas legíveis, mas impede criação, edição e movimentação; arquivar
+uma tarefa histórica ainda é permitido com `tasks.archive`. Remover membership
+com responsabilidade em tarefa ativa retorna 409; primeiro retire a atribuição
+ou arquive a tarefa. Tarefas arquivadas não bloqueiam essa remoção.
+
 Flyway controla o schema Java em `backend/src/main/resources/db/migration/`;
 migrations Java, quando usadas, são registradas explicitamente. Hibernate
 mantém `ddl-auto=validate`, e Flyway possui `clean-disabled=true`.

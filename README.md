@@ -14,10 +14,11 @@ supervisoras, suporte e voluntárias autorizadas.
 - **Usuárias:** gestão de perfil de acesso, status e participação em equipes.
 - **Convites:** criação, cancelamento e aceite com validade e uso único.
 - **Equipes:** hierarquia, integrantes, edição e arquivamento.
-- **Início do Workspace:** perfil e equipes da usuária autenticada.
+- **Tarefas:** Kanban, prioridades, prazo, responsáveis, filtros e arquivamento.
+- **Início do Workspace:** perfil, equipes e resumo real das tarefas atribuídas.
 - **Autorização:** roles e permissões verificadas no servidor.
 
-Tasks, Projetos, Eventos e os demais módulos de produtividade fazem parte do
+Projetos, Eventos e os demais módulos de produtividade fazem parte do
 roadmap. A [visão dos módulos](docs/product/modules.md) distingue o que está
 implementado do que está planejado.
 

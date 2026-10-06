@@ -15,6 +15,7 @@ O pacote base é `com.devannalu.tsworkspace`. A organização acompanha o domín
 - `equipes`: hierarquia, integrantes e operações transacionais;
 - `usuarios`: identidade, perfil e gestão paginada;
 - `convites`: criação, validação e provisionamento atômico;
+- `tarefas`: regras, escopo, responsáveis, consulta paginada e ordenação do trabalho;
 - `auditoria`: persistência de eventos mínimos;
 - `compartilhado`: bloqueio de Fundadoras e erros de domínio;
 - `infraestrutura`: verificação de saúde e marcador do schema.
@@ -38,6 +39,32 @@ que não pode ser reescrita após aplicação. Essa compatibilidade não cria du
 implementações de autenticação.
 
 ## Componentes
+
+Tarefas usam `TarefaController`, `TarefaService`, `PoliticaTarefa` e
+`TarefaRepository`; entidades `Tarefa` e `ResponsavelTarefa` documentam o mapping
+validado pelo Hibernate. Consultas JDBC retornam DTOs e carregam responsáveis em
+lote, evitando N+1. Capacidades de editar/atribuir/arquivar vêm do backend.
+
+API `/api/v1/tasks`: GET lista, GET `/{id}`, POST criação, PATCH `/{id}` edição,
+PATCH `/{id}/position` status/posição, POST `/{id}/archive`, GET `/summary` e
+GET `/options?teamId`. Não existe DELETE público. Edição recebe o formulário
+completo de conteúdo; `responsavelIds` ausente preserva vínculos. Criadora vem
+somente da sessão. Payloads novos usam PT-BR; parâmetros HTTP preservam convenções
+`teamId/status/priority/assigneeId/search/dueFrom/dueTo/archived/page/size`.
+
+Todas as escritas de tarefas bloqueiam Fundadoras antes das leituras, compartilhando
+a transação com gestão de equipes/usuárias. O cliente deve enviar `versao`; o SQL
+faz compare-and-swap (`WHERE id=? AND version=?`) e incrementa a versão. Conflitos
+retornam 409, sem reenvio automático. Ordenação global por status usa inteiros
+contíguos e renumeração transacional das colunas afetadas. Posições alteradas
+incrementam também a versão das demais tarefas; esse custo simples é adequado
+ao volume atual e deve ser medido antes de escalar para ordens fracionárias.
+
+Resumo é uma única agregação SQL das tarefas ativas atribuídas à sessão, dentro
+do escopo. Atraso deriva de `LocalDate.now(America/Bahia)`, prazo anterior ao dia
+e status diferente de CONCLUIDA. Auditoria registra `task.created`, `task.updated`,
+`task.status_changed`, `task.assignees_changed` e `task.archived`, sem texto da
+tarefa ou metadados sensíveis; ordenação isolada não gera evento.
 
 | Tecnologia | Papel |
 | --- | --- |

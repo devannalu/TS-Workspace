@@ -16,11 +16,12 @@ public class UsuarioService {
     public record PaginaUsuarios(List<UsuarioResponse> items,long total,int page,int size) { }
     public record OpcoesUsuarios(List<PerfilAcesso> roles,List<EquipeReferencia> teams) { }
     private final GestaoUsuariosRepository gestaoUsuarios;
+    private final com.devannalu.tsworkspace.tarefas.TarefaRepository tarefas;
     private final BloqueioOrganizacao bloqueioOrganizacao;
     private final AuditoriaRepository auditoria;
     private final RevogacaoSessaoService sessoes;
-    public UsuarioService(GestaoUsuariosRepository gestaoUsuarios,BloqueioOrganizacao bloqueioOrganizacao,AuditoriaRepository auditoria,RevogacaoSessaoService sessoes) {
-        this.gestaoUsuarios=gestaoUsuarios; this.bloqueioOrganizacao=bloqueioOrganizacao; this.auditoria=auditoria; this.sessoes=sessoes;
+    public UsuarioService(GestaoUsuariosRepository gestaoUsuarios,BloqueioOrganizacao bloqueioOrganizacao,AuditoriaRepository auditoria,RevogacaoSessaoService sessoes,com.devannalu.tsworkspace.tarefas.TarefaRepository tarefas) {
+        this.gestaoUsuarios=gestaoUsuarios; this.bloqueioOrganizacao=bloqueioOrganizacao; this.auditoria=auditoria; this.sessoes=sessoes; this.tarefas=tarefas;
     }
 
     @Transactional(readOnly=true)
@@ -52,7 +53,10 @@ public class UsuarioService {
             for(String equipe:equipesSolicitadas)if(gestaoUsuarios.contarEquipeAtiva(equipe)==0)throw ProblemaDominio.conflito("Uma ou mais equipes não estão disponíveis.");
             Set<String> equipesAnteriores=new HashSet<>(gestaoUsuarios.listarEquipesUsuario(id));
             if(!equipesAnteriores.equals(equipesSolicitadas)){
-                for(String equipe:equipesAnteriores)if(!equipesSolicitadas.contains(equipe))gestaoUsuarios.removerIntegrante(id, equipe);
+                for(String equipe:equipesAnteriores)if(!equipesSolicitadas.contains(equipe)){
+                    if(tarefas.possuiResponsabilidadeAtiva(id,equipe))throw ProblemaDominio.conflito("Retire a responsabilidade das tarefas ativas antes de remover a integrante.");
+                    gestaoUsuarios.removerIntegrante(id, equipe);
+                }
                 for(String equipe:equipesSolicitadas)if(!equipesAnteriores.contains(equipe))gestaoUsuarios.inserirIntegrante(id, equipe);
                 auditoria.registrar(atorId,"user.teams_changed","User",id);
             }
