@@ -20,6 +20,7 @@ export async function lerResposta<T>(response: Response): Promise<T> {
     // Detalhes técnicos do servidor não devem chegar à interface.
     const problema = await response.json().catch(() => null);
     const conflitosConhecidos = [
+      "Este comentário foi alterado. Atualize os dados e tente novamente.",
       "Este projeto foi atualizado por outra pessoa. Atualize os dados e tente novamente.",
       "Esta tarefa foi atualizada por outra pessoa. Atualize os dados e tente novamente.",
       "Conclua ou arquive as tarefas pendentes antes de concluir o projeto.",

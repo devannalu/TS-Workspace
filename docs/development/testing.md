@@ -87,8 +87,8 @@ nenhum código, configuração, migration ou dependência mudou.
 
 ## Verificação de refatorações
 
-Cada módulo é validado antes do próximo. A suíte Java contém 205 testes;
-o frontend possui 71 testes em `tests/unit`, distribuídos entre cliente Java,
+Cada módulo é validado antes do próximo. A suíte Java contém 221 testes;
+o frontend possui 86 testes em `tests/unit`, distribuídos entre cliente Java,
 falhas da API, painel, interface, tarefas e projetos. Projetos cobrem progresso
 derivado, conclusão/arquivo com pendências, vínculo entre equipes, histórico de
 primeiro vínculo, permissões/escopo, filtros, responsáveis, auditoria e concorrência
@@ -101,3 +101,7 @@ A verificação final inclui `mvnw.cmd -B test`, `mvnw.cmd -B package`, typechec
 lint, testes e build do frontend, além do navegador na porta local 3010. Dados
 transitórios usados no navegador devem ser removidos com escopo explícito e
 comparação dos dados oficiais antes/depois, sem limpar o banco ou volumes.
+
+Comentários cobrem integridade, autoria, moderação, versões, arquivo, escopo,
+paginação e auditoria segura. Frontend cobre abas, texto seguro, composer, edição
+inline, placeholder, permissões, rascunho, conflito, retry e timeline.

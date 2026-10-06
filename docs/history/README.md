@@ -31,3 +31,5 @@ Use a documentação viva para orientação atual:
 [convenções](../development/conventions.md).
 
 [Voltar ao README do projeto](../../README.md).
+
+- [Fase 10 — Comentários e atividade](fase-10-comentarios-atividade.md).

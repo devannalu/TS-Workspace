@@ -109,3 +109,13 @@ O banco de desenvolvimento não substitui o banco de testes.
 Volumes locais persistem dados. Não usar remoção de volumes, reset, clean ou
 limpeza de outros projetos como parte de um setup rotineiro.
 Veja [setup](../development/setup.md) e [testes](../development/testing.md).
+
+## Comentários — V10
+
+workspace_comment: id, task_id nullable, project_id nullable, author_id, content
+TEXT, version, created_at, updated_at, removed_at e removed_by_id nullable.
+CHECK exige exatamente um recurso; conteúdo trim entre 1 e 5000 caracteres.
+FKs RESTRICT preservam recurso/autoria/histórico. Índices por tarefa/data/id,
+projeto/data/id e autora; FK de remoção mantém integridade administrativa.
+V1–V9 não mudam. V10 adiciona três permissions e nove grants, preservando antigos.
+Audit_log não muda: atividade é leitura contextual, sem persistência duplicada.

@@ -52,7 +52,7 @@ permission para a mesma usuária. ALLOW e DENY não podem coexistir nesse par.
 | projects.manage_members | sim | sim | sim | não |
 | projects.archive | sim | sim | não | não |
 
-São 4 roles, 24 keys e 64 grants padrão. A existência de uma key não significa
+São 4 roles, 27 keys e 73 grants padrão. A existência de uma key não significa
 que sua tela ou módulo já foi entregue. O seed completa grants padrão
 faltantes sem apagar ajustes administrativos extras.
 
@@ -116,3 +116,17 @@ preserva decisões administrativas extras. Veja o [setup](../development/setup.m
 Evidências e pendências específicas estão no
 [registro histórico de RBAC Java](../history/fase-java-2-rbac.md).
 As regras vigentes pertencem a este documento e devem acompanhar futuras mudanças.
+
+## Comentários
+
+| Permissão | SUPER_ADMIN | ADMIN | SUPERVISOR | SUPPORT |
+| --- | --- | --- | --- | --- |
+| tasks.comment | Sim | Sim | Sim | Sim |
+| projects.comment | Sim | Sim | Sim | Não |
+| comments.moderate | Sim | Sim | Não | Não |
+
+Visualização herda tasks.view/projects.view e escopo do recurso, sem comments.view.
+Responsabilidade não amplia acesso. Autora edita/remove com grant atual e recurso
+ativo; moderação remove, nunca edita fala alheia. Em histórico arquivado apenas
+ADMIN/SUPER_ADMIN com comments.moderate removem. SUPPORT não altera conversa de
+Projeto. Catálogo atual: 27 keys e 73 grants padrão; seed idempotente.

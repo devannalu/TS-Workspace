@@ -143,3 +143,18 @@ erros controlados em feedback local. `lib/sessao.ts` contém as leituras de sess
 `lib/ui/painel.ts`, `permissoes.ts` e `formatacao.ts` são utilitários concretos.
 Rotas, chaves JSON, permissions e eventos de expiração permanecem compatíveis.
 Nomes técnicos de React, HTML e componentes do Design System ficam em inglês.
+
+## Colaboração contextual
+
+Detalhes de Tarefas/Projetos reutilizam AbasColaboracao: Detalhes, Comentários,
+Atividade. A API é consultada só ao abrir aba, sem polling, feed global ou novas
+rotas. Componentes compactos em comentarios reutilizam Button, Dialog, feedback
+e uma primitiva Textarea. Tabs usam setas/Home/End, labels e foco visível.
+
+Conversa em ordem cronológica; carregamento anterior de 25 itens com controle
+explícito. Composer com quebra de linha normal; edição inline; confirmação de
+remoção com foco e placeholder cronológico. Texto é renderizado pelo React,
+sem HTML/Markdown. Rascunho permanece na falha/409 e refresh exige ação explícita.
+Estado é local, sem localStorage. Capacidades do servidor determinam ações;
+401/403 e CSRF seguem o cliente Java central. Atividade paginada usa mensagens
+seguras e data humana, sem conteúdo duplicado. Sem realtime/mentions/notificações.

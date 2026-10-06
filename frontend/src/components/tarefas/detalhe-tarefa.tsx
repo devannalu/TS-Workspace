@@ -1,4 +1,5 @@
 "use client";
+import { AbasColaboracao } from "../comentarios/abas-colaboracao";
 import { useState } from "react";
 import {
   arquivarTarefa,
@@ -125,68 +126,75 @@ export function DetalheTarefa({
         />
       )}
       {modo === "ver" && tarefa && (
-        <div className="space-y-4">
-          <h3 className="break-words text-xl font-semibold">{tarefa.titulo}</h3>
-          <p className="whitespace-pre-wrap break-words subtle">
-            {tarefa.descricao || "Sem descrição."}
-          </p>
-          <dl className="grid grid-cols-2 gap-4 text-sm">
-            <div>
-              <dt className="subtle">Status</dt>
-              <dd>
-                {statusTarefa[tarefa.status]}
-                {tarefa.arquivada ? " · Arquivada" : ""}
-              </dd>
-            </div>
-            <div>
-              <dt className="subtle">Prioridade</dt>
-              <dd>{prioridadesTarefa[tarefa.prioridade]}</dd>
-            </div>
-            <div>
-              <dt className="subtle">Equipe</dt>
-              <dd>{tarefa.equipe.nome}</dd>
-            </div>
-            <div>
-              <dt className="subtle">Prazo</dt>
-              <dd>
-                {tarefa.prazo ? formatarPrazoTarefa(tarefa.prazo) : "Sem prazo"}
-                {tarefa.atrasada ? " · Atrasada" : ""}
-              </dd>
-            </div>
-            <div>
-              <dt className="subtle">Criada por</dt>
-              <dd>{tarefa.criadaPor.nome}</dd>
-            </div>
-            <div>
-              <dt className="subtle">Responsáveis</dt>
-              <dd>
-                {tarefa.responsaveis.map((pessoa) => pessoa.nome).join(", ") ||
-                  "Sem responsáveis"}
-              </dd>
-            </div>
-          </dl>
-          {!tarefa.capacidades.editar && (
-            <p className="subtle">
-              Esta tarefa está disponível somente para leitura no seu acesso
-              atual.
+        <AbasColaboracao recurso="tasks" recursoId={tarefa.id}>
+          <div className="space-y-4">
+            <h3 className="break-words text-xl font-semibold">
+              {tarefa.titulo}
+            </h3>
+            <p className="whitespace-pre-wrap break-words subtle">
+              {tarefa.descricao || "Sem descrição."}
             </p>
-          )}
-          <div className="flex flex-wrap gap-2">
-            {tarefa.capacidades.editar && (
-              <Button onClick={() => definirModo("editar")}>
-                Editar tarefa
-              </Button>
+            <dl className="grid grid-cols-2 gap-4 text-sm">
+              <div>
+                <dt className="subtle">Status</dt>
+                <dd>
+                  {statusTarefa[tarefa.status]}
+                  {tarefa.arquivada ? " · Arquivada" : ""}
+                </dd>
+              </div>
+              <div>
+                <dt className="subtle">Prioridade</dt>
+                <dd>{prioridadesTarefa[tarefa.prioridade]}</dd>
+              </div>
+              <div>
+                <dt className="subtle">Equipe</dt>
+                <dd>{tarefa.equipe.nome}</dd>
+              </div>
+              <div>
+                <dt className="subtle">Prazo</dt>
+                <dd>
+                  {tarefa.prazo
+                    ? formatarPrazoTarefa(tarefa.prazo)
+                    : "Sem prazo"}
+                  {tarefa.atrasada ? " · Atrasada" : ""}
+                </dd>
+              </div>
+              <div>
+                <dt className="subtle">Criada por</dt>
+                <dd>{tarefa.criadaPor.nome}</dd>
+              </div>
+              <div>
+                <dt className="subtle">Responsáveis</dt>
+                <dd>
+                  {tarefa.responsaveis
+                    .map((pessoa) => pessoa.nome)
+                    .join(", ") || "Sem responsáveis"}
+                </dd>
+              </div>
+            </dl>
+            {!tarefa.capacidades.editar && (
+              <p className="subtle">
+                Esta tarefa está disponível somente para leitura no seu acesso
+                atual.
+              </p>
             )}
-            {tarefa.capacidades.arquivar && (
-              <Button
-                variant="secondary"
-                onClick={() => definirModo("arquivar")}
-              >
-                Arquivar tarefa
-              </Button>
-            )}
+            <div className="flex flex-wrap gap-2">
+              {tarefa.capacidades.editar && (
+                <Button onClick={() => definirModo("editar")}>
+                  Editar tarefa
+                </Button>
+              )}
+              {tarefa.capacidades.arquivar && (
+                <Button
+                  variant="secondary"
+                  onClick={() => definirModo("arquivar")}
+                >
+                  Arquivar tarefa
+                </Button>
+              )}
+            </div>
           </div>
-        </div>
+        </AbasColaboracao>
       )}
       {modo === "arquivar" && tarefa && (
         <div className="space-y-4">

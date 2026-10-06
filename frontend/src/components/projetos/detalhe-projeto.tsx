@@ -1,4 +1,5 @@
 "use client";
+import { AbasColaboracao } from "../comentarios/abas-colaboracao";
 import Link from "next/link";
 import { useState } from "react";
 import {
@@ -139,7 +140,7 @@ export function DetalheProjeto({
           </>
         ) : (
           projeto && (
-            <>
+            <AbasColaboracao recurso="projects" recursoId={projeto.id}>
               <div className="flex flex-wrap gap-2">
                 <Badge
                   tone={projeto.status === "CONCLUIDO" ? "success" : "pink"}
@@ -231,7 +232,7 @@ export function DetalheProjeto({
                   disponível.
                 </p>
               )}
-            </>
+            </AbasColaboracao>
           )
         )}
         {projeto && modo !== "ver" && (

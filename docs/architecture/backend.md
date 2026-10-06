@@ -136,3 +136,25 @@ banco produz resposta controlada. O bind local padrão é `127.0.0.1:8080`.
 Consulte [autenticação](authentication.md), [RBAC](rbac.md),
 [equipes](teams.md), [usuárias e convites](users-invites.md), [banco](database.md)
 e [testes](../development/testing.md).
+
+## Comentários e atividade contextual
+
+O domínio `comentarios` contém entidade, repository, serviço e controller.
+Acesso reutiliza buscarTarefa/buscarProjeto; leitura herda a permissão e o escopo
+do recurso. Criar/editar/remover próprio exige tasks.comment ou projects.comment.
+Só a autora edita. comments.moderate permite remover alheios no escopo autorizado;
+em recurso/equipe arquivados apenas ADMIN/SUPER_ADMIN moderam. SUPPORT mantém
+Projetos somente leitura mesmo com override. Conclusão não congela conversa.
+
+GET/POST /api/v1/tasks/{id}/comments e /projects/{id}/comments;
+PATCH /api/v1/comments/{id}; POST /api/v1/comments/{id}/remove.
+Texto simples trim até 5000 caracteres; autora vem da sessão. Edição/remoção
+usam versão e CAS, dentro do bloqueio transacional organizacional existente.
+Removidos continuam na conversa, com conteúdo null e capacidades false.
+
+GET /api/v1/tasks/{id}/activity e /projects/{id}/activity projetam audit_log.
+Eventos Task/Project usam entity_type/entity_id; eventos Comment são relacionados
+pelo registro persistido workspace_comment. Allowlist exclui ações técnicas,
+eventos desconhecidos e associações sem vínculo exato. Não expõe metadata_json,
+conteúdo nem identificador de quem removeu. Actor é carregado em JOIN.
+Comentários e atividade têm paginação limitada, padrão 25; sem N+1.

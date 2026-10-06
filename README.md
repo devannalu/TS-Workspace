@@ -17,6 +17,9 @@ supervisoras, suporte e voluntárias autorizadas.
 - **Tarefas:** Kanban, prioridades, prazo, responsáveis, filtros e arquivamento.
 - **Projetos:** objetivos por equipe, responsáveis, período, status e progresso derivado das tarefas.
 - **Início do Workspace:** perfil, equipes e resumos reais de tarefas e projetos.
+
+- **Comentários e atividade:** conversa e histórico contextual nos detalhes de Tarefas e Projetos.
+
 - **Autorização:** roles e permissões verificadas no servidor.
 
 Eventos e os demais módulos de produtividade fazem parte do
