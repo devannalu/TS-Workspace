@@ -1,15 +1,13 @@
 import type { UsuarioAtual } from "../api/autenticacao";
 export function navegacaoPermitida(permissoes: readonly string[]) {
   return [
-    { label: "Início", href: "/workspace", permissao: null },
-    { label: "Tarefas", href: "/tarefas", permissao: "tasks.view" },
-    { label: "Projetos", href: "/projetos", permissao: "projects.view" },
-    { label: "Equipes", href: "/equipes", permissao: "teams.view" },
-    { label: "Usuárias", href: "/usuarias", permissao: "users.view" },
-  ].filter(
-    (linkNavegacao) =>
-      !linkNavegacao.permissao || permissoes.includes(linkNavegacao.permissao),
-  );
+    { label: "Início", href: "/workspace", permissoes: [] },
+    { label: "Tarefas", href: "/tarefas", permissoes: ["tasks.view"] },
+    { label: "Projetos", href: "/projetos", permissoes: ["projects.view"] },
+    { label: "Calendário", href: "/calendario", permissoes: ["tasks.view", "projects.view"] },
+    { label: "Equipes", href: "/equipes", permissoes: ["teams.view"] },
+    { label: "Usuárias", href: "/usuarias", permissoes: ["users.view"] },
+  ].filter(link => !link.permissoes.length || link.permissoes.some(p => permissoes.includes(p)));
 }
 export function acessosPainel(usuario: Pick<UsuarioAtual, "permissions">) {
   return {

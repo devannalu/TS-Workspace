@@ -35,3 +35,5 @@ Use a documentação viva para orientação atual:
 - [Fase 10 — Comentários e atividade](fase-10-comentarios-atividade.md).
 
 - [Fase 11 — Anexos e storage](fase-11-anexos-storage.md).
+
+- [Fase 12 — Calendário](fase-12-calendario.md).

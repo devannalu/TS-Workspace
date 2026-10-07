@@ -19,6 +19,8 @@ export async function lerResposta<T>(response: Response): Promise<T> {
     };
     // Detalhes técnicos do servidor não devem chegar à interface.
     const problema = await response.json().catch(() => null);
+    if (response.status === 400 && problema?.detail === "Informe um intervalo válido de até 366 dias.")
+      throw new ErroApi(400, problema.detail);
     const conflitosConhecidos = [
       "Este tipo de arquivo não é permitido.",
       "O arquivo ultrapassa o limite de 10 MB.",

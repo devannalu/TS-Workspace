@@ -124,3 +124,10 @@ Audit_log não muda: atividade é leitura contextual, sem persistência duplicad
 ## Anexos e armazenamento
 
 V11 adiciona attachment: vínculo exclusivo task_id/project_id, uploader_id, original_name, object_key único, MIME, size_bytes limitado a 10 MiB, state PENDENTE/DISPONIVEL/REMOVIDO e timestamps. Nenhum binário ou URL assinada no MySQL.
+
+## Calendário: sem schema adicional
+
+A Fase 12 não adicionou schema nem migration. Flyway permanece em V11.
+Calendário é uma projeção de Tarefas e Projetos e não possui persistência própria.
+Datas continuam em task.due_date e project.start_date/end_date; atrasos são derivados,
+sem calendar table, boolean persistido, evento duplicado ou nova permission.

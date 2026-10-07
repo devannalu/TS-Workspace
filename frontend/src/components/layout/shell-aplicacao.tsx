@@ -10,6 +10,7 @@ import {
   ChevronDown,
   ClipboardList,
   FolderKanban,
+  CalendarDays,
 } from "lucide-react";
 import type { UsuarioAtual } from "@/lib/api/autenticacao";
 import { navegacaoPermitida } from "@/lib/ui/permissoes";
@@ -21,6 +22,7 @@ const icones = {
   Início: House,
   Tarefas: ClipboardList,
   Projetos: FolderKanban,
+  Calendário: CalendarDays,
   Equipes: Network,
   Usuárias: Users,
 };

@@ -163,3 +163,26 @@ Comentários e atividade têm paginação limitada, padrão 25; sem N+1.
 ## Anexos e armazenamento
 
 Anexos ficam no domínio `anexos`: serviço valida acesso herdado, grants e arquivamento; repository persiste somente metadados; ArmazenamentoArquivo usa protocolo S3 com URLs temporárias. V11 adiciona attachment e três permissões. Ver configuração e consistência em [storage](../development/storage.md).
+
+## Calendário
+
+Calendário é uma projeção de Tarefas e Projetos e não possui persistência própria.
+O domínio compacto `calendario` contém controller de leitura, serviço de projeção e repository.
+`GET /api/v1/calendar` exige `from`/`to` ISO date-only, intervalo inclusivo de até 366 dias,
+e aceita `teamId`, `types=TAREFA,PROJETO` e `responsibleId`. Retorna uma lista normalizada:
+`id` (tipo:UUID), `tipo`, `recursoId`, `titulo`, `dataInicio`, `dataFim`, `equipe`, `status`,
+`prioridade` nullable, `responsaveis`, `concluido`, `atrasado`.
+
+Permissões tasks.view/projects.view habilitam cada fonte separadamente. Sem ambas, 403;
+sem sessão, 401. Controller não replica RBAC. Consultas reutilizam montagem de escopo dos
+repositories de Tarefas/Projetos e os tipos Acesso das políticas existentes.
+SQL seleciona apenas campos usados na projeção, exclui recursos arquivados, filtra por
+intervalo/equipe/responsável e busca responsáveis em lote (até quatro consultas das fontes,
+sem N+1). Nenhuma descrição, comentário, anexo ou agregado de progresso é carregado.
+
+Tarefa usa due_date. Projeto usa COALESCE(start_date,end_date) <= to e
+COALESCE(end_date,start_date) >= from, com limites inclusivos. Sem datas não aparece;
+uma única data corresponde a um dia. Atraso de Tarefa reutiliza PoliticaTarefa; Projeto exige
+end_date anterior a hoje e status diferente de CONCLUIDO. Projeto com apenas início
+não possui prazo final para ser marcado atrasado. Hoje segue America/Bahia, como Tarefas.
+Tudo usa LocalDate, sem converter as datas de domínio para Instant.

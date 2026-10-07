@@ -163,3 +163,25 @@ seguras e data humana, sem conteúdo duplicado. Sem realtime/mentions/notificaç
 ## Anexos e armazenamento
 
 Aba contextual Anexos nos diálogos de Tarefas e Projetos: seleção nativa, envio direto sem cookies, confirmação via Java com CSRF, download temporário via fetch sem cookies e Blob local, e remoção autorizada. Retentar preserva o ID autorizado e não reenvia bytes depois de upload concluído.
+
+## Calendário
+
+`/calendario` exige tasks.view OU projects.view, também na sidebar. A página entrega
+as equipes disponíveis e o componente de domínio consulta somente `/calendar` para a janela
+visível. Filtros: equipe, tipo autorizado, responsável da equipe selecionada e Meus itens.
+As opções de responsáveis reutilizam a API de opções existente da fonte autorizada.
+
+Mês começa na segunda-feira, limita cards a três por dia e permite selecionar o dia para
+ver a lista completa. Em telas pequenas mostra números/quantidade e a lista selecionada;
+Agenda fica disponível em um controle direto. Semana tem sete colunas all-day, com scroll
+horizontal contido quando necessário; Agenda agrupa cronologicamente e mostra cada projeto
+uma vez, conservando seu período original mesmo quando iniciou antes da janela.
+
+Visão/data permanecem na URL por replaceState. Controles reais, labels, aria-pressed,
+aria-current=date, focus visible e feedback de loading/erro preservam navegação por teclado.
+Dados obsoletos de fetch são descartados. Não há cache global nem bibliotecas novas.
+Utilitários pequenos em calendario/datas.ts trabalham com strings YYYY-MM-DD e aritmética
+UTC interna explícita; apresentação usa timeZone UTC para não deslocar date-only.
+Hoje é calculado no calendário local da usuária. Clique abre DetalheTarefa/DetalheProjeto
+existentes, consultando o recurso autorizado somente ao abrir. Mudanças no detalhe atualizam
+a projeção. Calendário não possui criação de evento, edição por drag ou formulário duplicado.

@@ -38,7 +38,7 @@ public class TratamentoErrosApi {
         return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, "Dados inválidos.");
     }
 
-    @ExceptionHandler(MethodArgumentNotValidException.class)
+    @ExceptionHandler({MethodArgumentNotValidException.class, org.springframework.web.bind.MissingServletRequestParameterException.class})
     ProblemDetail falhaValidacao() {
         return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, "Dados inválidos.");
     }

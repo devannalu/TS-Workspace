@@ -18,7 +18,7 @@ O Next.js apresenta os dados pelas APIs Auth, RBAC, Teams, Users, Invites, Tasks
 | Eventos | PLANEJADO | Organização da operação e das atividades de eventos da comunidade. |
 | Comunicação / Conteúdo | PLANEJADO | Organização de conteúdo e campanhas, articulando as frentes de Comunicação. |
 | Parcerias | PLANEJADO | Acompanhamento de parcerias e atividades relacionadas. |
-| Calendário | PLANEJADO | Visão temporal das atividades e compromissos do Workspace. |
+| Calendário | IMPLEMENTADO | Projeção dos prazos de Tarefas e períodos de Projetos, com mês, semana, agenda, filtros e detalhes reutilizados; sem eventos manuais ou persistência própria. |
 | Talks / Reuniões | PLANEJADO | Organização de encontros, informações e atividades decorrentes. |
 | Anexos | IMPLEMENTADO | Upload contextual em Tarefas/Projetos, storage S3 privado, download temporário e remoção autorizada; sem módulo global de arquivos ou preview. |
 | Chat | PLANEJADO | Comunicação interna contextual ao Workspace. |
