@@ -139,3 +139,7 @@ V12 adiciona notification, vinculada à destinatária, com origem, recurso, moti
 ## Checklist
 
 V13 cria task_checklist com FK para tarefa/autora, texto, concluído, ordem, versão e timestamps de criação/atualização/remoção. Índice por tarefa, remoção e ordem atende o detalhe. Sem percentual redundante, responsável ou prazo próprio.
+
+## Reuniões
+
+V14 cria meeting e meeting_participant, com FKs para equipe, autoria e participantes. Horários persistidos como instantes TIMESTAMP(6), zona preservada em zone_id. Responsabilidade é flag de participante; versão protege edição. Índices atendem equipe/status/período e participação pessoal. Acrescenta quatro keys meetings e grants sem substituir os anteriores.

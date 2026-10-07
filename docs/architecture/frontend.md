@@ -193,3 +193,7 @@ O sino do header abre um dialog paginado, com contador, leitura individual e lei
 ## Checklist
 
 O detalhe existente da tarefa contém checklist com progresso, inclusão, edição inline, conclusão, ordenação por botões acessíveis e confirmação de remoção. A capacidade de editar vem da consulta Java. Falhas mantêm rascunhos e oferecem atualização; conflitos não são reenviados automaticamente.
+
+## Reuniões e Talks
+
+/reunioes apresenta lista paginada, filtros, criação, detalhe, edição e confirmação de arquivo. Formulário informa explicitamente o fuso e transmite horários locais sem converter pelo fuso do navegador. Horários apresentados usam Intl com a zona persistida. Bahia e Lisboa disponíveis na seleção. O calendário reutiliza o detalhe e mostra horário/fuso nos cards, sem duplicar a interface nem converter datas de tarefas/projetos.

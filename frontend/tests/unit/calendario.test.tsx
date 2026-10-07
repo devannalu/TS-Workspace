@@ -69,7 +69,7 @@ it("reutiliza detalhe de projeto",async()=>{
 });
 it("loading, vazio e erro recuperável",async()=>{
   api.calendario.mockResolvedValue([]);abrir();expect(screen.getByRole("status",{name:"Carregando calendário"})).toBeTruthy();
-  expect(await screen.findByText("Nenhum prazo ou projeto neste período.")).toBeTruthy();
+  expect(await screen.findByText("Nenhum item neste período.")).toBeTruthy();
 });
 it("erro seguro preserva controles e permite retry",async()=>{
   api.calendario.mockRejectedValueOnce(new Error("Serviço indisponível"));abrir();

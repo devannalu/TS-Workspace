@@ -24,6 +24,7 @@ const icones = {
   Tarefas: ClipboardList,
   Projetos: FolderKanban,
   Calendário: CalendarDays,
+  Reuniões: CalendarDays,
   Equipes: Network,
   Usuárias: Users,
 };

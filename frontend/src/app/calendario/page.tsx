@@ -9,10 +9,10 @@ export default async function CalendarioPage({ searchParams }: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const usuario = await exigirSessao();
-  if (!usuario.permissions.some(p => p === "tasks.view" || p === "projects.view"))
+  if (!usuario.permissions.some(p => p === "tasks.view" || p === "projects.view" || p === "meetings.view"))
     return <ShellWorkspace><ErrorState message="Você não tem permissão para acessar esta área." /></ShellWorkspace>;
   const parametros = await searchParams;
-  const opcoes = await lerJava<OpcoesTarefas>(usuario.permissions.includes("tasks.view") ? "/tasks/options" : "/projects/options");
+  const opcoes = await lerJava<OpcoesTarefas>(usuario.permissions.includes("tasks.view") ? "/tasks/options" : usuario.permissions.includes("projects.view") ? "/projects/options" : "/meetings/options");
   return <ShellWorkspace><Calendario usuarioId={usuario.id} permissoes={usuario.permissions} equipes={opcoes.equipes}
     dataInicial={typeof parametros.date === "string" ? parametros.date : undefined}
     visaoInicial={typeof parametros.view === "string" ? parametros.view : undefined} /></ShellWorkspace>;

@@ -95,7 +95,7 @@ class CalendarioIntegrationTest {
             .andExpect(status().isOk()).andReturn().getResponse().getCookie("TS_SESSION");
     }
     @Test void preservaCalendarioSemTabelaPropria() {
-        assertThat(flyway.info().current().getVersion().getVersion()).isEqualTo("13");
+        assertThat(flyway.info().current().getVersion().getVersion()).isEqualTo("14");
         assertThat(flyway.migrate().migrationsExecuted).isZero();
         assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM information_schema.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME LIKE 'calendar%'", Integer.class)).isZero();
     }
@@ -145,7 +145,7 @@ class CalendarioIntegrationTest {
         negar(suporte,"projects.view"); negar(supervisora,"tasks.view");
         assertThat(listar(suporte)).allMatch(i->i.tipo().name().equals("TAREFA")).hasSize(1);
         assertThat(listar(supervisora)).allMatch(i->i.tipo().name().equals("PROJETO")).hasSize(1);
-        negar(suporte,"tasks.view"); assertThatThrownBy(()->listar(suporte)).isInstanceOf(AccessDeniedException.class);
+        negar(suporte,"tasks.view"); negar(suporte,"meetings.view"); assertThatThrownBy(()->listar(suporte)).isInstanceOf(AccessDeniedException.class);
     }
     @Test void filtrosEMesmoUuidEntreFontes() {
         String t=tarefa(equipeA,DE,"A_FAZER",false), p=projeto(equipeA,DE,ATE,"PLANEJADO",false);
@@ -168,7 +168,7 @@ class CalendarioIntegrationTest {
             .andExpect(status().isBadRequest()).andExpect(jsonPath("$.detail").value("Informe um intervalo válido de até 366 dias."));
         http.perform(get("/api/v1/calendar").cookie(sessao).param("from",DE.toString()).param("to",ATE.toString()))
             .andExpect(status().isOk()).andExpect(jsonPath("$[0].dataInicio").value("2026-10-07"));
-        negar(suporte,"tasks.view"); negar(suporte,"projects.view");
+        negar(suporte,"tasks.view"); negar(suporte,"projects.view"); negar(suporte,"meetings.view");
         http.perform(get("/api/v1/calendar").cookie(sessao).param("from",DE.toString()).param("to",ATE.toString())).andExpect(status().isForbidden());
     }
 }

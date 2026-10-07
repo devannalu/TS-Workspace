@@ -41,3 +41,5 @@ Use a documentação viva para orientação atual:
 - [Fase 13 — Notificações](fase-13-notificacoes.md).
 
 - [Fase 14 — Checklist](fase-14-checklist.md).
+
+- [Fase 15 — Reuniões e Talks](fase-15-reunioes-talks.md).

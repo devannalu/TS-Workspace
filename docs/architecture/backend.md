@@ -194,3 +194,9 @@ O domínio notificacoes usa JDBC e a migration V12. Alterações relevantes de t
 ## Checklist de tarefas
 
 ChecklistController, ChecklistService e ChecklistRepository ficam junto ao domínio tarefas. GET /tasks/{id}/checklist herda leitura da tarefa; POST, PATCH, order e remove herdam sua capacidade editar. Cada item tem versão; reordenação exige conjunto completo com versões. Escritas bloqueiam a tarefa, sem incrementar sua versão: checklist não modifica os campos da tarefa. Lista limitada a 200 itens de 500 caracteres para evitar abuso. Remoção lógica mantém autoria e timestamps; progresso é calculado.
+
+## Reuniões e Talks
+
+Domínio reunioes contém repository JDBC, serviço e controller em /api/v1/meetings: listagem paginada/busca/equipe/status/arquivo, detalhe, opções, criação, edição versionada e arquivo. Participantes são integrantes ativas da equipe; responsáveis também participam. Consultas fazem carregamento em lote. Escritas transacionais registram ações importantes na auditoria existente. Link aceita somente HTTP(S), host presente e sem credenciais.
+
+Horários locais e zone id chegam à API; ela resolve os offsets e persiste Instant com zona preservada. Horário inexistente ou ambíguo em mudança de verão retorna 400, sem escolha silenciosa. Período exige fim posterior ao início. Calendário agrega REUNIAO com inicioEm/fimEm/zona, mantendo null nesses campos para fontes date-only. Encontro aparece nas datas de seu fuso de origem; cancelados/arquivados são excluídos.

@@ -140,6 +140,9 @@ public class SegurancaConfig {
                 .requestMatchers(HttpMethod.POST, "/api/v1/tasks/*/attachments/upload", "/api/v1/projects/*/attachments/upload",
                     "/api/v1/tasks/*/attachments/*/confirm", "/api/v1/projects/*/attachments/*/confirm",
                     "/api/v1/attachments/*/download", "/api/v1/attachments/*/remove").authenticated()
+                .requestMatchers(HttpMethod.GET, "/api/v1/meetings", "/api/v1/meetings/options", "/api/v1/meetings/*").authenticated()
+                .requestMatchers(HttpMethod.POST, "/api/v1/meetings", "/api/v1/meetings/*/archive").authenticated()
+                .requestMatchers(HttpMethod.PATCH, "/api/v1/meetings/*").authenticated()
                 .requestMatchers(HttpMethod.GET, "/api/v1/calendar").authenticated()
                 .requestMatchers(HttpMethod.GET, "/api/v1/tasks/*/checklist").authenticated()
                 .requestMatchers(HttpMethod.POST, "/api/v1/tasks/*/checklist", "/api/v1/tasks/*/checklist/*/remove").authenticated()

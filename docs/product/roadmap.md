@@ -13,8 +13,7 @@ O frontend oficial utiliza Spring Boot com MySQL.
 Tarefas já oferecem Kanban, responsáveis, prioridades, prazo, filtros e arquivamento,
 com autorização no Java e resumo real no Dashboard. Projetos organizam objetivos
 por equipe, com período, responsáveis e progresso derivado das tarefas, sem exigir
-vínculo para tarefas independentes. Comentários, anexos e atividade contextual já atendem os dois recursos. A próxima evolução poderá conectar
-Talks/Reuniões. Checklist já oferece itens contextuais ordenados e progresso derivado em Tarefas. Notificações pessoais já acompanham atribuições, comentários, mudanças e prazos de tarefas e projetos.
+vínculo para tarefas independentes. Comentários, anexos e atividade contextual já atendem os dois recursos. Talks/Reuniões organizam encontros com horários, participantes e resultados, integrados ao calendário. Checklist já oferece itens contextuais ordenados e progresso derivado em Tarefas. Notificações pessoais já acompanham atribuições, comentários, mudanças e prazos de tarefas e projetos.
 
 ## 3. Operação da comunidade
 
@@ -46,6 +45,6 @@ Anexos contextuais utilizam storage S3 compatível, Garage local e R2 configurá
 
 ## Calendário
 
-Calendário é uma projeção de Tarefas e Projetos e não possui persistência própria.
+Calendário é uma projeção de Tarefas, Projetos e Reuniões/Talks e não possui persistência própria.
 A visão temporal disponível agrega prazos e períodos, respeita permissões e escopo das fontes
-e não inclui eventos manuais, sincronização externa, ICS ou lembretes.
+e inclui encontros com horário/fuso. Eventos da comunidade, sincronização externa e ICS permanecem fora desta entrega.

@@ -149,3 +149,7 @@ Não existe permission key nova. Cada pessoa consulta e marca apenas os próprio
 ## Checklist
 
 Não há permission nova: leitura herda tasks.view/escopo; mutações herdam a capacidade editar da tarefa, incluindo ownership para SUPPORT e bloqueio de recurso/equipe/projeto arquivado. Versões impedem sobrescrita; itens de outra tarefa não podem ser alterados pela rota contextual.
+
+## Reuniões
+
+meetings.view/create/edit/archive. SUPER_ADMIN e ADMIN recebem as quatro; SUPERVISOR recebe view/create/edit; SUPPORT recebe view. ADMIN/SUPER_ADMIN têm escopo global; demais dependem de membership direta da equipe. SUPPORT mantém somente leitura, mesmo com override de escrita. Arquivo do recurso/equipe bloqueia mutações. Catálogo: 34 keys, 94 grants padrão, seed idempotente.

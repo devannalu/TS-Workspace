@@ -19,9 +19,12 @@ export async function lerResposta<T>(response: Response): Promise<T> {
     };
     // Detalhes técnicos do servidor não devem chegar à interface.
     const problema = await response.json().catch(() => null);
-    if (response.status === 400 && problema?.detail === "Informe um intervalo válido de até 366 dias.")
+    if (response.status === 400 && ["Informe um intervalo válido de até 366 dias.","Horário inexistente ou ambíguo neste fuso. Escolha outro horário."].includes(problema?.detail))
       throw new ErroApi(400, problema.detail);
     const conflitosConhecidos = [
+      "Esta reunião foi atualizada. Atualize os dados e tente novamente.",
+      "Reunião arquivada: somente leitura.",
+      "Selecione integrantes ativas da equipe da reunião.",
       "O checklist foi atualizado. Atualize os itens e tente novamente.",
       "Esta tarefa atingiu o limite de 200 itens de checklist.",
       "Este tipo de arquivo não é permitido.",

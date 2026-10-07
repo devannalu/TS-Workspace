@@ -13,18 +13,24 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class CalendarioService {
-    public enum Tipo { TAREFA, PROJETO }
+    public enum Tipo { TAREFA, PROJETO, REUNIAO }
     public record Referencia(String id, String nome) { }
     public record Item(String id, Tipo tipo, String recursoId, String titulo, LocalDate dataInicio,
         LocalDate dataFim, Referencia equipe, String status, String prioridade,
-        List<Referencia> responsaveis, boolean concluido, boolean atrasado) { }
+        List<Referencia> responsaveis, boolean concluido, boolean atrasado,Instant inicioEm,Instant fimEm,String zona) {
+        public Item(String id,Tipo tipo,String recursoId,String titulo,LocalDate dataInicio,LocalDate dataFim,
+            Referencia equipe,String status,String prioridade,List<Referencia> responsaveis,boolean concluido,boolean atrasado) {
+            this(id,tipo,recursoId,titulo,dataInicio,dataFim,equipe,status,prioridade,responsaveis,concluido,atrasado,null,null,null);
+        }
+    }
     private final CalendarioRepository calendario;
     private final TarefaRepository tarefas;
     private final ProjetoRepository projetos;
     private final PermissaoService permissoes;
+    private final com.devannalu.tsworkspace.reunioes.ReuniaoRepository reunioes;
     public CalendarioService(CalendarioRepository calendario, TarefaRepository tarefas,
-        ProjetoRepository projetos, PermissaoService permissoes) {
-        this.calendario = calendario; this.tarefas = tarefas; this.projetos = projetos; this.permissoes = permissoes;
+        ProjetoRepository projetos, PermissaoService permissoes,com.devannalu.tsworkspace.reunioes.ReuniaoRepository reunioes) {
+        this.calendario = calendario; this.tarefas = tarefas; this.projetos = projetos; this.permissoes = permissoes;this.reunioes=reunioes;
     }
 
     @Transactional(readOnly = true)
@@ -34,7 +40,7 @@ public class CalendarioService {
             throw ProblemaDominio.requisicaoInvalida("Informe um intervalo válido de até 366 dias.");
         var acesso = permissoes.buscarPermissoesUsuario(usuariaId);
         Set<String> chaves = Set.copyOf(acesso.chavesEfetivas());
-        if (acesso.role() == null || (!chaves.contains("tasks.view") && !chaves.contains("projects.view")))
+        if (acesso.role() == null || (!chaves.contains("tasks.view") && !chaves.contains("projects.view") && !chaves.contains("meetings.view")))
             throw new AccessDeniedException("Acesso negado.");
         var selecionados = tipos == null || tipos.isEmpty() ? EnumSet.allOf(Tipo.class) : tipos;
         LocalDate hoje = LocalDate.now(ZoneId.of("America/Bahia"));
@@ -54,6 +60,20 @@ public class CalendarioService {
             var responsaveis = projetos.buscarResponsaveis(registros.stream().map(CalendarioRepository.Registro::id).toList());
             for (var registro : registros) itens.add(item(registro, Tipo.PROJETO,
                 responsaveis.getOrDefault(registro.id(), List.of()).stream().map(p -> new Referencia(p.id(), p.nome())).toList(), hoje));
+        }
+        if(chaves.contains("meetings.view")&&selecionados.contains(Tipo.REUNIAO)) {
+            var escopo=new PoliticaTarefa.Acesso(usuariaId,acesso.role().key(),chaves);
+            var consulta=reunioes.consulta(usuariaId,escopo.global(),equipeId,null,null,false,responsavelId);
+            // A margem inclui todas as zonas; a interseção exata usa a data local do encontro.
+            var registros=reunioes.calendario(consulta,de.minusDays(1).atStartOfDay(ZoneOffset.UTC).toInstant(),ate.plusDays(2).atStartOfDay(ZoneOffset.UTC).toInstant());
+            var participantes=reunioes.participantes(registros.stream().map(com.devannalu.tsworkspace.reunioes.ReuniaoRepository.Registro::id).toList());
+            for(var r:registros) {
+                var zona=ZoneId.of(r.zona());var inicio=r.inicio().atZone(zona).toLocalDate();var fim=r.fim().minusNanos(1).atZone(zona).toLocalDate();
+                if(inicio.isAfter(ate)||fim.isBefore(de)||r.status()==com.devannalu.tsworkspace.reunioes.ReuniaoRepository.Status.CANCELADA)continue;
+                itens.add(new Item("REUNIAO:"+r.id(),Tipo.REUNIAO,r.id(),r.titulo(),inicio,fim,new Referencia(r.equipe().id(),r.equipe().nome()),r.status().name(),null,
+                    participantes.getOrDefault(r.id(),List.of()).stream().filter(com.devannalu.tsworkspace.reunioes.ReuniaoRepository.Participante::responsavel).map(p->new Referencia(p.id(),p.nome())).toList(),
+                    r.status()==com.devannalu.tsworkspace.reunioes.ReuniaoRepository.Status.REALIZADA,false,r.inicio(),r.fim(),r.zona()));
+            }
         }
         return itens.stream().sorted(Comparator.comparing(Item::dataInicio).thenComparing(Item::id)).toList();
     }
