@@ -22,6 +22,11 @@ export async function lerResposta<T>(response: Response): Promise<T> {
     if (response.status === 400 && ["Informe um intervalo válido de até 366 dias.","Horário inexistente ou ambíguo neste fuso. Escolha outro horário."].includes(problema?.detail))
       throw new ErroApi(400, problema.detail);
     const conflitosConhecidos = [
+      "Este conteúdo foi atualizado. Atualize os dados e tente novamente.",
+      "Conteúdo arquivado: somente leitura.",
+      "Selecione uma responsável ativa da equipe do conteúdo.",
+      "Vincule um evento ativo da mesma equipe.",
+      "Vincule um projeto ativo da mesma equipe.",
       "Este evento foi atualizado. Atualize os dados e tente novamente.",
       "Evento arquivado: somente leitura.",
       "Selecione integrantes ativas da equipe do evento.",

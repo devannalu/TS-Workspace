@@ -13,7 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class CalendarioService {
-    public enum Tipo { TAREFA, PROJETO, REUNIAO, EVENTO }
+    public enum Tipo { TAREFA, PROJETO, REUNIAO, EVENTO, CONTEUDO }
     public record Referencia(String id, String nome) { }
     public record Item(String id, Tipo tipo, String recursoId, String titulo, LocalDate dataInicio,
         LocalDate dataFim, Referencia equipe, String status, String prioridade,
@@ -29,9 +29,10 @@ public class CalendarioService {
     private final PermissaoService permissoes;
     private final com.devannalu.tsworkspace.reunioes.ReuniaoRepository reunioes;
     private final com.devannalu.tsworkspace.eventos.EventoRepository eventos;
+    private final com.devannalu.tsworkspace.conteudos.ConteudoRepository conteudos;
     public CalendarioService(CalendarioRepository calendario, TarefaRepository tarefas,
-        ProjetoRepository projetos, PermissaoService permissoes,com.devannalu.tsworkspace.reunioes.ReuniaoRepository reunioes,com.devannalu.tsworkspace.eventos.EventoRepository eventos) {
-        this.calendario = calendario; this.tarefas = tarefas; this.projetos = projetos; this.permissoes = permissoes;this.reunioes=reunioes;this.eventos=eventos;
+        ProjetoRepository projetos, PermissaoService permissoes,com.devannalu.tsworkspace.reunioes.ReuniaoRepository reunioes,com.devannalu.tsworkspace.eventos.EventoRepository eventos,com.devannalu.tsworkspace.conteudos.ConteudoRepository conteudos) {
+        this.calendario = calendario; this.tarefas = tarefas; this.projetos = projetos; this.permissoes = permissoes;this.reunioes=reunioes;this.eventos=eventos;this.conteudos=conteudos;
     }
 
     @Transactional(readOnly = true)
@@ -41,7 +42,7 @@ public class CalendarioService {
             throw ProblemaDominio.requisicaoInvalida("Informe um intervalo válido de até 366 dias.");
         var acesso = permissoes.buscarPermissoesUsuario(usuariaId);
         Set<String> chaves = Set.copyOf(acesso.chavesEfetivas());
-        if (acesso.role() == null || (!chaves.contains("tasks.view") && !chaves.contains("projects.view") && !chaves.contains("meetings.view") && !chaves.contains("events.view")))
+        if (acesso.role() == null || (!chaves.contains("tasks.view") && !chaves.contains("projects.view") && !chaves.contains("meetings.view") && !chaves.contains("events.view") && !chaves.contains("content.view")))
             throw new AccessDeniedException("Acesso negado.");
         var selecionados = tipos == null || tipos.isEmpty() ? EnumSet.allOf(Tipo.class) : tipos;
         LocalDate hoje = LocalDate.now(ZoneId.of("America/Bahia"));
@@ -88,6 +89,15 @@ public class CalendarioService {
                 itens.add(new Item("EVENTO:"+r.id(),Tipo.EVENTO,r.id(),r.nome(),inicio,fim,new Referencia(r.equipe().id(),r.equipe().nome()),r.status().name(),null,
                     responsaveis.getOrDefault(r.id(),List.of()).stream().map(p->new Referencia(p.id(),p.nome())).toList(),
                     r.status()==com.devannalu.tsworkspace.eventos.EventoRepository.Status.CONCLUIDO,false,r.inicio(),r.fim(),r.zona()));
+            }
+        }
+        if(chaves.contains("content.view")&&selecionados.contains(Tipo.CONTEUDO)) {
+            var escopo=new PoliticaTarefa.Acesso(usuariaId,acesso.role().key(),chaves);
+            var consulta=conteudos.consulta(usuariaId,escopo.global(),equipeId,null,null,false,responsavelId);
+            for(var r:conteudos.calendario(consulta,de,ate)) {
+                var responsaveis=r.responsavel()==null?List.<Referencia>of():List.of(new Referencia(r.responsavel().id(),r.responsavel().nome()));
+                itens.add(new Item("CONTEUDO:"+r.id(),Tipo.CONTEUDO,r.id(),r.titulo(),r.publicacaoPlanejada(),r.publicacaoPlanejada(),
+                    new Referencia(r.equipe().id(),r.equipe().nome()),r.status().name(),null,responsaveis,r.status()==com.devannalu.tsworkspace.conteudos.ConteudoRepository.Status.PUBLICADO,false));
             }
         }
         return itens.stream().sorted(Comparator.comparing(Item::dataInicio).thenComparing(Item::id)).toList();

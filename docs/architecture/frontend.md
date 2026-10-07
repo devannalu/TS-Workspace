@@ -201,3 +201,7 @@ O detalhe existente da tarefa contém checklist com progresso, inclusão, ediç�
 ## Eventos
 
 /eventos oferece cards paginados, filtros e detalhe/formulário com o Design System atual. O calendário reutiliza DetalheEvento; capacidade server-side dirige os controles. Sessão e CSRF continuam centralizados.
+
+## Comunicação e Conteúdo
+
+/conteudos oferece fluxo editorial simples, responsável e publicação date-only. Calendário reutiliza DetalheConteudo; links de fonte só aparecem conforme capacidades atuais e as rotas de destino revalidam acesso.

@@ -6,7 +6,8 @@ export function navegacaoPermitida(permissoes: readonly string[]) {
     { label: "Projetos", href: "/projetos", permissoes: ["projects.view"] },
     { label: "Reuniões", href: "/reunioes", permissoes: ["meetings.view"] },
     { label: "Eventos", href: "/eventos", permissoes: ["events.view"] },
-    { label: "Calendário", href: "/calendario", permissoes: ["tasks.view", "projects.view", "meetings.view", "events.view"] },
+    { label: "Conteúdo", href: "/conteudos", permissoes: ["content.view"] },
+    { label: "Calendário", href: "/calendario", permissoes: ["tasks.view", "projects.view", "meetings.view", "events.view", "content.view"] },
     { label: "Equipes", href: "/equipes", permissoes: ["teams.view"] },
     { label: "Usuárias", href: "/usuarias", permissoes: ["users.view"] },
   ].filter(link => !link.permissoes.length || link.permissoes.some(p => permissoes.includes(p)));

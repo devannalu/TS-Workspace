@@ -157,3 +157,7 @@ meetings.view/create/edit/archive. SUPER_ADMIN e ADMIN recebem as quatro; SUPERV
 ## Eventos
 
 events.view/create/edit/archive são capacidades reais. SUPER_ADMIN/ADMIN globais; SUPERVISOR cria/edita nas equipes atuais; SUPPORT lê somente. Arquivo não concedido ao SUPERVISOR por padrão. V15 e seed acrescentam quatro keys e 12 grants sem modificar grants históricos.
+
+## Comunicação e Conteúdo
+
+content.view/create/edit/archive; V16 acrescenta quatro keys e 12 grants. Escrita de SUPERVISOR por equipe, arquivo administrativo; SUPPORT somente leitura. Vincular uma fonte não concede acesso à fonte.

@@ -146,3 +146,5 @@ Veja o [roadmap do produto](docs/product/roadmap.md).
 Anexos usam storage S3 privado: Garage local e R2/S3 configurável em produção. Consulte [configuração e limites](docs/development/storage.md).
 
 Eventos da comunidade organizam formato, responsáveis, horários com fuso, status e notas operacionais. A agenda agrega seus períodos com as fontes existentes.
+
+Comunicação/Conteúdo organiza peças e briefing, canal/formato, responsável, fluxo editorial, vínculos e publicação planejada no calendário.

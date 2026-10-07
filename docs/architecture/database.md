@@ -147,3 +147,7 @@ V14 cria meeting e meeting_participant, com FKs para equipe, autoria e participa
 ## Eventos da comunidade
 
 V15 adiciona community_event (nome, descrição, formato, status, equipe, Instant, zona, notas, autoria, versão, arquivo) e community_event_responsible. Índices de equipe/período, checks e FKs preservam integridade. Sem persistência paralela de calendário.
+
+## Comunicação e Conteúdo
+
+V16 adiciona communication_content com canal/formato/status limitados por checks, responsável opcional e FKs para Evento/Projeto. planned_publication_date é DATE; não persistir instant/fuso para essa informação.

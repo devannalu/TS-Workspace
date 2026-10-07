@@ -101,9 +101,9 @@ class ProjetosIntegrationTest {
         return new ProjetoService.FiltrosProjetos(equipe,status,pessoa,busca,null,null,null,null,arquivo,pagina,tamanho);
     }
     @Test void deveAplicarV9ComVinculoOpcionalESeedIdempotente() {
-        assertThat(flyway.info().current().getVersion().getVersion()).isEqualTo("15");assertThat(flyway.migrate().migrationsExecuted).isZero();
-        seed.seed();seed.seed();assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM permissions",Integer.class)).isEqualTo(38);
-        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM role_permissions",Integer.class)).isEqualTo(106);
+        assertThat(flyway.info().current().getVersion().getVersion()).isEqualTo("16");assertThat(flyway.migrate().migrationsExecuted).isZero();
+        seed.seed();seed.seed();assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM permissions",Integer.class)).isEqualTo(42);
+        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM role_permissions",Integer.class)).isEqualTo(118);
         assertThat(criar(admin,equipeA,"Standalone",List.of()).projeto()).isNull();
         assertThat(jdbc.queryForObject("SELECT IS_NULLABLE FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='task' AND COLUMN_NAME='project_id'",String.class)).isEqualTo("YES");
     }

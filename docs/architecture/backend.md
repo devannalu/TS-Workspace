@@ -204,3 +204,7 @@ Horários locais e zone id chegam à API; ela resolve os offsets e persiste Inst
 ## Eventos da comunidade
 
 Domínio eventos concentra API /api/v1/events, validação e JDBC; versões, escopo atual, responsáveis ativas, arquivo e auditoria existentes. HorarioEncontro resolve horários locais de reuniões/eventos sem escolher silenciosamente offsets de DST.
+
+## Comunicação e Conteúdo
+
+O domínio conteudos atende /api/v1/content com JDBC, escopo por equipe, versões e auditoria. Novos vínculos de fonte exigem permissão de leitura, atividade e mesma equipe; vínculos históricos são preservados.

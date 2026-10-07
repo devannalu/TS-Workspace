@@ -26,6 +26,7 @@ const icones = {
   Calendário: CalendarDays,
   Reuniões: CalendarDays,
   Eventos: CalendarDays,
+  Conteúdo: ClipboardList,
   Equipes: Network,
   Usuárias: Users,
 };

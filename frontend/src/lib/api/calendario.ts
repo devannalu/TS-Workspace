@@ -1,6 +1,6 @@
 import { requisitarJava } from "./http";
 import type { ReferenciaTarefa, PrioridadeTarefa } from "./tarefas";
-export type TipoCalendario = "TAREFA" | "PROJETO" | "REUNIAO" | "EVENTO";
+export type TipoCalendario = "TAREFA" | "PROJETO" | "REUNIAO" | "EVENTO" | "CONTEUDO";
 export type ItemCalendario = {
   id: string; tipo: TipoCalendario; recursoId: string; titulo: string;
   dataInicio: string; dataFim: string; equipe: ReferenciaTarefa; status: string;
