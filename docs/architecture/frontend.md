@@ -197,3 +197,7 @@ O detalhe existente da tarefa contém checklist com progresso, inclusão, ediç�
 ## Reuniões e Talks
 
 /reunioes apresenta lista paginada, filtros, criação, detalhe, edição e confirmação de arquivo. Formulário informa explicitamente o fuso e transmite horários locais sem converter pelo fuso do navegador. Horários apresentados usam Intl com a zona persistida. Bahia e Lisboa disponíveis na seleção. O calendário reutiliza o detalhe e mostra horário/fuso nos cards, sem duplicar a interface nem converter datas de tarefas/projetos.
+
+## Eventos
+
+/eventos oferece cards paginados, filtros e detalhe/formulário com o Design System atual. O calendário reutiliza DetalheEvento; capacidade server-side dirige os controles. Sessão e CSRF continuam centralizados.

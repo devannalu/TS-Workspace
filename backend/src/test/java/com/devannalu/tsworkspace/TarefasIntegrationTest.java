@@ -95,13 +95,13 @@ class TarefasIntegrationTest {
     }
 
     @Test void deveAplicarV8ComConstraintsSemReexecutarMigracoes() {
-        assertThat(flyway.info().current().getVersion().getVersion()).isEqualTo("14");
+        assertThat(flyway.info().current().getVersion().getVersion()).isEqualTo("15");
         assertThat(flyway.migrate().migrationsExecuted).isZero();
         assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM information_schema.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME IN ('task','task_assignee')", Long.class)).isEqualTo(2);
     }
     @Test void devePreservarSeedIdempotenteEMatrizNova() {
         seed.seed(); seed.seed();
-        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM permissions", Integer.class)).isEqualTo(34);
+        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM permissions", Integer.class)).isEqualTo(38);
         for (String pessoa : List.of(superAdmin, admin, supervisora, suporte)) {
             assertThat(permissoes.possuiPermissao(pessoa, "tasks.view")).isTrue();
             assertThat(permissoes.possuiPermissao(pessoa, "tasks.create")).isTrue();

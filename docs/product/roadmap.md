@@ -17,7 +17,8 @@ vínculo para tarefas independentes. Comentários, anexos e atividade contextual
 
 ## 3. Operação da comunidade
 
-Ampliar o Workspace para Comunicação/Conteúdo, Eventos e Parcerias,
+Eventos da comunidade já oferecem operação, responsáveis, horários/fusos e calendário.
+Ampliar o Workspace para Comunicação/Conteúdo e Parcerias,
 com notas e chat como recursos de colaboração. A organização deve respeitar
 as equipes e frentes reais da Tech Sisters.
 
@@ -45,6 +46,6 @@ Anexos contextuais utilizam storage S3 compatível, Garage local e R2 configurá
 
 ## Calendário
 
-Calendário é uma projeção de Tarefas, Projetos e Reuniões/Talks e não possui persistência própria.
+Calendário é uma projeção de Tarefas, Projetos, Reuniões/Talks e Eventos e não possui persistência própria.
 A visão temporal disponível agrega prazos e períodos, respeita permissões e escopo das fontes
-e inclui encontros com horário/fuso. Eventos da comunidade, sincronização externa e ICS permanecem fora desta entrega.
+e inclui encontros com horário/fuso. Sincronização externa e ICS permanecem fora desta entrega.

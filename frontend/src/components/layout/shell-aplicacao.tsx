@@ -25,6 +25,7 @@ const icones = {
   Projetos: FolderKanban,
   Calendário: CalendarDays,
   Reuniões: CalendarDays,
+  Eventos: CalendarDays,
   Equipes: Network,
   Usuárias: Users,
 };

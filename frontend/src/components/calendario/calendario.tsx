@@ -7,6 +7,8 @@ import { buscarCalendario, type ItemCalendario } from "@/lib/api/calendario";
 import { buscarTarefa, buscarOpcoesTarefas, statusTarefa, prioridadesTarefa, type Tarefa, type OpcoesTarefas, type ReferenciaTarefa } from "@/lib/api/tarefas";
 import { buscarProjeto, buscarOpcoesProjetos, statusProjeto, type Projeto, type OpcoesProjetos } from "@/lib/api/projetos";
 import { buscarReuniao,opcoesReunioes,formatarHorarioReuniao,statusReuniao,type Reuniao,type OpcoesReunioes } from "@/lib/api/reunioes";
+import { buscarEvento,opcoesEventos,statusEvento,type Evento,type OpcoesEventos } from "@/lib/api/eventos";
+import { DetalheEvento } from "../eventos/detalhe-evento";
 import { DetalheReuniao } from "../reunioes/detalhe-reuniao";
 import { DetalheTarefa } from "../tarefas/detalhe-tarefa";
 import { DetalheProjeto } from "../projetos/detalhe-projeto";
@@ -32,6 +34,8 @@ export function Calendario({ usuarioId, permissoes, equipes, dataInicial, visaoI
   const [tarefa, definirTarefa] = useState<{ recurso: Tarefa; opcoes: OpcoesTarefas }>();
   const [projeto, definirProjeto] = useState<{ recurso: Projeto; opcoes: OpcoesProjetos }>();
   const [reuniao,definirReuniao]=useState<{recurso:Reuniao;opcoes:OpcoesReunioes}>();
+  const [evento,definirEvento]=useState<{recurso:Evento;opcoes:OpcoesEventos}>();
+  const podeEventos=permissoes.includes("events.view");
   const podeReunioes=permissoes.includes("meetings.view");
   const podeTarefas = permissoes.includes("tasks.view"), podeProjetos = permissoes.includes("projects.view");
   const { de, ate } = intervaloVisivel(data, visao);
@@ -49,11 +53,11 @@ export function Calendario({ usuarioId, permissoes, equipes, dataInicial, visaoI
   useEffect(() => {
     if (!equipeId) return;
     let ativo = true;
-    const consulta = podeTarefas ? buscarOpcoesTarefas(equipeId) : podeProjetos ? buscarOpcoesProjetos(equipeId) : opcoesReunioes(equipeId).then(o=>({responsaveis:o.participantes}));
+    const consulta = podeTarefas ? buscarOpcoesTarefas(equipeId) : podeProjetos ? buscarOpcoesProjetos(equipeId) : podeReunioes ? opcoesReunioes(equipeId).then(o=>({responsaveis:o.participantes})) : opcoesEventos(equipeId);
     consulta.then(opcoes => { if (ativo) definirResponsaveis(opcoes.responsaveis); })
       .catch(e => { if (ativo) definirErro(e instanceof Error ? e.message : "Não foi possível carregar responsáveis."); });
     return () => { ativo = false; };
-  }, [equipeId, podeTarefas,podeProjetos]);
+  }, [equipeId, podeTarefas,podeProjetos,podeReunioes]);
 
   function prepararConsulta() { definirCarregando(true); definirErro(""); }
   function atualizarPeriodo(novaData: string, novaVisao = visao) {
@@ -73,19 +77,21 @@ export function Calendario({ usuarioId, permissoes, equipes, dataInicial, visaoI
         const recurso = await buscarProjeto(item.recursoId);
         const opcoes = await buscarOpcoesProjetos(recurso.capacidades.editar ? recurso.equipe.id : undefined);
         definirProjeto({ recurso, opcoes });
-      } else {
+      } else if(item.tipo === "REUNIAO") {
         const recurso=await buscarReuniao(item.recursoId);const opcoes=await opcoesReunioes(recurso.capacidades.editar?recurso.equipe.id:"");definirReuniao({recurso,opcoes});
+      } else {
+        const recurso=await buscarEvento(item.recursoId);const opcoes=await opcoesEventos(recurso.capacidades.editar?recurso.equipe.id:"");definirEvento({recurso,opcoes});
       }
     } catch(e) { definirErro(e instanceof Error ? e.message : "Não foi possível abrir este recurso."); }
     finally { definirAbrindo(false); }
   }
   function concluir() {
-    definirTarefa(undefined); definirProjeto(undefined);definirReuniao(undefined); prepararConsulta(); definirRevisao(r => r + 1);
+    definirTarefa(undefined); definirProjeto(undefined);definirReuniao(undefined);definirEvento(undefined); prepararConsulta(); definirRevisao(r => r + 1);
   }
   function itensDoDia(dia: string) { return itens.filter(item => item.dataInicio <= dia && item.dataFim >= dia); }
   function botaoItem(item: ItemCalendario, compacto = false) {
-    const status = item.tipo === "TAREFA" ? statusTarefa[item.status as keyof typeof statusTarefa] : item.tipo === "PROJETO" ? statusProjeto[item.status as keyof typeof statusProjeto] : statusReuniao[item.status as keyof typeof statusReuniao];
-    const nomeTipo=item.tipo === "TAREFA" ? "Tarefa" : item.tipo === "PROJETO" ? "Projeto" : "Reunião";
+    const status = item.tipo === "TAREFA" ? statusTarefa[item.status as keyof typeof statusTarefa] : item.tipo === "PROJETO" ? statusProjeto[item.status as keyof typeof statusProjeto] : item.tipo === "REUNIAO" ? statusReuniao[item.status as keyof typeof statusReuniao] : statusEvento[item.status as keyof typeof statusEvento];
+    const nomeTipo=item.tipo === "TAREFA" ? "Tarefa" : item.tipo === "PROJETO" ? "Projeto" : item.tipo === "REUNIAO" ? "Reunião" : "Evento";
     return <button key={item.id} type="button" disabled={abrindo} onClick={() => void abrir(item)}
       aria-label={`Abrir ${nomeTipo.toLowerCase()} ${item.titulo}`}
       className={`block w-full min-w-0 rounded-lg border border-border px-3 py-2 text-left text-xs ${item.tipo === "TAREFA" ? "bg-accent" : "bg-lilac"} ${item.concluido ? "opacity-65" : ""}`}>
@@ -122,7 +128,7 @@ export function Calendario({ usuarioId, permissoes, equipes, dataInicial, visaoI
         <label className="field">Equipe<select value={equipeId} onChange={e => { prepararConsulta(); definirEquipe(e.target.value); definirResponsavel(""); definirResponsaveis([]); }}>
           <option value="">Todas as equipes</option>{equipes.map(e => <option key={e.id} value={e.id}>{e.nome}</option>)}</select></label>
         <label className="field">Tipo<select value={tipo} onChange={e => { prepararConsulta(); definirTipo(e.target.value); }}>
-          <option value="">Todos os tipos disponíveis</option>{podeTarefas && <option value="TAREFA">Tarefas</option>}{podeProjetos && <option value="PROJETO">Projetos</option>}{podeReunioes&&<option value="REUNIAO">Reuniões / Talks</option>}</select></label>
+          <option value="">Todos os tipos disponíveis</option>{podeTarefas && <option value="TAREFA">Tarefas</option>}{podeProjetos && <option value="PROJETO">Projetos</option>}{podeReunioes&&<option value="REUNIAO">Reuniões / Talks</option>}{podeEventos&&<option value="EVENTO">Eventos</option>}</select></label>
         <label className="field">Responsável<select disabled={!equipeId || meusItens} value={responsavelId} onChange={e => { prepararConsulta(); definirResponsavel(e.target.value); }}>
           <option value="">{equipeId ? "Todas as responsáveis" : "Selecione uma equipe"}</option>{responsaveis.map(p => <option key={p.id} value={p.id}>{p.nome}</option>)}</select></label>
       </div>
@@ -163,6 +169,7 @@ export function Calendario({ usuarioId, permissoes, equipes, dataInicial, visaoI
     </section>
     {tarefa && <DetalheTarefa inicial={tarefa.recurso} opcoes={tarefa.opcoes} podeAtribuir={permissoes.includes("tasks.assign")}
       podeVerProjetos={podeProjetos} aoFechar={() => definirTarefa(undefined)} aoConcluir={concluir} />}
+    {evento&&<DetalheEvento inicial={evento.recurso} opcoes={evento.opcoes} aoFechar={()=>definirEvento(undefined)} aoConcluir={concluir}/>}
     {reuniao&&<DetalheReuniao inicial={reuniao.recurso} opcoes={reuniao.opcoes} aoFechar={()=>definirReuniao(undefined)} aoConcluir={concluir}/>}
     {projeto && <DetalheProjeto inicial={projeto.recurso} opcoes={projeto.opcoes} podeGerenciar={permissoes.includes("projects.manage_members")}
       podeVerTarefas={podeTarefas} aoFechar={() => definirProjeto(undefined)} aoConcluir={concluir} />}

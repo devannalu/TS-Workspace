@@ -143,3 +143,7 @@ V13 cria task_checklist com FK para tarefa/autora, texto, concluído, ordem, ver
 ## Reuniões
 
 V14 cria meeting e meeting_participant, com FKs para equipe, autoria e participantes. Horários persistidos como instantes TIMESTAMP(6), zona preservada em zone_id. Responsabilidade é flag de participante; versão protege edição. Índices atendem equipe/status/período e participação pessoal. Acrescenta quatro keys meetings e grants sem substituir os anteriores.
+
+## Eventos da comunidade
+
+V15 adiciona community_event (nome, descrição, formato, status, equipe, Instant, zona, notas, autoria, versão, arquivo) e community_event_responsible. Índices de equipe/período, checks e FKs preservam integridade. Sem persistência paralela de calendário.

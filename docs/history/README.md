@@ -43,3 +43,5 @@ Use a documentação viva para orientação atual:
 - [Fase 14 — Checklist](fase-14-checklist.md).
 
 - [Fase 15 — Reuniões e Talks](fase-15-reunioes-talks.md).
+
+- [Fase 16 — Eventos](fase-16-eventos.md)

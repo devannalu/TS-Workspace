@@ -153,3 +153,7 @@ Não há permission nova: leitura herda tasks.view/escopo; mutações herdam a c
 ## Reuniões
 
 meetings.view/create/edit/archive. SUPER_ADMIN e ADMIN recebem as quatro; SUPERVISOR recebe view/create/edit; SUPPORT recebe view. ADMIN/SUPER_ADMIN têm escopo global; demais dependem de membership direta da equipe. SUPPORT mantém somente leitura, mesmo com override de escrita. Arquivo do recurso/equipe bloqueia mutações. Catálogo: 34 keys, 94 grants padrão, seed idempotente.
+
+## Eventos
+
+events.view/create/edit/archive são capacidades reais. SUPER_ADMIN/ADMIN globais; SUPERVISOR cria/edita nas equipes atuais; SUPPORT lê somente. Arquivo não concedido ao SUPERVISOR por padrão. V15 e seed acrescentam quatro keys e 12 grants sem modificar grants históricos.

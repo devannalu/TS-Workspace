@@ -69,14 +69,7 @@ public class ReuniaoService {
         var acesso=acesso(pessoa,"meetings.view");if(equipe!=null)equipe(acesso,equipe,true);
         return new Opcoes(equipes.listarEquipesDisponiveis(acesso),equipe==null?List.of():equipes.listarResponsaveisElegiveis(equipe));
     }
-    public static Instant resolverHorario(LocalDateTime data,String zona) {
-        if(data==null||zona==null)throw new IllegalArgumentException();
-        final ZoneId fuso;try {fuso=ZoneId.of(zona);}catch(DateTimeException e){throw new IllegalArgumentException();}
-        var offsets=fuso.getRules().getValidOffsets(data);
-        // Não escolher silenciosamente um horário inexistente ou duplicado na transição de verão.
-        if(offsets.size()!=1)throw ProblemaDominio.requisicaoInvalida("Horário inexistente ou ambíguo neste fuso. Escolha outro horário.");
-        return data.toInstant(offsets.get(0));
-    }
+    public static Instant resolverHorario(LocalDateTime data,String zona) {return HorarioEncontro.resolver(data,zona);}
     private void validar(Dados d) {
         if(d==null||d.titulo()==null||d.titulo().isBlank()||d.titulo().trim().length()>200||d.tipo()==null||d.status()==null)throw new IllegalArgumentException();
         if((d.pauta()!=null&&d.pauta().length()>5000)||(d.resultados()!=null&&d.resultados().length()>5000)||(d.local()!=null&&d.local().length()>500))throw new IllegalArgumentException();

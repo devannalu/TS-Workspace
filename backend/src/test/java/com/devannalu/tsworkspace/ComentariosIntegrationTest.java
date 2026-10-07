@@ -109,10 +109,10 @@ class ComentariosIntegrationTest {
         return comentarios.criar(usuaria,TAREFA,id,texto);
     }
     @Test void migrationConstraintSeedEHistoricoPreservados() {
-        assertThat(flyway.info().current().getVersion().getVersion()).isEqualTo("14");
+        assertThat(flyway.info().current().getVersion().getVersion()).isEqualTo("15");
         assertThat(flyway.migrate().migrationsExecuted).isZero(); seed.seed(); seed.seed();
-        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM permissions",Integer.class)).isEqualTo(34);
-        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM role_permissions",Integer.class)).isEqualTo(94);
+        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM permissions",Integer.class)).isEqualTo(38);
+        assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM role_permissions",Integer.class)).isEqualTo(106);
         var tarefa=tarefa(); var projeto=projeto(superAdmin,equipeA,List.of());
         for(var ids:List.of(Arrays.asList(null,null),Arrays.asList(tarefa.id(),projeto.id()))) {
             assertThatThrownBy(()->jdbc.update("INSERT INTO workspace_comment(id,task_id,project_id,author_id,content,created_at,updated_at) VALUES(?,?,?,?,?,NOW(6),NOW(6))",UUID.randomUUID().toString(),ids.get(0),ids.get(1),superAdmin,"Texto"))
