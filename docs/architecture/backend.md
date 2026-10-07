@@ -190,3 +190,7 @@ Tudo usa LocalDate, sem converter as datas de domínio para Instant.
 ## Notificações pessoais
 
 O domínio notificacoes usa JDBC e a migration V12. Alterações relevantes de tarefas, projetos e comentários produzem avisos na mesma transação. A consulta revalida permissões, equipe e arquivo da fonte, e projeta seu título atual. Prazos são materializados com chave única ao consultar a central, sem scheduler externo. GET /api/v1/notifications é paginado; POST /{id}/read e /read-all exigem sessão e CSRF.
+
+## Checklist de tarefas
+
+ChecklistController, ChecklistService e ChecklistRepository ficam junto ao domínio tarefas. GET /tasks/{id}/checklist herda leitura da tarefa; POST, PATCH, order e remove herdam sua capacidade editar. Cada item tem versão; reordenação exige conjunto completo com versões. Escritas bloqueiam a tarefa, sem incrementar sua versão: checklist não modifica os campos da tarefa. Lista limitada a 200 itens de 500 caracteres para evitar abuso. Remoção lógica mantém autoria e timestamps; progresso é calculado.

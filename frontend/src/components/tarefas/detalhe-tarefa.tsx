@@ -1,4 +1,5 @@
 "use client";
+import { ChecklistTarefa } from "./checklist-tarefa";
 import { AbasColaboracao } from "../comentarios/abas-colaboracao";
 import { useState } from "react";
 import {
@@ -172,6 +173,7 @@ export function DetalheTarefa({
                 </dd>
               </div>
             </dl>
+            <ChecklistTarefa tarefaId={tarefa.id} />
             {!tarefa.capacidades.editar && (
               <p className="subtle">
                 Esta tarefa está disponível somente para leitura no seu acesso

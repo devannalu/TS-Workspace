@@ -22,6 +22,8 @@ export async function lerResposta<T>(response: Response): Promise<T> {
     if (response.status === 400 && problema?.detail === "Informe um intervalo válido de até 366 dias.")
       throw new ErroApi(400, problema.detail);
     const conflitosConhecidos = [
+      "O checklist foi atualizado. Atualize os itens e tente novamente.",
+      "Esta tarefa atingiu o limite de 200 itens de checklist.",
       "Este tipo de arquivo não é permitido.",
       "O arquivo ultrapassa o limite de 10 MB.",
       "A autorização de upload expirou.",

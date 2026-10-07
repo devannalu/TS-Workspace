@@ -14,7 +14,7 @@ supervisoras, suporte e voluntárias autorizadas.
 - **Usuárias:** gestão de perfil de acesso, status e participação em equipes.
 - **Convites:** criação, cancelamento e aceite com validade e uso único.
 - **Equipes:** hierarquia, integrantes, edição e arquivamento.
-- **Tarefas:** Kanban, prioridades, prazo, responsáveis, filtros e arquivamento.
+- **Tarefas:** Kanban, prioridades, prazo, responsáveis, checklist, filtros e arquivamento.
 - **Projetos:** objetivos por equipe, responsáveis, período, status e progresso derivado das tarefas.
 - **Notificações:** central pessoal com leitura, avisos de atribuição, comentários, mudanças e prazos, respeitando o acesso atual.
 - **Calendário:** prazos de tarefas e períodos de projetos em mês, semana e agenda, com filtros e acesso herdado das fontes.
@@ -128,7 +128,7 @@ e da navegação; MySQL persiste os dados e sessões.
 
 - Fundação Java, Auth, RBAC, Teams e Users/Invites concluídos.
 - Tarefas, Projetos, colaboração, anexos, calendário e notificações disponíveis.
-- Próximas capacidades de produtividade: checklist e reuniões.
+- Próxima capacidade de produtividade: reuniões.
 - Ampliar a operação: conteúdo, eventos, parcerias e comunicação interna.
 - Preparar produção: busca, auditoria completa, integrações e qualidade operacional.
 

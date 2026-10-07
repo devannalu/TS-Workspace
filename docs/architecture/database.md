@@ -135,3 +135,7 @@ sem calendar table, boolean persistido, evento duplicado ou nova permission.
 ## Notificações
 
 V12 adiciona notification, vinculada à destinatária, com origem, recurso, motivo, chave única de evento e datas de criação/leitura. Não armazena texto de comentários, credenciais ou cópia do título. A consulta exclui fontes inexistentes, arquivadas ou fora do acesso atual.
+
+## Checklist
+
+V13 cria task_checklist com FK para tarefa/autora, texto, concluído, ordem, versão e timestamps de criação/atualização/remoção. Índice por tarefa, remoção e ordem atende o detalhe. Sem percentual redundante, responsável ou prazo próprio.

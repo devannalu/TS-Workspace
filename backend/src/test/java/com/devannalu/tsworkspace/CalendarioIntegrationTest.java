@@ -95,7 +95,7 @@ class CalendarioIntegrationTest {
             .andExpect(status().isOk()).andReturn().getResponse().getCookie("TS_SESSION");
     }
     @Test void preservaCalendarioSemTabelaPropria() {
-        assertThat(flyway.info().current().getVersion().getVersion()).isEqualTo("12");
+        assertThat(flyway.info().current().getVersion().getVersion()).isEqualTo("13");
         assertThat(flyway.migrate().migrationsExecuted).isZero();
         assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM information_schema.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME LIKE 'calendar%'", Integer.class)).isZero();
     }

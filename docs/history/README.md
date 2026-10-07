@@ -39,3 +39,5 @@ Use a documentação viva para orientação atual:
 - [Fase 12 — Calendário](fase-12-calendario.md).
 
 - [Fase 13 — Notificações](fase-13-notificacoes.md).
+
+- [Fase 14 — Checklist](fase-14-checklist.md).

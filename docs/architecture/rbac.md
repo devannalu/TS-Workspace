@@ -145,3 +145,7 @@ Visualização e download herdam view/escopo do recurso. Remoção própria exig
 ## Notificações
 
 Não existe permission key nova. Cada pessoa consulta e marca apenas os próprios avisos; o servidor revalida tasks.view/projects.view e o escopo atual da fonte. Um aviso antigo não conserva acesso após remoção de uma equipe ou revogação de permissão.
+
+## Checklist
+
+Não há permission nova: leitura herda tasks.view/escopo; mutações herdam a capacidade editar da tarefa, incluindo ownership para SUPPORT e bloqueio de recurso/equipe/projeto arquivado. Versões impedem sobrescrita; itens de outra tarefa não podem ser alterados pela rota contextual.
