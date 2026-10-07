@@ -95,7 +95,7 @@ class TarefasIntegrationTest {
     }
 
     @Test void deveAplicarV8ComConstraintsSemReexecutarMigracoes() {
-        assertThat(flyway.info().current().getVersion().getVersion()).isEqualTo("11");
+        assertThat(flyway.info().current().getVersion().getVersion()).isEqualTo("12");
         assertThat(flyway.migrate().migrationsExecuted).isZero();
         assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM information_schema.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME IN ('task','task_assignee')", Long.class)).isEqualTo(2);
     }

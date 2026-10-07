@@ -19,10 +19,12 @@ import { CardProjeto } from "./card-projeto";
 import { DetalheProjeto } from "./detalhe-projeto";
 
 export function ListaProjetos({
+  abrirInicial,
   usuarioId,
   permissoes,
   opcoes,
 }: {
+  abrirInicial?: string;
   usuarioId: string;
   permissoes: string[];
   opcoes: OpcoesProjetos;
@@ -39,6 +41,13 @@ export function ListaProjetos({
     [detalhe, definirDetalhe] = useState<Projeto | null>(),
     [abrindo, definirAbrindo] = useState(false),
     [mensagem, definirMensagem] = useState("");
+  useEffect(() => {
+    if (!abrirInicial || !/^[0-9a-f-]{36}$/i.test(abrirInicial)) return;
+    let ativa = true;
+    buscarProjeto(abrirInicial).then(recurso => { if (ativa) definirDetalhe(recurso); })
+      .catch(e => { if (ativa) definirErro(e instanceof Error ? e.message : "Não foi possível abrir o recurso."); });
+    return () => { ativa = false; };
+  }, [abrirInicial]);
   useEffect(() => {
     let atual = true;
     const temporizador = setTimeout(() => {

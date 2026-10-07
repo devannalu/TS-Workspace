@@ -131,3 +131,7 @@ A Fase 12 não adicionou schema nem migration. Flyway permanece em V11.
 Calendário é uma projeção de Tarefas e Projetos e não possui persistência própria.
 Datas continuam em task.due_date e project.start_date/end_date; atrasos são derivados,
 sem calendar table, boolean persistido, evento duplicado ou nova permission.
+
+## Notificações
+
+V12 adiciona notification, vinculada à destinatária, com origem, recurso, motivo, chave única de evento e datas de criação/leitura. Não armazena texto de comentários, credenciais ou cópia do título. A consulta exclui fontes inexistentes, arquivadas ou fora do acesso atual.

@@ -141,6 +141,8 @@ public class SegurancaConfig {
                     "/api/v1/tasks/*/attachments/*/confirm", "/api/v1/projects/*/attachments/*/confirm",
                     "/api/v1/attachments/*/download", "/api/v1/attachments/*/remove").authenticated()
                 .requestMatchers(HttpMethod.GET, "/api/v1/calendar").authenticated()
+                .requestMatchers(HttpMethod.GET, "/api/v1/notifications").authenticated()
+                .requestMatchers(HttpMethod.POST, "/api/v1/notifications/*/read", "/api/v1/notifications/read-all").authenticated()
                 .anyRequest().denyAll())
             .addFilterAfter(new UsuarioAtivoFilter(profiles, logoutHandler), org.springframework.security.web.context.SecurityContextHolderFilter.class)
             .build();

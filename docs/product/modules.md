@@ -22,7 +22,7 @@ O Next.js apresenta os dados pelas APIs Auth, RBAC, Teams, Users, Invites, Tasks
 | Talks / Reuniões | PLANEJADO | Organização de encontros, informações e atividades decorrentes. |
 | Anexos | IMPLEMENTADO | Upload contextual em Tarefas/Projetos, storage S3 privado, download temporário e remoção autorizada; sem módulo global de arquivos ou preview. |
 | Chat | PLANEJADO | Comunicação interna contextual ao Workspace. |
-| Notificações | PLANEJADO | Avisos relevantes sobre atividades e mudanças. |
+| Notificações | IMPLEMENTADO | Central pessoal paginada, contador e leitura individual/em lote; atribuições, comentários, status e prazos de tarefas/projetos. Acesso atual revalidado; atualização a cada 60 segundos com a página visível. |
 | Auditoria | PLANEJADO — módulo completo | Registros administrativos existem no Java (convites, roles, status e equipes de usuárias). Consulta administrativa completa ainda não está entregue. |
 | Busca | PLANEJADO | Busca global pelos conteúdos e módulos acessíveis à usuária. |
 

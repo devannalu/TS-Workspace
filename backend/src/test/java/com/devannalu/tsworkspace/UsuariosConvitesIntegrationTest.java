@@ -55,7 +55,7 @@ class UsuariosConvitesIntegrationTest {
         role=role("SUPPORT");
     }
     @Test void devePreservarMigrationsERegrasDoCheckpoint() throws Exception {
-        assertThat(flyway.info().current().getVersion().getVersion()).isEqualTo("11");assertThat(flyway.migrate().migrationsExecuted).isZero();
+        assertThat(flyway.info().current().getVersion().getVersion()).isEqualTo("12");assertThat(flyway.migrate().migrationsExecuted).isZero();
         try(var input=getClass().getResourceAsStream("/users-invites-baseline.json")){
             var baseline=mapper.readTree(input);assertThat(PoliticaConvite.PRAZO_PADRAO_CONVITE_DIAS).isEqualTo(baseline.path("ttlDays").asInt());
             assertThat(java.util.HexFormat.of().parseHex(PoliticaConvite.gerarToken())).hasSize(baseline.path("entropyBytes").asInt());

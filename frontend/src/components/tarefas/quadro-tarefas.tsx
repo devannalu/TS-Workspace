@@ -109,12 +109,14 @@ function ColunaTarefas({
 }
 
 export function QuadroTarefas({
+  abrirInicial,
   usuarioId,
   permissoes,
   opcoesIniciais,
   minhasInicial = false,
   projetoInicial,
 }: {
+  abrirInicial?: string;
   usuarioId: string;
   permissoes: string[];
   opcoesIniciais: OpcoesTarefas;
@@ -175,6 +177,13 @@ export function QuadroTarefas({
     },
     [filtros],
   );
+  useEffect(() => {
+    if (!abrirInicial || !/^[0-9a-f-]{36}$/i.test(abrirInicial)) return;
+    let ativa = true;
+    buscarTarefa(abrirInicial).then(recurso => { if (ativa) definirDetalhe(recurso); })
+      .catch(e => { if (ativa) definirErro(e instanceof Error ? e.message : "Não foi possível abrir o recurso."); });
+    return () => { ativa = false; };
+  }, [abrirInicial]);
   useEffect(() => {
     // Agrupar digitação e filtros evita consultas intermediárias a cada tecla.
     const intervalo = setTimeout(() => {

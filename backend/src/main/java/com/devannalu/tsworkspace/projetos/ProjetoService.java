@@ -20,9 +20,10 @@ public class ProjetoService {
     private final PermissaoService permissoes;
     private final BloqueioOrganizacao bloqueio;
     private final AuditoriaRepository auditoria;
+    private final com.devannalu.tsworkspace.notificacoes.NotificacaoService notificacoes;
     public ProjetoService(ProjetoRepository projetos,TarefaRepository tarefas,PermissaoService permissoes,
-        BloqueioOrganizacao bloqueio,AuditoriaRepository auditoria) {
-        this.projetos=projetos;this.tarefas=tarefas;this.permissoes=permissoes;this.bloqueio=bloqueio;this.auditoria=auditoria;
+        BloqueioOrganizacao bloqueio,AuditoriaRepository auditoria,com.devannalu.tsworkspace.notificacoes.NotificacaoService notificacoes) {
+        this.projetos=projetos;this.tarefas=tarefas;this.permissoes=permissoes;this.bloqueio=bloqueio;this.auditoria=auditoria;this.notificacoes=notificacoes;
     }
     public record Capacidades(boolean editar,boolean gerenciarResponsaveis,boolean arquivar,boolean trocarEquipe) { }
     public record ProjetoResponse(String id,String titulo,String descricao,Projeto.Status status,Referencia equipe,
@@ -102,6 +103,7 @@ public class ProjetoService {
         PoliticaProjeto.validarPeriodo(inicio,fim);var novos=validarResponsaveis(acesso,equipeId,ids,Set.of());String id=UUID.randomUUID().toString();
         projetos.inserir(id,PoliticaProjeto.validarTitulo(titulo),PoliticaProjeto.validarDescricao(descricao),equipeId,usuarioId,inicio,fim);
         projetos.substituirResponsaveis(id,novos);auditoria.registrar(usuarioId,"project.created","Project",id);
+        notificacoes.avisar(usuarioId,"PROJETO",id,"ATRIBUICAO",novos);
         return resposta(acesso,buscarNoEscopo(acesso,id),responsaveis(id));
     }
     private EstadoProjeto exigirAlteravel(Acesso acesso,String id,long versao) {
@@ -122,6 +124,9 @@ public class ProjetoService {
         if(projetos.atualizar(atual,PoliticaProjeto.validarTitulo(titulo),PoliticaProjeto.validarDescricao(descricao),status,equipeId,inicio,fim)!=1)
             PoliticaProjeto.exigirVersao(-1,versao);
         if(!novos.equals(anteriores)){projetos.substituirResponsaveis(id,novos);auditoria.registrar(usuarioId,"project.responsibles_changed","Project",id);}
+        var adicionadas=new HashSet<>(novos);adicionadas.removeAll(anteriores);
+        notificacoes.avisar(usuarioId,"PROJETO",id,"ATRIBUICAO",adicionadas);
+        if(status!=atual.status()||!Objects.equals(atual.dataFim(),fim)) notificacoes.avisarResponsaveis(usuarioId,"PROJETO",id,"ALTERACAO");
         if(status!=atual.status())auditoria.registrar(usuarioId,"project.status_changed","Project",id);
         if(!Objects.equals(atual.titulo(),titulo.trim())||!Objects.equals(atual.descricao(),PoliticaProjeto.validarDescricao(descricao))
             ||!atual.equipe().id().equals(equipeId)||!Objects.equals(atual.dataInicio(),inicio)||!Objects.equals(atual.dataFim(),fim))

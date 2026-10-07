@@ -186,3 +186,7 @@ uma única data corresponde a um dia. Atraso de Tarefa reutiliza PoliticaTarefa;
 end_date anterior a hoje e status diferente de CONCLUIDO. Projeto com apenas início
 não possui prazo final para ser marcado atrasado. Hoje segue America/Bahia, como Tarefas.
 Tudo usa LocalDate, sem converter as datas de domínio para Instant.
+
+## Notificações pessoais
+
+O domínio notificacoes usa JDBC e a migration V12. Alterações relevantes de tarefas, projetos e comentários produzem avisos na mesma transação. A consulta revalida permissões, equipe e arquivo da fonte, e projeta seu título atual. Prazos são materializados com chave única ao consultar a central, sem scheduler externo. GET /api/v1/notifications é paginado; POST /{id}/read e /read-all exigem sessão e CSRF.

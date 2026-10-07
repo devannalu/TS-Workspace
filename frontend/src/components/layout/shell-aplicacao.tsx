@@ -17,6 +17,7 @@ import { navegacaoPermitida } from "@/lib/ui/permissoes";
 import { Avatar } from "../ui/avatar";
 import { Dialog } from "../ui/dialog";
 import { MarcaWorkspace } from "./shell-publico";
+import { CentralNotificacoes } from "../notificacoes/central-notificacoes";
 import { SairButton } from "../autenticacao/sair-button";
 const icones = {
   Início: House,
@@ -120,6 +121,7 @@ export function ShellAplicacao({
               <p className="text-sm font-semibold">{tituloPagina}</p>
             </div>
           </div>
+          <div className="flex items-center gap-2"><CentralNotificacoes />
           <details ref={referenciaMenu} className="relative">
             <summary
               aria-label="Menu da usuária"
@@ -144,7 +146,7 @@ export function ShellAplicacao({
                 <SairButton />
               </div>
             </div>
-          </details>
+          </details></div>
         </header>
         <main
           id="conteudo"

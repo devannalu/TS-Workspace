@@ -22,6 +22,7 @@ export default async function TarefasPage({
   return (
     <ShellWorkspace>
       <QuadroTarefas
+        abrirInicial={typeof parametros.abrir === "string" ? parametros.abrir : undefined}
         usuarioId={usuario.id}
         permissoes={usuario.permissions}
         opcoesIniciais={opcoes}

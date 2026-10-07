@@ -185,3 +185,7 @@ UTC interna explícita; apresentação usa timeZone UTC para não deslocar date-
 Hoje é calculado no calendário local da usuária. Clique abre DetalheTarefa/DetalheProjeto
 existentes, consultando o recurso autorizado somente ao abrir. Mudanças no detalhe atualizam
 a projeção. Calendário não possui criação de evento, edição por drag ou formulário duplicado.
+
+## Central de notificações
+
+O sino do header abre um dialog paginado, com contador, leitura individual e leitura de todos os avisos pessoais. O cliente REST reutiliza sessão, CSRF e tratamento central de erros. Atualizações a cada 60 segundos ocorrem apenas com a página visível. Links abrem os detalhes existentes de tarefas e projetos por parâmetro abrir, sem duplicar interfaces.

@@ -19,11 +19,12 @@ public class TarefaService {
     private final PermissaoService permissoes;
     private final BloqueioOrganizacao bloqueio;
     private final AuditoriaRepository auditoria;
+    private final com.devannalu.tsworkspace.notificacoes.NotificacaoService notificacoes;
     private final com.devannalu.tsworkspace.projetos.ProjetoRepository projetos;
     public TarefaService(TarefaRepository tarefas, PermissaoService permissoes, BloqueioOrganizacao bloqueio,
-        AuditoriaRepository auditoria, com.devannalu.tsworkspace.projetos.ProjetoRepository projetos) {
+        AuditoriaRepository auditoria, com.devannalu.tsworkspace.projetos.ProjetoRepository projetos, com.devannalu.tsworkspace.notificacoes.NotificacaoService notificacoes) {
         this.tarefas = tarefas; this.permissoes = permissoes; this.bloqueio = bloqueio; this.auditoria = auditoria;
-        this.projetos = projetos;
+        this.projetos = projetos; this.notificacoes = notificacoes;
     }
 
     public record Capacidades(boolean editar, boolean atribuir, boolean arquivar) { }
@@ -146,6 +147,7 @@ public class TarefaService {
         tarefas.substituirResponsaveis(id, novos);
         auditoria.registrar(usuarioId, "task.created", "Task", id);
         if (!novos.isEmpty()) auditoria.registrar(usuarioId, "task.assignees_changed", "Task", id);
+        notificacoes.avisar(usuarioId,"TAREFA",id,"ATRIBUICAO",novos);
         return montarResposta(acesso, buscarNoEscopo(acesso, id), responsaveis(id));
     }
 
@@ -184,6 +186,9 @@ public class TarefaService {
             tarefas.substituirResponsaveis(id, novos);
             auditoria.registrar(usuarioId, "task.assignees_changed", "Task", id);
         }
+        var adicionadas = new HashSet<>(novos); adicionadas.removeAll(anteriores);
+        notificacoes.avisar(usuarioId,"TAREFA",id,"ATRIBUICAO",adicionadas);
+        if (!Objects.equals(atual.prazo(),prazo)) notificacoes.avisarResponsaveis(usuarioId,"TAREFA",id,"ALTERACAO");
         auditoria.registrar(usuarioId, "task.updated", "Task", id);
         return montarResposta(acesso, buscarNoEscopo(acesso, id), responsaveis(id));
     }
@@ -212,6 +217,7 @@ public class TarefaService {
         if (atual.status() != status) {
             tarefas.renumerarColuna(tarefas.listarColuna(atual.status()));
             auditoria.registrar(usuarioId, "task.status_changed", "Task", id);
+            notificacoes.avisarResponsaveis(usuarioId,"TAREFA",id,"ALTERACAO");
         }
         return montarResposta(acesso, buscarNoEscopo(acesso, id), responsaveis(id));
     }

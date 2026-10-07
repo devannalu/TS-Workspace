@@ -14,8 +14,7 @@ Tarefas já oferecem Kanban, responsáveis, prioridades, prazo, filtros e arquiv
 com autorização no Java e resumo real no Dashboard. Projetos organizam objetivos
 por equipe, com período, responsáveis e progresso derivado das tarefas, sem exigir
 vínculo para tarefas independentes. Comentários, anexos e atividade contextual já atendem os dois recursos. A próxima evolução poderá conectar
-Talks/Reuniões, checklist e
-notificações. Esses recursos ainda não estão implementados.
+Talks/Reuniões e checklist. Notificações pessoais já acompanham atribuições, comentários, mudanças e prazos de tarefas e projetos.
 
 ## 3. Operação da comunidade
 

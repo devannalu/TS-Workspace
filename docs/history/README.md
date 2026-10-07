@@ -37,3 +37,5 @@ Use a documentação viva para orientação atual:
 - [Fase 11 — Anexos e storage](fase-11-anexos-storage.md).
 
 - [Fase 12 — Calendário](fase-12-calendario.md).
+
+- [Fase 13 — Notificações](fase-13-notificacoes.md).

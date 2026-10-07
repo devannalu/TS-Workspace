@@ -94,8 +94,8 @@ class CalendarioIntegrationTest {
             .content(json.writeValueAsString(Map.of("email", email, "password", SENHA_TESTE))))
             .andExpect(status().isOk()).andReturn().getResponse().getCookie("TS_SESSION");
     }
-    @Test void preservaV11SemTabelaCalendario() {
-        assertThat(flyway.info().current().getVersion().getVersion()).isEqualTo("11");
+    @Test void preservaCalendarioSemTabelaPropria() {
+        assertThat(flyway.info().current().getVersion().getVersion()).isEqualTo("12");
         assertThat(flyway.migrate().migrationsExecuted).isZero();
         assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM information_schema.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME LIKE 'calendar%'", Integer.class)).isZero();
     }

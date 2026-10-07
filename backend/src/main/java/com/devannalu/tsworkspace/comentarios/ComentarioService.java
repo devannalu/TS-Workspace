@@ -23,11 +23,12 @@ public class ComentarioService {
     private final TarefaRepository equipes;
     private final PermissaoService permissoes;
     private final AuditoriaRepository auditoria;
+    private final com.devannalu.tsworkspace.notificacoes.NotificacaoService notificacoes;
     private final BloqueioOrganizacao bloqueio;
     public ComentarioService(ComentarioRepository comentarios, TarefaService tarefas, ProjetoService projetos,
-        TarefaRepository equipes, PermissaoService permissoes, AuditoriaRepository auditoria, BloqueioOrganizacao bloqueio) {
+        TarefaRepository equipes, PermissaoService permissoes, AuditoriaRepository auditoria, BloqueioOrganizacao bloqueio, com.devannalu.tsworkspace.notificacoes.NotificacaoService notificacoes) {
         this.comentarios = comentarios; this.tarefas = tarefas; this.projetos = projetos; this.equipes = equipes;
-        this.permissoes = permissoes; this.auditoria = auditoria; this.bloqueio = bloqueio;
+        this.permissoes = permissoes; this.auditoria = auditoria; this.bloqueio = bloqueio; this.notificacoes = notificacoes;
     }
     public record Capacidades(boolean editar, boolean remover) { }
     public record ComentarioResponse(String id, Pessoa autora, String conteudo, boolean editado, boolean removido,
@@ -85,6 +86,7 @@ public class ComentarioService {
         String id = UUID.randomUUID().toString();
         comentarios.inserir(id, recurso, recursoId, usuarioId, validarConteudo(conteudo));
         auditoria.registrar(usuarioId, "comment.created", "Comment", id);
+        notificacoes.avisarResponsaveis(usuarioId,recurso.name(),recursoId,"COMENTARIO");
         return resposta(usuarioId, acesso, buscar(id));
     }
     private void exigirVersao(EstadoComentario c, long versao) {

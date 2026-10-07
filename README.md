@@ -16,6 +16,7 @@ supervisoras, suporte e voluntárias autorizadas.
 - **Equipes:** hierarquia, integrantes, edição e arquivamento.
 - **Tarefas:** Kanban, prioridades, prazo, responsáveis, filtros e arquivamento.
 - **Projetos:** objetivos por equipe, responsáveis, período, status e progresso derivado das tarefas.
+- **Notificações:** central pessoal com leitura, avisos de atribuição, comentários, mudanças e prazos, respeitando o acesso atual.
 - **Calendário:** prazos de tarefas e períodos de projetos em mês, semana e agenda, com filtros e acesso herdado das fontes.
 - **Início do Workspace:** perfil, equipes e resumos reais de tarefas e projetos.
 
@@ -126,8 +127,8 @@ e da navegação; MySQL persiste os dados e sessões.
 ## Roadmap
 
 - Fundação Java, Auth, RBAC, Teams e Users/Invites concluídos.
-- Próximo módulo: Tasks.
-- Desenvolver produtividade: Tasks, Projetos, reuniões, arquivos e calendário.
+- Tarefas, Projetos, colaboração, anexos, calendário e notificações disponíveis.
+- Próximas capacidades de produtividade: checklist e reuniões.
 - Ampliar a operação: conteúdo, eventos, parcerias e comunicação interna.
 - Preparar produção: busca, auditoria completa, integrações e qualidade operacional.
 

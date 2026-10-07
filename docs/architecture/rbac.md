@@ -141,3 +141,7 @@ Projeto. Catálogo atual: 30 keys e 82 grants padrão; seed idempotente.
 | attachments.remove | Sim | Sim | Não | Não |
 
 Visualização e download herdam view/escopo do recurso. Remoção própria exige attach e acesso atual, com recurso/equipe não arquivados; moderação permite remoção administrativa em histórico arquivado. SUPPORT mantém Projetos somente para leitura mesmo com override. Não existe attachments.view.
+
+## Notificações
+
+Não existe permission key nova. Cada pessoa consulta e marca apenas os próprios avisos; o servidor revalida tasks.view/projects.view e o escopo atual da fonte. Um aviso antigo não conserva acesso após remoção de uma equipe ou revogação de permissão.
