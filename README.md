@@ -22,6 +22,7 @@ supervisoras, suporte e voluntárias autorizadas.
 - **Calendário:** prazos de tarefas, períodos de projetos e reuniões com horário em mês, semana e agenda, com filtros e acesso herdado das fontes.
 - **Início do Workspace:** perfil, equipes e resumos reais de tarefas e projetos.
 
+- **Chat:** conversa geral e por equipe, histórico paginado, edição própria e moderação, com acesso atual revalidado.
 - **Notas:** documentação contextual com autoria, edição própria e remoção lógica em Projetos, Eventos, Parcerias e Reuniões.
 - **Comentários e atividade:** conversa e histórico contextual nos detalhes de Tarefas e Projetos.
 

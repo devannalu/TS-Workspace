@@ -202,6 +202,12 @@ describe("autenticação e shell", () => {
     expect(link.getAttribute("aria-current")).toBe("page");
     expect(link.querySelector("svg")).not.toBeNull();
   });
+  it("renderiza Chat na navegação com ícone e rota ativa", () => {
+    mock.path="/chat";
+    render(<ShellAplicacao usuario={{...admin,permissions:["chat.view"]}}><p>Área</p></ShellAplicacao>);
+    const link=screen.getByRole("link",{name:"Chat"});
+    expect(link.getAttribute("href")).toBe("/chat");expect(link.getAttribute("aria-current")).toBe("page");expect(link.querySelector("svg")).not.toBeNull();
+  });
   it("destaca rota ativa e abre navegação mobile", async () => {
     render(
       <ShellAplicacao usuario={admin}>

@@ -61,7 +61,7 @@ class EquipesIntegrationTest {
         root = jdbc.queryForObject("SELECT id FROM team WHERE team_key='fundadoras'",String.class);
     }
     @Test void devePreservarInicializacaoECompatibilidadeHistoricaDasEquipes() throws Exception {
-        assertThat(flyway.info().current().getVersion().getVersion()).isEqualTo("18");
+        assertThat(flyway.info().current().getVersion().getVersion()).isEqualTo("19");
         assertThat(flyway.migrate().migrationsExecuted).isZero();
         seed.seed(); seed.seed();
         try(var input=getClass().getResourceAsStream("/teams-baseline.json")) {

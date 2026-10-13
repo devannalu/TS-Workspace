@@ -21,8 +21,14 @@ spring:
     password: ${JAVA_MYSQL_PASSWORD}
     hikari:
       connection-timeout: 5000
+      data-source-properties:
+        connectionTimeZone: "+00:00"
+        forceConnectionTimeZoneToSession: "true"
+        preserveInstants: "true"
   jpa:
     open-in-view: false
+    properties:
+      hibernate.jdbc.time_zone: UTC
     hibernate:
       ddl-auto: validate
   flyway:

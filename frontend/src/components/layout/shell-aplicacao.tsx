@@ -11,6 +11,7 @@ import {
   ClipboardList,
   FolderKanban,
   CalendarDays,
+  MessageSquare,
 } from "lucide-react";
 import type { UsuarioAtual } from "@/lib/api/autenticacao";
 import { navegacaoPermitida } from "@/lib/ui/permissoes";
@@ -28,6 +29,7 @@ const icones = {
   Eventos: CalendarDays,
   Conteúdo: ClipboardList,
   Parcerias: Network,
+  Chat: MessageSquare,
   Equipes: Network,
   Usuárias: Users,
 };

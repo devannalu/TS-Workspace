@@ -51,3 +51,5 @@ Use a documentação viva para orientação atual:
 - [Fase 18 — Parcerias](fase-18-parcerias.md)
 
 - [Fase 19 — Notas contextuais](fase-19-notas.md)
+
+- [Fase 20 — Chat interno](fase-20-chat.md)

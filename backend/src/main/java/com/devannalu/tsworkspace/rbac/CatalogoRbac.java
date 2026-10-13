@@ -12,7 +12,7 @@ public final class CatalogoRbac {
         "permissions.view", "permissions.manage", "settings.view", "audit.view",
         "tasks.view", "tasks.create", "tasks.edit", "tasks.assign", "tasks.archive",
         "projects.view", "projects.create", "projects.edit", "projects.manage_members", "projects.archive",
-        "tasks.comment", "projects.comment", "comments.moderate", "tasks.attach", "projects.attach", "attachments.remove", "meetings.view", "meetings.create", "meetings.edit", "meetings.archive", "events.view", "events.create", "events.edit", "events.archive", "content.view", "content.create", "content.edit", "content.archive", "partnerships.view", "partnerships.create", "partnerships.edit", "partnerships.archive"
+        "tasks.comment", "projects.comment", "comments.moderate", "tasks.attach", "projects.attach", "attachments.remove", "meetings.view", "meetings.create", "meetings.edit", "meetings.archive", "events.view", "events.create", "events.edit", "events.archive", "content.view", "content.create", "content.edit", "content.archive", "partnerships.view", "partnerships.create", "partnerships.edit", "partnerships.archive", "chat.view", "chat.send", "chat.moderate"
     );
     public static final Map<String, String> PERFIS_ACESSO = Map.of(
         "SUPER_ADMIN", "Super Admin", "ADMIN", "Admin", "SUPERVISOR", "Supervisora", "SUPPORT", "Suporte"
@@ -21,7 +21,7 @@ public final class CatalogoRbac {
         "SUPER_ADMIN", PERMISSOES,
         "ADMIN", PERMISSOES.stream().filter(key -> !key.equals("permissions.manage")).toList(),
         "SUPERVISOR", List.of("users.view", "teams.view", "settings.view", "tasks.view", "tasks.create", "tasks.edit", "tasks.assign",
-            "projects.view", "projects.create", "projects.edit", "projects.manage_members", "tasks.comment", "projects.comment", "tasks.attach", "projects.attach", "meetings.view", "meetings.create", "meetings.edit", "events.view", "events.create", "events.edit", "content.view", "content.create", "content.edit", "partnerships.view", "partnerships.create", "partnerships.edit"),
-        "SUPPORT", List.of("teams.view", "settings.view", "tasks.view", "tasks.create", "tasks.edit", "projects.view", "tasks.comment", "tasks.attach", "meetings.view", "events.view", "content.view", "partnerships.view")
+            "projects.view", "projects.create", "projects.edit", "projects.manage_members", "tasks.comment", "projects.comment", "tasks.attach", "projects.attach", "meetings.view", "meetings.create", "meetings.edit", "events.view", "events.create", "events.edit", "content.view", "content.create", "content.edit", "partnerships.view", "partnerships.create", "partnerships.edit", "chat.view", "chat.send"),
+        "SUPPORT", List.of("teams.view", "settings.view", "tasks.view", "tasks.create", "tasks.edit", "projects.view", "tasks.comment", "tasks.attach", "meetings.view", "events.view", "content.view", "partnerships.view", "chat.view", "chat.send")
     );
 }

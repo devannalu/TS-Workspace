@@ -21,7 +21,7 @@ Eventos da comunidade já oferecem operação, responsáveis, horários/fusos e 
 Comunicação/Conteúdo já organiza briefing, fluxo editorial, responsável, vínculos e publicação planejada.
 Parcerias já acompanha organizações, contatos e próximas ações com acesso por equipe.
 Notas já documentam informações contextuais em Projetos, Eventos, Parcerias e Reuniões.
-Ampliar a colaboração com chat. A organização deve respeitar
+Chat já oferece conversa geral e por equipe, com histórico paginado, autoria e moderação. A organização deve respeitar
 as equipes e frentes reais da Tech Sisters.
 
 ## 4. Qualidade e operação em produção

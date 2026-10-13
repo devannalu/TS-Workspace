@@ -216,3 +216,9 @@ O domínio parcerias atende /api/v1/partnerships com JDBC, escopo atual por equi
 ## Notas contextuais
 
 O domínio notas atende os quatro contextos existentes por FKs exclusivas. Leitura e capacidade de escrita vêm do serviço da fonte, revalidando permissão, membership e arquivo. Mutação própria usa bloqueio organizacional e versão; remoção lógica oculta texto na consulta. Auditoria contém somente ação/identidade da nota. Não reserva permissions adicionais nem cria notas globais.
+
+## Chat e timestamps
+
+O domínio chat deriva canais das equipes e oferece geral autorizado. Leitura e mutações revalidam permission/membership; edição própria e moderação usam versão e bloqueio organizacional. Cursor creation/id impede deslocamento por mensagens novas. Remoção nunca retorna texto. Auditoria registra somente edição e remoção.
+
+JDBC e Hibernate usam UTC explicitamente para preservar Instant independentemente do fuso da JVM. Connector/J fixa também o fuso da conexão; DATE permanece LocalDate e encontros mantêm zone id para apresentação. Não há correção retroativa de dados.

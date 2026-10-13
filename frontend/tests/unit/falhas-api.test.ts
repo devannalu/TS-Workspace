@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, it, expect, vi } from "vitest";
-import { requisitarJava, limparCsrf, ErroApi } from "../../src/lib/api/http";
+import { requisitarJava, limparCsrf, ErroApi, lerResposta } from "../../src/lib/api/http";
 const fetchMock = vi.fn();
 beforeEach(() => {
   limparCsrf();
@@ -30,4 +30,15 @@ it("resposta inválida não revela conteúdo da exceção", async () => {
     status: 502,
     message: "Não foi possível ler a resposta. Tente novamente em instantes.",
   });
+});
+
+it.each([
+  "Esta mensagem foi alterada. Atualize a conversa e tente novamente.",
+  "Esta nota foi alterada. Atualize os dados e tente novamente.",
+  "Esta parceria foi atualizada. Atualize os dados e tente novamente.",
+])("conflito contextual conhecido permanece legível: %s",async detail=>{
+  await expect(lerResposta(new Response(JSON.stringify({detail}),{status:409}))).rejects.toMatchObject({status:409,message:detail});
+});
+it("conflito técnico desconhecido não revela SQL",async()=>{
+  await expect(lerResposta(new Response(JSON.stringify({detail:"private SQL stack"}),{status:409}))).rejects.toMatchObject({status:409,message:"A operação conflita com o estado atual do workspace."});
 });
