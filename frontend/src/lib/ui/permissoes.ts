@@ -6,6 +6,7 @@ export function navegacaoPermitida(permissoes: readonly string[]) {
     { label: "Projetos", href: "/projetos", permissoes: ["projects.view"] },
     { label: "Reuniões", href: "/reunioes", permissoes: ["meetings.view"] },
     { label: "Eventos", href: "/eventos", permissoes: ["events.view"] },
+    { label: "Parcerias", href: "/parcerias", permissoes: ["partnerships.view"] },
     { label: "Conteúdo", href: "/conteudos", permissoes: ["content.view"] },
     { label: "Calendário", href: "/calendario", permissoes: ["tasks.view", "projects.view", "meetings.view", "events.view", "content.view"] },
     { label: "Equipes", href: "/equipes", permissoes: ["teams.view"] },

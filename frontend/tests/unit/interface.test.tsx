@@ -194,6 +194,14 @@ describe("autenticação e shell", () => {
     ).toBeGreaterThan(0);
     expect(screen.queryByRole("link", { name: "Tasks" })).toBeNull();
   });
+  it("renderiza navegação de Parcerias com ícone e acesso atual", () => {
+    mock.path = "/parcerias";
+    render(<ShellAplicacao usuario={{...admin,permissions:["partnerships.view"]}}><p>Área</p></ShellAplicacao>);
+    const link = screen.getByRole("link", {name:"Parcerias"});
+    expect(link.getAttribute("href")).toBe("/parcerias");
+    expect(link.getAttribute("aria-current")).toBe("page");
+    expect(link.querySelector("svg")).not.toBeNull();
+  });
   it("destaca rota ativa e abre navegação mobile", async () => {
     render(
       <ShellAplicacao usuario={admin}>

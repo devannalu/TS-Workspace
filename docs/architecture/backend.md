@@ -208,3 +208,7 @@ Domínio eventos concentra API /api/v1/events, validação e JDBC; versões, esc
 ## Comunicação e Conteúdo
 
 O domínio conteudos atende /api/v1/content com JDBC, escopo por equipe, versões e auditoria. Novos vínculos de fonte exigem permissão de leitura, atividade e mesma equipe; vínculos históricos são preservados.
+
+## Parcerias
+
+O domínio parcerias atende /api/v1/partnerships com JDBC, escopo atual por equipe, escrita transacional e versões. Contatos e observações não entram na auditoria. Novos vínculos validam atividade, mesma equipe e leitura da fonte; vínculos históricos permanecem.

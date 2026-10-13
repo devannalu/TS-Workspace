@@ -17,6 +17,7 @@ supervisoras, suporte e voluntárias autorizadas.
 - **Tarefas:** Kanban, prioridades, prazo, responsáveis, checklist, filtros e arquivamento.
 - **Projetos:** objetivos por equipe, responsáveis, período, status e progresso derivado das tarefas.
 - **Notificações:** central pessoal com leitura, avisos de atribuição, comentários, mudanças e prazos, respeitando o acesso atual.
+- **Parcerias:** organizações, pipeline, contatos, próximas ações e vínculos com Eventos/Projetos, com versões e acesso por equipe.
 - **Reuniões/Talks:** pauta, participantes, responsáveis, horários com fuso, status e resultados.
 - **Calendário:** prazos de tarefas, períodos de projetos e reuniões com horário em mês, semana e agenda, com filtros e acesso herdado das fontes.
 - **Início do Workspace:** perfil, equipes e resumos reais de tarefas e projetos.

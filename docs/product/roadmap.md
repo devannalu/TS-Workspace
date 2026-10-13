@@ -19,8 +19,8 @@ vínculo para tarefas independentes. Comentários, anexos e atividade contextual
 
 Eventos da comunidade já oferecem operação, responsáveis, horários/fusos e calendário.
 Comunicação/Conteúdo já organiza briefing, fluxo editorial, responsável, vínculos e publicação planejada.
-Ampliar o Workspace para Parcerias,
-com notas e chat como recursos de colaboração. A organização deve respeitar
+Parcerias já acompanha organizações, contatos e próximas ações com acesso por equipe.
+Ampliar a colaboração com notas e chat. A organização deve respeitar
 as equipes e frentes reais da Tech Sisters.
 
 ## 4. Qualidade e operação em produção
