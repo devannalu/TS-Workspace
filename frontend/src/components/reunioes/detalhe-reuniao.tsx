@@ -1,4 +1,5 @@
 "use client";
+import { NotasContextuais } from "../notas/notas-contextuais";
 import { useEffect,useState,type FormEvent } from "react";
 import { criarReuniao,editarReuniao,arquivarReuniao,opcoesReunioes,statusReuniao,formatarHorarioReuniao,type DadosReuniao,type Reuniao,type OpcoesReunioes } from "@/lib/api/reunioes";
 import { Dialog } from "../ui/dialog";
@@ -24,6 +25,7 @@ export function DetalheReuniao({inicial,opcoes,aoFechar,aoConcluir}:{inicial:Reu
       <div><h4 className="font-medium">Participantes</h4>{inicial.participantes.length?<ul className="text-sm">{inicial.participantes.map(p=><li key={p.id}>{p.nome}{p.responsavel?" · Responsável":""}</li>)}</ul>:<p className="subtle">Sem participantes definidos.</p>}</div>
       <div><h4 className="font-medium">Resultados</h4><p className="whitespace-pre-wrap break-words text-sm">{inicial.resultados||"Sem resultados registrados."}</p></div>
       <div className="flex flex-wrap gap-2">{inicial.capacidades.editar&&<Button onClick={()=>definirModo("editar")}>Editar reunião</Button>}{inicial.capacidades.arquivar&&<Button variant="secondary" onClick={()=>definirModo("arquivar")}>Arquivar reunião</Button>}</div>
+      <NotasContextuais recurso="meetings" recursoId={inicial.id}/>
     </div>}
     {modo==="editar"&&<form onSubmit={salvar} className="space-y-4"><label className="field">Título<Input name="titulo" defaultValue={inicial?.titulo} maxLength={200} required disabled={ocupada}/></label><label className="field">Pauta<textarea name="pauta" defaultValue={inicial?.pauta??""} maxLength={5000} rows={3} disabled={ocupada}/></label>
       <div className="grid gap-3 sm:grid-cols-2"><label className="field">Tipo<select name="tipo" defaultValue={inicial?.tipo??"REUNIAO"} disabled={ocupada}><option value="REUNIAO">Reunião</option><option value="TALK">Talk</option></select></label><label className="field">Status<select name="status" defaultValue={inicial?.status??"AGENDADA"} disabled={ocupada||!inicial}>{Object.entries(statusReuniao).map(([valor,nome])=><option key={valor} value={valor}>{nome}</option>)}</select>{!inicial&&<input type="hidden" name="status" value="AGENDADA"/>}</label></div>

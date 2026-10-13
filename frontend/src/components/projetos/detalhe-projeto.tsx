@@ -1,4 +1,5 @@
 "use client";
+import { NotasContextuais } from "../notas/notas-contextuais";
 import { AbasColaboracao } from "../comentarios/abas-colaboracao";
 import Link from "next/link";
 import { useState } from "react";
@@ -232,6 +233,7 @@ export function DetalheProjeto({
                   disponível.
                 </p>
               )}
+              <NotasContextuais recurso="projects" recursoId={projeto.id}/>
             </AbasColaboracao>
           )
         )}

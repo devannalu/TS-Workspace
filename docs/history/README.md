@@ -49,3 +49,5 @@ Use a documentação viva para orientação atual:
 - [Fase 17 — Comunicação e Conteúdo](fase-17-conteudo.md)
 
 - [Fase 18 — Parcerias](fase-18-parcerias.md)
+
+- [Fase 19 — Notas contextuais](fase-19-notas.md)

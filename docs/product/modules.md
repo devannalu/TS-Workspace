@@ -21,12 +21,13 @@ O Next.js apresenta os dados pelas APIs Auth, RBAC, Teams, Users, Invites, Tasks
 | Calendário | IMPLEMENTADO | Projeção dos prazos de Tarefas e períodos de Projetos, com mês, semana, agenda, filtros e detalhes reutilizados; reuniões/eventos com horário/fuso e publicação planejada de conteúdo date-only e acesso herdado das fontes; sem persistência própria. |
 | Talks / Reuniões | IMPLEMENTADO | Pauta, tipo, status, equipe, participantes/responsáveis, horários com fuso, local/link, resultados, versões e arquivo. Integra o calendário com horários; sem criação automática de videoconferência. |
 | Anexos | IMPLEMENTADO | Upload contextual em Tarefas/Projetos, storage S3 privado, download temporário e remoção autorizada; sem módulo global de arquivos ou preview. |
+| Notas | IMPLEMENTADO | Documentação contextual em Projetos, Eventos, Parcerias e Reuniões; título/texto simples, autoria, edição própria, versão e remoção lógica. Acesso herdado da fonte; sem módulo global. |
 | Chat | PLANEJADO | Comunicação interna contextual ao Workspace. |
 | Notificações | IMPLEMENTADO | Central pessoal paginada, contador e leitura individual/em lote; atribuições, comentários, status e prazos de tarefas/projetos. Acesso atual revalidado; atualização a cada 60 segundos com a página visível. |
 | Auditoria | PLANEJADO — módulo completo | Registros administrativos existem no Java (convites, roles, status e equipes de usuárias). Consulta administrativa completa ainda não está entregue. |
 | Busca | PLANEJADO | Busca global pelos conteúdos e módulos acessíveis à usuária. |
 
-Comentários já integram Tarefas e Projetos; notas permanecem futuras.
+Comentários já integram Tarefas e Projetos. Notas documentam informações de Projetos, Eventos, Parcerias e Reuniões; comentários mantêm a conversa cronológica.
 Itens de navegação devem ser apresentados quando houver funcionalidade real
 e a usuária tiver acesso, evitando telas vazias de “em breve”.
 

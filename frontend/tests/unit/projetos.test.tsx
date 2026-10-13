@@ -407,3 +407,5 @@ it("seleciona somente projetos elegíveis da equipe e pagina opções", async ()
   });
   expect(selecionar).toHaveBeenCalledWith("segundo");
 });
+
+vi.mock("../../src/components/notas/notas-contextuais",()=>({NotasContextuais:()=>null}));

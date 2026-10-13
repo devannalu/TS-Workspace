@@ -212,3 +212,7 @@ O domínio conteudos atende /api/v1/content com JDBC, escopo por equipe, versõe
 ## Parcerias
 
 O domínio parcerias atende /api/v1/partnerships com JDBC, escopo atual por equipe, escrita transacional e versões. Contatos e observações não entram na auditoria. Novos vínculos validam atividade, mesma equipe e leitura da fonte; vínculos históricos permanecem.
+
+## Notas contextuais
+
+O domínio notas atende os quatro contextos existentes por FKs exclusivas. Leitura e capacidade de escrita vêm do serviço da fonte, revalidando permissão, membership e arquivo. Mutação própria usa bloqueio organizacional e versão; remoção lógica oculta texto na consulta. Auditoria contém somente ação/identidade da nota. Não reserva permissions adicionais nem cria notas globais.

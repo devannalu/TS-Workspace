@@ -1,4 +1,5 @@
 "use client";
+import { NotasContextuais } from "../notas/notas-contextuais";
 import { useEffect,useState,type FormEvent } from "react";
 import Link from "next/link";
 import { criarParceria,editarParceria,arquivarParceria,opcoesParcerias,statusParceria,type DadosParceria,type Parceria,type OpcoesParcerias } from "@/lib/api/parcerias";
@@ -32,6 +33,7 @@ export function DetalheParceria({inicial,opcoes,aoFechar,aoConcluir}:{inicial:Pa
       <dl className="grid gap-3 text-sm sm:grid-cols-2">{[["Contato principal",inicial.contatoPrincipal],["E-mail",inicial.email],["Telefone",inicial.telefone],["Próxima ação",inicial.proximaAcao],["Observações",inicial.observacoes]].map(([nome,valor])=><div key={nome}><dt className="subtle">{nome}</dt><dd className="whitespace-pre-wrap break-words">{valor||"Não informado"}</dd></div>)}</dl>
       <div className="flex flex-wrap gap-3 text-sm">{inicial.eventoId&&inicial.capacidades.verEvento&&<Link className="text-primary underline" href={`/eventos?abrir=${inicial.eventoId}`}>Abrir evento vinculado</Link>}{inicial.projetoId&&inicial.capacidades.verProjeto&&<Link className="text-primary underline" href={`/projetos?abrir=${inicial.projetoId}`}>Abrir projeto vinculado</Link>}</div>
       <div className="flex flex-wrap gap-2">{inicial.capacidades.editar&&<Button onClick={()=>definirModo("editar")}>Editar parceria</Button>}{inicial.capacidades.arquivar&&<Button variant="secondary" onClick={()=>definirModo("arquivar")}>Arquivar parceria</Button>}</div>
+      <NotasContextuais recurso="partnerships" recursoId={inicial.id}/>
     </div>}
     {modo==="editar"&&<form onSubmit={salvar} className="space-y-4">
       <label className="field">Organização<Input name="organizacao" defaultValue={inicial?.organizacao} maxLength={200} required disabled={ocupada}/></label>

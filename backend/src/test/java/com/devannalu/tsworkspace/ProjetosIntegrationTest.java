@@ -101,7 +101,7 @@ class ProjetosIntegrationTest {
         return new ProjetoService.FiltrosProjetos(equipe,status,pessoa,busca,null,null,null,null,arquivo,pagina,tamanho);
     }
     @Test void deveAplicarV9ComVinculoOpcionalESeedIdempotente() {
-        assertThat(flyway.info().current().getVersion().getVersion()).isEqualTo("17");assertThat(flyway.migrate().migrationsExecuted).isZero();
+        assertThat(flyway.info().current().getVersion().getVersion()).isEqualTo("18");assertThat(flyway.migrate().migrationsExecuted).isZero();
         seed.seed();seed.seed();assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM permissions",Integer.class)).isEqualTo(46);
         assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM role_permissions",Integer.class)).isEqualTo(130);
         assertThat(criar(admin,equipeA,"Standalone",List.of()).projeto()).isNull();

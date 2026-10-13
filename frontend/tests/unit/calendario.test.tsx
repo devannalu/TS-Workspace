@@ -76,3 +76,5 @@ it("erro seguro preserva controles e permite retry",async()=>{
   expect(await screen.findByRole("alert")).toBeTruthy();fireEvent.click(screen.getByRole("button",{name:"Tentar novamente"}));
   expect(await screen.findByRole("button",{name:"Abrir tarefa Publicar campanha"})).toBeTruthy();
 });
+
+vi.mock("../../src/components/notas/notas-contextuais",()=>({NotasContextuais:()=>null}));
