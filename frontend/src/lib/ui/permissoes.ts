@@ -9,6 +9,7 @@ export function navegacaoPermitida(permissoes: readonly string[]) {
     { label: "Parcerias", href: "/parcerias", permissoes: ["partnerships.view"] },
     { label: "Conteúdo", href: "/conteudos", permissoes: ["content.view"] },
     { label: "Calendário", href: "/calendario", permissoes: ["tasks.view", "projects.view", "meetings.view", "events.view", "content.view"] },
+    { label: "Busca", href: "/busca", permissoes: ["tasks.view", "projects.view", "meetings.view", "events.view", "content.view", "partnerships.view"] },
     { label: "Chat", href: "/chat", permissoes: ["chat.view"] },
     { label: "Equipes", href: "/equipes", permissoes: ["teams.view"] },
     { label: "Usuárias", href: "/usuarias", permissoes: ["users.view"] },

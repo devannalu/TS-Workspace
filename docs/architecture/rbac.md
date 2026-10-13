@@ -161,3 +161,7 @@ events.view/create/edit/archive são capacidades reais. SUPER_ADMIN/ADMIN globai
 ## Comunicação e Conteúdo
 
 content.view/create/edit/archive; V16 acrescenta quatro keys e 12 grants. Escrita de SUPERVISOR por equipe, arquivo administrativo; SUPPORT somente leitura. Vincular uma fonte não concede acesso à fonte.
+
+## Busca
+
+Sem nova permission key: cada grupo exige a leitura da fonte. Notas herdam a fonte e somente equipe atual acessível participa da consulta. Super Admin/Admin têm escopo global. Filtro sem permissão recebe 403; busca geral retorna apenas grupos autorizados.

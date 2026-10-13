@@ -12,6 +12,7 @@ import {
   FolderKanban,
   CalendarDays,
   MessageSquare,
+  Search,
 } from "lucide-react";
 import type { UsuarioAtual } from "@/lib/api/autenticacao";
 import { navegacaoPermitida } from "@/lib/ui/permissoes";
@@ -30,6 +31,7 @@ const icones = {
   Conteúdo: ClipboardList,
   Parcerias: Network,
   Chat: MessageSquare,
+  Busca: Search,
   Equipes: Network,
   Usuárias: Users,
 };
@@ -127,7 +129,10 @@ export function ShellAplicacao({
               <p className="text-sm font-semibold">{tituloPagina}</p>
             </div>
           </div>
-          <div className="flex items-center gap-2"><CentralNotificacoes />
+          <div className="flex items-center gap-2">
+          <form action="/busca" className="hidden xl:flex items-center gap-2 max-w-64" role="search"><input aria-label="Busca global" name="q" minLength={2} maxLength={160} required placeholder="Buscar no Workspace…" className="min-w-0 w-full rounded-xl border border-border bg-card px-3 py-2 text-sm"/><button aria-label="Buscar" className="size-11 shrink-0 flex items-center justify-center rounded-xl hover:bg-muted"><Search size={18} aria-hidden/></button></form>
+          <Link href="/busca" aria-label="Busca global" className="flex size-11 items-center justify-center rounded-xl hover:bg-muted xl:hidden"><Search size={18} aria-hidden/></Link>
+          <CentralNotificacoes />
           <details ref={referenciaMenu} className="relative">
             <summary
               aria-label="Menu da usuária"

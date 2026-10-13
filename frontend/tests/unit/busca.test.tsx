@@ -1,0 +1,13 @@
+// @vitest-environment jsdom
+import {beforeEach,afterEach,it,expect,vi} from "vitest";
+import {render,screen,fireEvent,waitFor,cleanup} from "@testing-library/react";
+import {BuscaWorkspace} from "../../src/components/busca/busca-workspace";
+const api=vi.hoisted(()=>({buscar:vi.fn()}));
+vi.mock("../../src/lib/api/busca",async importar=>({...await importar<object>(),buscarWorkspace:api.buscar}));
+const grupo={tipo:"PROJETO",items:[{id:"projeto",titulo:"Sisters",resumo:"<script>texto simples</script>",contexto:"Equipe",rota:"/projetos?abrir=projeto"}],total:9,page:0,size:5};
+beforeEach(()=>{vi.clearAllMocks();api.buscar.mockResolvedValue({consulta:"Sisters",tipos:["PROJETO","NOTA"],grupos:[grupo]});});afterEach(cleanup);
+function pesquisar(){fireEvent.change(screen.getByRole("textbox",{name:"Buscar no Workspace"}),{target:{value:"Sisters"}});fireEvent.click(screen.getByRole("button",{name:"Buscar"}));}
+it("busca ao enviar e apresenta resultados com link contextual e texto seguro",async()=>{render(<BuscaWorkspace/>);expect(api.buscar).not.toHaveBeenCalled();pesquisar();expect(await screen.findByText("<script>texto simples</script>")).toBeTruthy();expect(screen.getByRole("link",{name:/Sisters/}).getAttribute("href")).toBe("/projetos?abrir=projeto");expect(api.buscar).toHaveBeenCalledWith("Sisters",undefined,0);});
+it("filtra grupo e pagina no servidor",async()=>{render(<BuscaWorkspace consultaInicial="Sisters"/>);fireEvent.click(await screen.findByRole("button",{name:"Ver todos: Projetos"}));api.buscar.mockResolvedValue({consulta:"Sisters",tipos:["PROJETO","NOTA"],grupos:[{...grupo,size:3}]});await waitFor(()=>expect(api.buscar).toHaveBeenCalledWith("Sisters","PROJETO",0));fireEvent.click(await screen.findByRole("button",{name:"Próxima"}));await waitFor(()=>expect(api.buscar).toHaveBeenCalledWith("Sisters","PROJETO",1));});
+it("apresenta vazio e somente tipos autorizados retornados",async()=>{api.buscar.mockResolvedValue({consulta:"Sisters",tipos:["PROJETO"],grupos:[{...grupo,items:[],total:0}]});render(<BuscaWorkspace consultaInicial="Sisters"/>);expect(await screen.findByText("Nenhum resultado encontrado.")).toBeTruthy();expect(screen.queryByRole("option",{name:"Parcerias"})).toBeNull();});
+it("falha de permissão limpa resultados e permite tentar novamente",async()=>{render(<BuscaWorkspace/>);pesquisar();await screen.findByText("Sisters");api.buscar.mockRejectedValueOnce(new Error("Você não tem permissão para esta ação."));pesquisar();expect(await screen.findByText("Você não tem permissão para esta ação.")).toBeTruthy();expect(screen.queryByRole("link",{name:/Sisters/})).toBeNull();fireEvent.click(screen.getByRole("button",{name:"Tentar novamente"}));expect(await screen.findByText("Sisters")).toBeTruthy();});

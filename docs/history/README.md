@@ -53,3 +53,5 @@ Use a documentação viva para orientação atual:
 - [Fase 19 — Notas contextuais](fase-19-notas.md)
 
 - [Fase 20 — Chat interno](fase-20-chat.md)
+
+- [Fase 21 — Busca global](fase-21-busca.md)

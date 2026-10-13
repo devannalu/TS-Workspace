@@ -1,6 +1,6 @@
 "use client";
 import {useEffect,useState,type FormEvent} from "react";
-import {listarNotas,criarNota,editarNota,removerNota,type ContextoNota,type Nota,type PaginaNotas} from "@/lib/api/notas";
+import {buscarNota,listarNotas,criarNota,editarNota,removerNota,type ContextoNota,type Nota,type PaginaNotas} from "@/lib/api/notas";
 import {Button} from "../ui/button";
 import {Input} from "../ui/input";
 import {ErrorState,EmptyState} from "../ui/feedback";
@@ -10,7 +10,15 @@ export function NotasContextuais({recurso,recursoId}:{recurso:ContextoNota;recur
   const [dados,definirDados]=useState<PaginaNotas>(),[pagina,definirPagina]=useState(0),[revisao,definirRevisao]=useState(0);
   const [erro,definirErro]=useState(""),[carregando,definirCarregando]=useState(true),[ocupada,definirOcupada]=useState(false);
   const [edicao,definirEdicao]=useState<Nota|null>(),[remocao,definirRemocao]=useState<string>();
-  useEffect(()=>{let ativa=true;listarNotas(recurso,recursoId,pagina).then(r=>{if(ativa){definirDados(r);definirErro("");}}).catch(e=>{if(ativa)definirErro(e instanceof Error?e.message:"Não foi possível carregar notas.");}).finally(()=>{if(ativa)definirCarregando(false);});return()=>{ativa=false;};},[recurso,recursoId,pagina,revisao]);
+  const [notaEncontrada,definirNotaEncontrada]=useState<Nota>();
+  useEffect(()=>{let ativa=true;listarNotas(recurso,recursoId,pagina).then(r=>{if(ativa){definirDados(r);definirErro("");}}).catch(e=>{if(ativa){definirDados(undefined);definirNotaEncontrada(undefined);definirErro(e instanceof Error?e.message:"Não foi possível carregar notas.");}}).finally(()=>{if(ativa)definirCarregando(false);});return()=>{ativa=false;};},[recurso,recursoId,pagina,revisao]);
+  useEffect(()=>{
+    const notaId=new URLSearchParams(window.location.search).get("nota");
+    if(!notaId)return;
+    let ativa=true;
+    buscarNota(recurso,recursoId,notaId).then(n=>{if(ativa)definirNotaEncontrada(n);}).catch(()=>{if(ativa)definirNotaEncontrada(undefined);});
+    return()=>{ativa=false;};
+  },[recurso,recursoId,revisao]);
   function atualizar(){definirCarregando(true);definirRevisao(r=>r+1);}
   async function executar(acao:()=>Promise<unknown>){definirOcupada(true);definirErro("");try{await acao();definirEdicao(undefined);definirRemocao(undefined);atualizar();}catch(e){definirErro(e instanceof Error?e.message:"Não foi possível salvar a nota.");}finally{definirOcupada(false);}}
   function salvar(e:FormEvent<HTMLFormElement>){e.preventDefault();const formulario=new FormData(e.currentTarget),titulo=String(formulario.get("tituloNota")),texto=String(formulario.get("textoNota"));void executar(()=>edicao?editarNota(edicao,titulo,texto):criarNota(recurso,recursoId,titulo,texto));}
@@ -24,6 +32,7 @@ export function NotasContextuais({recurso,recursoId}:{recurso:ContextoNota;recur
       <div className="flex flex-wrap gap-2"><Button type="submit" disabled={ocupada}>{ocupada?"Salvando…":"Salvar nota"}</Button><Button variant="secondary" disabled={ocupada} onClick={()=>definirEdicao(undefined)}>Cancelar nota</Button></div>
     </form>}
     {carregando?<p role="status">Carregando notas…</p>:dados&&<>{!dados.items.length&&<EmptyState title="Nenhuma nota ainda." description="Registre informações úteis para este recurso."/>}
+      {notaEncontrada&&!dados.items.some(n=>n.id===notaEncontrada.id)&&<aside className="rounded-xl border border-primary p-3 space-y-2" aria-label="Nota encontrada na busca"><p className="subtle text-xs">Resultado da busca</p><h5 className="font-semibold break-words">{notaEncontrada.titulo}</h5><p className="whitespace-pre-wrap break-words text-sm">{notaEncontrada.texto}</p><p className="subtle text-xs">{notaEncontrada.autora.nome}</p></aside>}
       {dados.items.map(n=><article key={n.id} className="rounded-xl border border-border p-3 space-y-2">
         <h5 className="font-semibold break-words">{n.titulo}</h5><p className="whitespace-pre-wrap break-words text-sm">{n.texto}</p>
         <p className="subtle text-xs">{n.autora.nome} · Atualizada em {new Date(n.atualizadaEm).toLocaleString("pt-BR")}</p>

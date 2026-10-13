@@ -205,3 +205,7 @@ O detalhe existente da tarefa contém checklist com progresso, inclusão, ediç�
 ## Comunicação e Conteúdo
 
 /conteudos oferece fluxo editorial simples, responsável e publicação date-only. Calendário reutiliza DetalheConteudo; links de fonte só aparecem conforme capacidades atuais e as rotas de destino revalidam acesso.
+
+## Busca global
+
+/busca utiliza uma única projeção Java. Campo no header desktop e acesso compacto nas telas menores; grupos, filtro e paginação reutilizam detalhes existentes. Nota encontrada fora da página inicial recebe destaque no contexto correto, sem ignorar autorização da fonte.

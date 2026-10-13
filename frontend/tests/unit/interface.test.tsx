@@ -202,6 +202,13 @@ describe("autenticação e shell", () => {
     expect(link.getAttribute("aria-current")).toBe("page");
     expect(link.querySelector("svg")).not.toBeNull();
   });
+  it("apresenta busca global com ícone e campo no shell", () => {
+    mock.path="/busca";
+    render(<ShellAplicacao usuario={{...admin,permissions:["projects.view"]}}><p>Área</p></ShellAplicacao>);
+    const link=screen.getByRole("link",{name:"Busca"});
+    expect(link.getAttribute("href")).toBe("/busca");expect(link.querySelector("svg")).not.toBeNull();
+    expect(screen.getByRole("textbox",{name:"Busca global"})).toBeTruthy();
+  });
   it("renderiza Chat na navegação com ícone e rota ativa", () => {
     mock.path="/chat";
     render(<ShellAplicacao usuario={{...admin,permissions:["chat.view"]}}><p>Área</p></ShellAplicacao>);

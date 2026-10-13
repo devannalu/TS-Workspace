@@ -47,6 +47,13 @@ public class NotaService {
         if(titulo==null||titulo.isBlank()||titulo.length()>200||texto==null||texto.isBlank()||texto.length()>5000) throw new IllegalArgumentException();
     }
     @Transactional(readOnly=true)
+    public Resposta detalhe(String pessoa, Recurso recurso, String recursoId, String id) {
+        boolean escrever=acesso(pessoa,recurso,recursoId);
+        var nota=notas.buscar(id).filter(n->n.recurso()==recurso&&n.recursoId().equals(recursoId)&&n.removidaEm()==null)
+            .orElseThrow(()->ProblemaDominio.naoEncontrado("Nota não encontrada."));
+        return resposta(pessoa,escrever,nota);
+    }
+    @Transactional(readOnly=true)
     public Pagina listar(String pessoa, Recurso recurso, String id, int pagina, int tamanho) {
         if(pagina<0||pagina>100000||tamanho<1||tamanho>100) throw new IllegalArgumentException();
         boolean escrever=acesso(pessoa,recurso,id);

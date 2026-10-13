@@ -15,6 +15,10 @@ public class NotaController {
     public NotaController(NotaService notas) {this.notas=notas;}
     public record Dados(@NotBlank @Size(max=200) String titulo,@NotBlank @Size(max=5000) String texto,@Min(0) Long versao) { }
     public record Versao(@NotNull @Min(0) Long versao) { }
+    @GetMapping("/{recurso:projects|events|partnerships|meetings}/{id}/notes/{notaId}")
+    public NotaService.Resposta detalhe(@AuthenticationPrincipal AppUserPrincipal pessoa,@PathVariable String recurso,@PathVariable UUID id,@PathVariable UUID notaId) {
+        return notas.detalhe(pessoa.id(),NotaRepository.Recurso.daRota(recurso),id.toString(),notaId.toString());
+    }
     @GetMapping("/{recurso:projects|events|partnerships|meetings}/{id}/notes")
     public NotaService.Pagina listar(@AuthenticationPrincipal AppUserPrincipal pessoa,@PathVariable String recurso,@PathVariable UUID id,
         @RequestParam(defaultValue="0") int page,@RequestParam(defaultValue="10") int size) {

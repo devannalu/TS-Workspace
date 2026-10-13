@@ -6,3 +6,5 @@ export const listarNotas=(recurso:ContextoNota,id:string,pagina=0)=>requisitarJa
 export const criarNota=(recurso:ContextoNota,id:string,titulo:string,texto:string)=>requisitarJava<Nota>(`/${recurso}/${id}/notes`,"POST",{titulo,texto});
 export const editarNota=(nota:Nota,titulo:string,texto:string)=>requisitarJava<Nota>(`/notes/${nota.id}`,"PATCH",{titulo,texto,versao:nota.versao});
 export const removerNota=(nota:Nota)=>requisitarJava<void>(`/notes/${nota.id}/remove`,"POST",{versao:nota.versao});
+
+export const buscarNota=(recurso:ContextoNota,id:string,notaId:string)=>requisitarJava<Nota>(`/${recurso}/${id}/notes/${notaId}`);

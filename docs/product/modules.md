@@ -25,7 +25,7 @@ O Next.js apresenta os dados pelas APIs Auth, RBAC, Teams, Users, Invites, Tasks
 | Chat | IMPLEMENTADO | Geral do Workspace e canais derivados das equipes; mensagens paginadas por cursor, texto simples, autoria, edição própria, remoção/moderação e histórico readonly de equipes arquivadas. Polling visível de três segundos; sem DM, threads ou uploads. |
 | Notificações | IMPLEMENTADO | Central pessoal paginada, contador e leitura individual/em lote; atribuições, comentários, status e prazos de tarefas/projetos. Acesso atual revalidado; atualização a cada 60 segundos com a página visível. |
 | Auditoria | PLANEJADO — módulo completo | Registros administrativos existem no Java (convites, roles, status e equipes de usuárias). Consulta administrativa completa ainda não está entregue. |
-| Busca | PLANEJADO | Busca global pelos conteúdos e módulos acessíveis à usuária. |
+| Busca | IMPLEMENTADO | Resultados agrupados de Tarefas, Projetos, Reuniões, Eventos, Conteúdo, Parcerias e Notas; permissões e equipe atuais aplicadas antes de contar/retornar, paginação e links contextuais. Exclui arquivo, remoção e dados de identidade/contato. |
 
 Comentários já integram Tarefas e Projetos. Notas documentam informações de Projetos, Eventos, Parcerias e Reuniões; comentários mantêm a conversa cronológica.
 Itens de navegação devem ser apresentados quando houver funcionalidade real
