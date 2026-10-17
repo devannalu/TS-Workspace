@@ -12,6 +12,7 @@ export function navegacaoPermitida(permissoes: readonly string[]) {
     { label: "Busca", href: "/busca", permissoes: ["tasks.view", "projects.view", "meetings.view", "events.view", "content.view", "partnerships.view"] },
     { label: "Chat", href: "/chat", permissoes: ["chat.view"] },
     { label: "Equipes", href: "/equipes", permissoes: ["teams.view"] },
+    { label: "Auditoria", href: "/auditoria", permissoes: ["audit.view"] },
     { label: "Usuárias", href: "/usuarias", permissoes: ["users.view"] },
   ].filter(link => !link.permissoes.length || link.permissoes.some(p => permissoes.includes(p)));
 }

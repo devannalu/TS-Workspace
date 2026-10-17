@@ -151,3 +151,7 @@ V15 adiciona community_event (nome, descrição, formato, status, equipe, Instan
 ## Comunicação e Conteúdo
 
 V16 adiciona communication_content com canal/formato/status limitados por checks, responsável opcional e FKs para Evento/Projeto. planned_publication_date é DATE; não persistir instant/fuso para essa informação.
+
+## Consulta administrativa
+
+V20 acrescenta audit_created_id_idx(created_at,id) ao audit_log existente. Não altera conteúdo, retenção ou migrations históricas. Leitura administrativa seleciona somente colunas seguras, com filtros e ordenação temporal estável.

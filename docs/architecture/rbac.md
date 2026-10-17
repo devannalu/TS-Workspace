@@ -165,3 +165,7 @@ content.view/create/edit/archive; V16 acrescenta quatro keys e 12 grants. Escrit
 ## Busca
 
 Sem nova permission key: cada grupo exige a leitura da fonte. Notas herdam a fonte e somente equipe atual acessível participa da consulta. Super Admin/Admin têm escopo global. Filtro sem permissão recebe 403; busca geral retorna apenas grupos autorizados.
+
+## Auditoria administrativa
+
+audit.view existente é a autoridade da consulta organizacional. Listagem, opções e detalhe revalidam permissão e perfil ativo; overrides existentes continuam aplicáveis. O acesso à trilha não concede leitura de corpos privados dos recursos. Metadados livres não participam da resposta HTTP.

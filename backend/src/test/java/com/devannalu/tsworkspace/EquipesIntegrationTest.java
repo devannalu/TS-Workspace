@@ -53,6 +53,7 @@ class EquipesIntegrationTest {
     @BeforeEach void reset() {
         jdbc.update("DELETE FROM SPRING_SESSION_ATTRIBUTES"); jdbc.update("DELETE FROM SPRING_SESSION");
         jdbc.update("DELETE FROM team_member"); jdbc.update("DELETE FROM user_permissions");
+        jdbc.update("DELETE FROM audit_log");
         jdbc.update("DELETE FROM app_profile"); jdbc.update("DELETE FROM app_user");
         // Apenas a árvore temporária é removida, das folhas para a raiz.
         while (jdbc.queryForObject("SELECT COUNT(*) FROM team WHERE team_key<>'fundadoras'",Long.class)>0)
@@ -61,7 +62,7 @@ class EquipesIntegrationTest {
         root = jdbc.queryForObject("SELECT id FROM team WHERE team_key='fundadoras'",String.class);
     }
     @Test void devePreservarInicializacaoECompatibilidadeHistoricaDasEquipes() throws Exception {
-        assertThat(flyway.info().current().getVersion().getVersion()).isEqualTo("19");
+        assertThat(flyway.info().current().getVersion().getVersion()).isEqualTo("20");
         assertThat(flyway.migrate().migrationsExecuted).isZero();
         seed.seed(); seed.seed();
         try(var input=getClass().getResourceAsStream("/teams-baseline.json")) {
@@ -90,9 +91,9 @@ class EquipesIntegrationTest {
     }
     @Test void deveListarEquipesPropriasRespeitandoParticipacaoEPermissao() throws Exception {
         String support = user("SUPPORT");
-        String own = teams.criarEquipe("Own team", null, root).team().id();
-        String archived = teams.criarEquipe("Archived team", null, root).team().id();
-        teams.adicionarIntegrante(own, support); teams.adicionarIntegrante(archived, support); teams.arquivarEquipe(archived);
+        String own = teams.criarEquipe(admin, "Own team", null, root).team().id();
+        String archived = teams.criarEquipe(admin, "Archived team", null, root).team().id();
+        teams.adicionarIntegrante(admin, own, support); teams.adicionarIntegrante(admin, archived, support); teams.arquivarEquipe(admin, archived);
         Cookie session = login(support);
         mvc.perform(get("/api/v1/teams/mine").cookie(session)).andExpect(status().isOk())
             .andExpect(jsonPath("$.length()").value(1)).andExpect(jsonPath("$[0].id").value(own));
@@ -101,25 +102,25 @@ class EquipesIntegrationTest {
         mvc.perform(get("/api/v1/teams/mine").cookie(session)).andExpect(status().isForbidden());
     }
     @Test void deveCriarEditarConsultarEArquivarEquipePreservandoHistorico() {
-        String id=teams.criarEquipe("Teste","description",root).team().id();
-        String child=teams.criarEquipe("Child",null,id).team().id();
-        assertThatThrownBy(()->teams.arquivarEquipe(id)).hasMessageContaining("subequipes");
-        teams.editarEquipe(child,"Moved",null,root);
-        teams.adicionarIntegrante(id,admin);
+        String id=teams.criarEquipe(admin, "Teste","description",root).team().id();
+        String child=teams.criarEquipe(admin, "Child",null,id).team().id();
+        assertThatThrownBy(()->teams.arquivarEquipe(admin, id)).hasMessageContaining("subequipes");
+        teams.editarEquipe(admin, child,"Moved",null,root);
+        teams.adicionarIntegrante(admin, id,admin);
         assertThat(teams.buscarDetalheEquipe(id).team().memberCount()).isEqualTo(1);
-        assertThat(teams.arquivarEquipe(id).team().archived()).isTrue();
-        assertThat(teams.arquivarEquipe(id).team().archived()).isTrue();
+        assertThat(teams.arquivarEquipe(admin, id).team().archived()).isTrue();
+        assertThat(teams.arquivarEquipe(admin, id).team().archived()).isTrue();
         assertThat(teams.listarEquipes()).extracting(EquipeService.ResumoEquipe::id).doesNotContain(id);
         assertThat(teams.buscarDetalheEquipe(id).members()).hasSize(1);
-        assertThatThrownBy(()->teams.editarEquipe(id,"No",null,root)).isInstanceOf(ProblemaDominio.class);
-        assertThatThrownBy(()->teams.adicionarIntegrante(id,admin)).isInstanceOf(ProblemaDominio.class);
-        assertThatThrownBy(()->teams.removerIntegrante(id,admin)).isInstanceOf(ProblemaDominio.class);
+        assertThatThrownBy(()->teams.editarEquipe(admin, id,"No",null,root)).isInstanceOf(ProblemaDominio.class);
+        assertThatThrownBy(()->teams.adicionarIntegrante(admin, id,admin)).isInstanceOf(ProblemaDominio.class);
+        assertThatThrownBy(()->teams.removerIntegrante(admin, id,admin)).isInstanceOf(ProblemaDominio.class);
     }
     @Test void devePreservarAlteracoesAdministrativasERejeitarRaizInvalida() {
         String events=jdbc.queryForObject("SELECT id FROM team WHERE team_key='eventos'",String.class);
-        teams.editarEquipe(events,"Eventos personalizados","Preserved",root);
-        teams.arquivarEquipe(events);
-        String custom=teams.criarEquipe("Custom team",null,root).team().id();
+        teams.editarEquipe(admin, events,"Eventos personalizados","Preserved",root);
+        teams.arquivarEquipe(admin, events);
+        String custom=teams.criarEquipe(admin, "Custom team",null,root).team().id();
         seed.seed(); seed.seed();
         assertThat(teams.buscarDetalheEquipe(events).team().name()).isEqualTo("Eventos personalizados");
         assertThat(teams.buscarDetalheEquipe(events).team().archived()).isTrue();
@@ -129,30 +130,30 @@ class EquipesIntegrationTest {
         finally { jdbc.update("UPDATE team SET archived_at=NULL WHERE id=?",root); }
     }
     @Test void deveProtegerHierarquiaERaiz() {
-        String a=teams.criarEquipe("Parent",null,root).team().id(), b=teams.criarEquipe("Child",null,a).team().id(), c=teams.criarEquipe("Grandchild",null,b).team().id();
-        assertThatThrownBy(()->teams.criarEquipe("Second root",null,null)).isInstanceOf(ProblemaDominio.class);
-        assertThatThrownBy(()->teams.editarEquipe(a,"Parent",null,a)).isInstanceOf(ProblemaDominio.class);
-        assertThatThrownBy(()->teams.editarEquipe(a,"Parent",null,b)).isInstanceOf(ProblemaDominio.class);
-        assertThatThrownBy(()->teams.editarEquipe(a,"Parent",null,c)).isInstanceOf(ProblemaDominio.class);
-        assertThatThrownBy(()->teams.editarEquipe(a,"Parent",null,null)).isInstanceOf(ProblemaDominio.class);
-        assertThatThrownBy(()->teams.editarEquipe(root,"Fundadoras",null,a)).isInstanceOf(ProblemaDominio.class);
-        assertThatThrownBy(()->teams.arquivarEquipe(root)).isInstanceOf(ProblemaDominio.class);
-        teams.arquivarEquipe(c);
-        assertThatThrownBy(()->teams.criarEquipe("Invalid",null,c)).isInstanceOf(ProblemaDominio.class);
-        assertThatThrownBy(()->teams.criarEquipe("Invalid",null,UUID.randomUUID().toString())).isInstanceOfSatisfying(ProblemaDominio.class,e->assertThat(e.status()).isEqualTo(404));
+        String a=teams.criarEquipe(admin, "Parent",null,root).team().id(), b=teams.criarEquipe(admin, "Child",null,a).team().id(), c=teams.criarEquipe(admin, "Grandchild",null,b).team().id();
+        assertThatThrownBy(()->teams.criarEquipe(admin, "Second root",null,null)).isInstanceOf(ProblemaDominio.class);
+        assertThatThrownBy(()->teams.editarEquipe(admin, a,"Parent",null,a)).isInstanceOf(ProblemaDominio.class);
+        assertThatThrownBy(()->teams.editarEquipe(admin, a,"Parent",null,b)).isInstanceOf(ProblemaDominio.class);
+        assertThatThrownBy(()->teams.editarEquipe(admin, a,"Parent",null,c)).isInstanceOf(ProblemaDominio.class);
+        assertThatThrownBy(()->teams.editarEquipe(admin, a,"Parent",null,null)).isInstanceOf(ProblemaDominio.class);
+        assertThatThrownBy(()->teams.editarEquipe(admin, root,"Fundadoras",null,a)).isInstanceOf(ProblemaDominio.class);
+        assertThatThrownBy(()->teams.arquivarEquipe(admin, root)).isInstanceOf(ProblemaDominio.class);
+        teams.arquivarEquipe(admin, c);
+        assertThatThrownBy(()->teams.criarEquipe(admin, "Invalid",null,c)).isInstanceOf(ProblemaDominio.class);
+        assertThatThrownBy(()->teams.criarEquipe(admin, "Invalid",null,UUID.randomUUID().toString())).isInstanceOfSatisfying(ProblemaDominio.class,e->assertThat(e.status()).isEqualTo(404));
     }
     @Test void deveValidarParticipacoesDuplicidadeInatividadeEUltimaAdmin() {
-        String other=user("SUPPORT"), a=teams.criarEquipe("A team",null,root).team().id(), b=teams.criarEquipe("B team",null,root).team().id();
-        teams.adicionarIntegrante(a,other); teams.adicionarIntegrante(b,other);
-        assertThatThrownBy(()->teams.adicionarIntegrante(a,other)).hasMessageContaining("já");
-        teams.removerIntegrante(a,other); assertThat(teams.buscarDetalheEquipe(b).members()).hasSize(1);
+        String other=user("SUPPORT"), a=teams.criarEquipe(admin, "A team",null,root).team().id(), b=teams.criarEquipe(admin, "B team",null,root).team().id();
+        teams.adicionarIntegrante(admin, a,other); teams.adicionarIntegrante(admin, b,other);
+        assertThatThrownBy(()->teams.adicionarIntegrante(admin, a,other)).hasMessageContaining("já");
+        teams.removerIntegrante(admin, a,other); assertThat(teams.buscarDetalheEquipe(b).members()).hasSize(1);
         jdbc.update("UPDATE app_profile SET status='INACTIVE' WHERE user_id=?",other);
         assertThat(teams.buscarDetalheEquipe(b).team().memberCount()).isZero(); assertThat(teams.buscarDetalheEquipe(b).members()).isEmpty();
-        assertThatThrownBy(()->teams.adicionarIntegrante(a,other)).hasMessageContaining("indisponível");
-        teams.removerIntegrante(b,other); // Remover integrantes inativas preserva a compatibilidade do fluxo.
-        assertThatThrownBy(()->teams.removerIntegrante(root,admin)).hasMessageContaining("última");
-        String second=user("SUPER_ADMIN"); teams.adicionarIntegrante(root,second); teams.removerIntegrante(root,admin);
-        assertThatThrownBy(()->teams.removerIntegrante(root,second)).hasMessageContaining("última");
+        assertThatThrownBy(()->teams.adicionarIntegrante(admin, a,other)).hasMessageContaining("indisponível");
+        teams.removerIntegrante(admin, b,other); // Remover integrantes inativas preserva a compatibilidade do fluxo.
+        assertThatThrownBy(()->teams.removerIntegrante(admin, root,admin)).hasMessageContaining("última");
+        String second=user("SUPER_ADMIN"); teams.adicionarIntegrante(admin, root,second); teams.removerIntegrante(admin, root,admin);
+        assertThatThrownBy(()->teams.removerIntegrante(admin, root,second)).hasMessageContaining("última");
     }
     @Test void deveImpedirParticipacaoDuplicadaSegundaRaizEReferenciaInexistente() {
         assertThatThrownBy(()->jdbc.update("INSERT INTO team_member VALUES (?,?,CURRENT_TIMESTAMP(6))",admin,root)).isInstanceOf(org.springframework.dao.DataIntegrityViolationException.class);
@@ -160,15 +161,15 @@ class EquipesIntegrationTest {
         assertThatThrownBy(()->jdbc.update("INSERT INTO team_member VALUES (?,?,CURRENT_TIMESTAMP(6))",UUID.randomUUID().toString(),root)).isInstanceOf(org.springframework.dao.DataIntegrityViolationException.class);
     }
     @Test void deveSerializarAlteracoesConcorrentesDeParticipacaoEHierarquia() throws Exception {
-        String member=user("SUPPORT"), a=teams.criarEquipe("Concurrent A",null,root).team().id(), b=teams.criarEquipe("Concurrent B",null,root).team().id();
+        String member=user("SUPPORT"), a=teams.criarEquipe(admin, "Concurrent A",null,root).team().id(), b=teams.criarEquipe(admin, "Concurrent B",null,root).team().id();
         var pool=Executors.newFixedThreadPool(2);
         try {
-            var duplicate=pool.invokeAll(List.of(attempt(()->teams.adicionarIntegrante(a,member)),attempt(()->teams.adicionarIntegrante(a,member))));
+            var duplicate=pool.invokeAll(List.of(attempt(()->teams.adicionarIntegrante(admin, a,member)),attempt(()->teams.adicionarIntegrante(admin, a,member))));
             assertThat(List.of(duplicate.get(0).get(),duplicate.get(1).get())).containsExactlyInAnyOrder(true,false);
-            var cycle=pool.invokeAll(List.of(attempt(()->teams.editarEquipe(a,"Concurrent A",null,b)),attempt(()->teams.editarEquipe(b,"Concurrent B",null,a))));
+            var cycle=pool.invokeAll(List.of(attempt(()->teams.editarEquipe(admin, a,"Concurrent A",null,b)),attempt(()->teams.editarEquipe(admin, b,"Concurrent B",null,a))));
             assertThat(List.of(cycle.get(0).get(),cycle.get(1).get())).containsExactlyInAnyOrder(true,false);
-            String second=user("SUPER_ADMIN"); teams.adicionarIntegrante(root,second);
-            var removal=pool.invokeAll(List.of(attempt(()->teams.removerIntegrante(root,admin)),attempt(()->teams.removerIntegrante(root,second))));
+            String second=user("SUPER_ADMIN"); teams.adicionarIntegrante(admin, root,second);
+            var removal=pool.invokeAll(List.of(attempt(()->teams.removerIntegrante(admin, root,admin)),attempt(()->teams.removerIntegrante(admin, root,second))));
             assertThat(List.of(removal.get(0).get(),removal.get(1).get())).containsExactlyInAnyOrder(true,false);
         } finally { pool.shutdownNow(); }
     }

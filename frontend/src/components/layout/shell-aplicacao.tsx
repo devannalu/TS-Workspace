@@ -13,6 +13,7 @@ import {
   CalendarDays,
   MessageSquare,
   Search,
+  ShieldCheck,
 } from "lucide-react";
 import type { UsuarioAtual } from "@/lib/api/autenticacao";
 import { navegacaoPermitida } from "@/lib/ui/permissoes";
@@ -32,6 +33,7 @@ const icones = {
   Parcerias: Network,
   Chat: MessageSquare,
   Busca: Search,
+  Auditoria: ShieldCheck,
   Equipes: Network,
   Usuárias: Users,
 };

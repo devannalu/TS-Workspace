@@ -209,6 +209,12 @@ describe("autenticação e shell", () => {
     expect(link.getAttribute("href")).toBe("/busca");expect(link.querySelector("svg")).not.toBeNull();
     expect(screen.getByRole("textbox",{name:"Busca global"})).toBeTruthy();
   });
+  it("mostra Auditoria somente com a capacidade administrativa", () => {
+    mock.path="/auditoria";
+    render(<ShellAplicacao usuario={{...admin,permissions:["audit.view"]}}><p>Área</p></ShellAplicacao>);
+    const link=screen.getByRole("link",{name:"Auditoria"});
+    expect(link.getAttribute("href")).toBe("/auditoria");expect(link.querySelector("svg")).not.toBeNull();
+  });
   it("renderiza Chat na navegação com ícone e rota ativa", () => {
     mock.path="/chat";
     render(<ShellAplicacao usuario={{...admin,permissions:["chat.view"]}}><p>Área</p></ShellAplicacao>);

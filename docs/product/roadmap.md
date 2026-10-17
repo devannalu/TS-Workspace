@@ -27,7 +27,8 @@ as equipes e frentes reais da Tech Sisters.
 ## 4. Qualidade e operação em produção
 
 Busca global já reúne os sete módulos textuais com autorização atual e links contextuais.
-Consolidar auditoria completa, envio de emails, integrações,
+Auditoria administrativa já permite consulta filtrada e detalhe seguro com audit.view.
+Consolidar envio de emails, integrações,
 performance, testes e polimento da interface. Preparar configuração segura,
 operação e recuperação de dados para o ambiente de produção.
 

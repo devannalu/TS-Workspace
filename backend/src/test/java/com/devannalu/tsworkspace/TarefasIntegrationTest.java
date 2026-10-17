@@ -95,7 +95,7 @@ class TarefasIntegrationTest {
     }
 
     @Test void deveAplicarV8ComConstraintsSemReexecutarMigracoes() {
-        assertThat(flyway.info().current().getVersion().getVersion()).isEqualTo("19");
+        assertThat(flyway.info().current().getVersion().getVersion()).isEqualTo("20");
         assertThat(flyway.migrate().migrationsExecuted).isZero();
         assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM information_schema.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME IN ('task','task_assignee')", Long.class)).isEqualTo(2);
     }
@@ -147,10 +147,10 @@ class TarefasIntegrationTest {
     }
     @Test void deveImpedirRemocaoDeIntegranteComResponsabilidadeAtiva() {
         var tarefa = criar(admin, equipeA, "Encontro", List.of(suporte));
-        assertThatThrownBy(() -> equipes.removerIntegrante(equipeA, suporte)).isInstanceOf(ProblemaDominio.class);
+        assertThatThrownBy(() -> equipes.removerIntegrante(admin, equipeA, suporte)).isInstanceOf(ProblemaDominio.class);
         assertThatThrownBy(() -> usuarios.editarUsuario(superAdmin, suporte, null, null, List.of())).isInstanceOf(ProblemaDominio.class);
         tarefas.arquivarTarefa(admin, tarefa.id(), tarefa.versao());
-        assertThatCode(() -> equipes.removerIntegrante(equipeA, suporte)).doesNotThrowAnyException();
+        assertThatCode(() -> equipes.removerIntegrante(admin, equipeA, suporte)).doesNotThrowAnyException();
     }
     @Test void devePermitirSuporteEditarSomenteCriadasOuAtribuidas() {
         var propria = criar(suporte, equipeA, "Própria", List.of());

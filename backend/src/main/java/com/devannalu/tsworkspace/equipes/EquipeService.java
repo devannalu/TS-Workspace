@@ -7,11 +7,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class EquipeService {
+    private final com.devannalu.tsworkspace.auditoria.AuditoriaRepository auditoria;
     private final EquipeRepository equipes;
     private final com.devannalu.tsworkspace.tarefas.TarefaRepository tarefas;
     private final com.devannalu.tsworkspace.projetos.ProjetoRepository projetos;
     private final com.devannalu.tsworkspace.compartilhado.BloqueioOrganizacao bloqueioOrganizacao;
-    public EquipeService(EquipeRepository equipes, com.devannalu.tsworkspace.compartilhado.BloqueioOrganizacao bloqueioOrganizacao, com.devannalu.tsworkspace.tarefas.TarefaRepository tarefas, com.devannalu.tsworkspace.projetos.ProjetoRepository projetos) { this.equipes = equipes; this.bloqueioOrganizacao = bloqueioOrganizacao; this.tarefas = tarefas; this.projetos = projetos; }
+    public EquipeService(EquipeRepository equipes, com.devannalu.tsworkspace.compartilhado.BloqueioOrganizacao bloqueioOrganizacao, com.devannalu.tsworkspace.tarefas.TarefaRepository tarefas, com.devannalu.tsworkspace.projetos.ProjetoRepository projetos, com.devannalu.tsworkspace.auditoria.AuditoriaRepository auditoria) { this.auditoria=auditoria; this.equipes = equipes; this.bloqueioOrganizacao = bloqueioOrganizacao; this.tarefas = tarefas; this.projetos = projetos; }
     public record ResumoEquipe(String id, String key, String name, String description, String parentId, boolean archived, long memberCount) { }
     public record IntegranteEquipe(String id, String name, String email) { }
     public record DetalheEquipe(ResumoEquipe team, List<IntegranteEquipe> members) { }
@@ -47,39 +48,42 @@ public class EquipeService {
         return equipe;
     }
     @Transactional
-    public DetalheEquipe criarEquipe(String nome, String descricao, String equipeMaeId) {
+    public DetalheEquipe criarEquipe(String autoraId, String nome, String descricao, String equipeMaeId) {
         bloquearHierarquia();
         String id = UUID.randomUUID().toString();
         PoliticaEquipe.validarEquipeMae(listarHierarquia(), id, equipeMaeId);
         equipes.inserirEquipe(id, nome, descricao, equipeMaeId);
+        auditoria.registrar(autoraId,"team.created","Team",id);
         return buscarDetalheEquipe(id);
     }
     @Transactional
-    public DetalheEquipe editarEquipe(String id, String nome, String descricao, String equipeMaeId) {
+    public DetalheEquipe editarEquipe(String autoraId, String id, String nome, String descricao, String equipeMaeId) {
         bloquearHierarquia(); buscarEquipe(id);
         PoliticaEquipe.validarEquipeMae(listarHierarquia(), id, equipeMaeId);
         equipes.atualizarEquipe(id, nome, descricao, equipeMaeId);
+        auditoria.registrar(autoraId,"team.updated","Team",id);
         return buscarDetalheEquipe(id);
     }
     @Transactional
-    public DetalheEquipe arquivarEquipe(String id) {
+    public DetalheEquipe arquivarEquipe(String autoraId, String id) {
         bloquearHierarquia(); var equipe = buscarEquipe(id);
         long subequipesAtivas = equipes.contarSubequipesAtivas(id);
         PoliticaEquipe.arquivarEquipe(equipe, subequipesAtivas);
-        if (!equipe.archived()) equipes.arquivarEquipe(id);
+        if (!equipe.archived()) {equipes.arquivarEquipe(id);auditoria.registrar(autoraId,"team.archived","Team",id);}
         return buscarDetalheEquipe(id);
     }
     @Transactional
-    public void adicionarIntegrante(String equipeId, String usuarioId) {
+    public void adicionarIntegrante(String autoraId, String equipeId, String usuarioId) {
         bloquearHierarquia(); buscarEquipeAtiva(equipeId);
         var perfis = equipes.buscarStatusUsuarioBloqueado(usuarioId);
         if (perfis.isEmpty()) throw ProblemaDominio.naoEncontrado("Usuária não encontrada.");
         boolean integranteDuplicada = equipes.contarIntegrante(equipeId, usuarioId) > 0;
         PoliticaEquipe.adicionarIntegrante("ACTIVE".equals(perfis.get(0).get("status")), integranteDuplicada);
         equipes.inserirIntegrante(usuarioId, equipeId);
+        auditoria.registrar(autoraId,"team.member_added","Team",equipeId);
     }
     @Transactional
-    public void removerIntegrante(String equipeId, String usuarioId) {
+    public void removerIntegrante(String autoraId, String equipeId, String usuarioId) {
         bloquearHierarquia(); var equipe = buscarEquipeAtiva(equipeId);
         var perfis = equipes.buscarPerfilAcessoUsuarioBloqueado(usuarioId);
         if (perfis.isEmpty()) throw ProblemaDominio.naoEncontrado("Usuária não encontrada.");
@@ -92,5 +96,6 @@ public class EquipeService {
         if (projetos.possuiResponsabilidadeAtiva(usuarioId, equipeId))
             throw ProblemaDominio.conflito("Retire a responsabilidade dos projetos ativos antes de remover a integrante.");
         equipes.removerIntegrante(usuarioId, equipeId);
+        auditoria.registrar(autoraId,"team.member_removed","Team",equipeId);
     }
 }

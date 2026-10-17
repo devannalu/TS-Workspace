@@ -109,7 +109,7 @@ class ComentariosIntegrationTest {
         return comentarios.criar(usuaria,TAREFA,id,texto);
     }
     @Test void migrationConstraintSeedEHistoricoPreservados() {
-        assertThat(flyway.info().current().getVersion().getVersion()).isEqualTo("19");
+        assertThat(flyway.info().current().getVersion().getVersion()).isEqualTo("20");
         assertThat(flyway.migrate().migrationsExecuted).isZero(); seed.seed(); seed.seed();
         assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM permissions",Integer.class)).isEqualTo(49);
         assertThat(jdbc.queryForObject("SELECT COUNT(*) FROM role_permissions",Integer.class)).isEqualTo(140);

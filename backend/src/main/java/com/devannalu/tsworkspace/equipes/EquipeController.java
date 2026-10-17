@@ -3,6 +3,7 @@ package com.devannalu.tsworkspace.equipes;
 import jakarta.validation.Valid;
 import com.devannalu.tsworkspace.auth.AppUserPrincipal;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import jakarta.validation.constraints.*;
 import java.util.List;
 import java.util.UUID;
@@ -28,19 +29,19 @@ public class EquipeController {
     @GetMapping("/{id}") @PreAuthorize("@verificadorPermissao.possuiPermissao(authentication, 'teams.view')")
     public EquipeService.DetalheEquipe buscarDetalheEquipe(@PathVariable UUID id) { return teams.buscarDetalheEquipe(id.toString()); }
     @PostMapping @ResponseStatus(HttpStatus.CREATED) @PreAuthorize("@verificadorPermissao.possuiPermissao(authentication, 'teams.create')")
-    public EquipeService.DetalheEquipe criarEquipe(@Valid @RequestBody SalvarEquipeRequest input) {
-        return teams.criarEquipe(input.name(), input.description(), input.parentId() == null ? null : input.parentId().toString());
+    public EquipeService.DetalheEquipe criarEquipe(@AuthenticationPrincipal AppUserPrincipal pessoa, @Valid @RequestBody SalvarEquipeRequest input) {
+        return teams.criarEquipe(pessoa.id(), input.name(), input.description(), input.parentId() == null ? null : input.parentId().toString());
     }
     @PutMapping("/{id}") @PreAuthorize("@verificadorPermissao.possuiPermissao(authentication, 'teams.edit')")
-    public EquipeService.DetalheEquipe editarEquipe(@PathVariable UUID id, @Valid @RequestBody SalvarEquipeRequest input) {
-        return teams.editarEquipe(id.toString(), input.name(), input.description(), input.parentId() == null ? null : input.parentId().toString());
+    public EquipeService.DetalheEquipe editarEquipe(@AuthenticationPrincipal AppUserPrincipal pessoa, @PathVariable UUID id, @Valid @RequestBody SalvarEquipeRequest input) {
+        return teams.editarEquipe(pessoa.id(), id.toString(), input.name(), input.description(), input.parentId() == null ? null : input.parentId().toString());
     }
     @PostMapping("/{id}/archive") @PreAuthorize("@verificadorPermissao.possuiPermissao(authentication, 'teams.archive')")
-    public EquipeService.DetalheEquipe arquivarEquipe(@PathVariable UUID id) { return teams.arquivarEquipe(id.toString()); }
+    public EquipeService.DetalheEquipe arquivarEquipe(@AuthenticationPrincipal AppUserPrincipal pessoa, @PathVariable UUID id) { return teams.arquivarEquipe(pessoa.id(), id.toString()); }
     @PostMapping("/{id}/members") @ResponseStatus(HttpStatus.NO_CONTENT)
     @PreAuthorize("@verificadorPermissao.possuiPermissao(authentication, 'teams.manage_members')")
-    public void add(@PathVariable UUID id, @Valid @RequestBody AdicionarIntegranteRequest input) { teams.adicionarIntegrante(id.toString(), input.userId().toString()); }
+    public void add(@AuthenticationPrincipal AppUserPrincipal pessoa, @PathVariable UUID id, @Valid @RequestBody AdicionarIntegranteRequest input) { teams.adicionarIntegrante(pessoa.id(), id.toString(), input.userId().toString()); }
     @DeleteMapping("/{id}/members/{userId}") @ResponseStatus(HttpStatus.NO_CONTENT)
     @PreAuthorize("@verificadorPermissao.possuiPermissao(authentication, 'teams.manage_members')")
-    public void remove(@PathVariable UUID id, @PathVariable UUID userId) { teams.removerIntegrante(id.toString(), userId.toString()); }
+    public void remove(@AuthenticationPrincipal AppUserPrincipal pessoa, @PathVariable UUID id, @PathVariable UUID userId) { teams.removerIntegrante(pessoa.id(), id.toString(), userId.toString()); }
 }

@@ -55,3 +55,5 @@ Use a documentação viva para orientação atual:
 - [Fase 20 — Chat interno](fase-20-chat.md)
 
 - [Fase 21 — Busca global](fase-21-busca.md)
+
+- [Fase 22 — Auditoria administrativa](fase-22-auditoria.md)

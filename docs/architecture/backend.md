@@ -17,7 +17,7 @@ O pacote base é `com.devannalu.tsworkspace`. A organização acompanha o domín
 - `convites`: criação, validação e provisionamento atômico;
 - `tarefas`: regras, escopo, responsáveis, consulta paginada e ordenação do trabalho;
 - `projetos`: objetivos, período, escopo, responsáveis e progresso derivado das tarefas;
-- `auditoria`: persistência de eventos mínimos;
+- `auditoria`: eventos mínimos e consulta administrativa filtrada, paginada e sem metadados privados;
 - `compartilhado`: bloqueio de Fundadoras e erros de domínio;
 - `infraestrutura`: verificação de saúde e marcador do schema.
 
