@@ -1,5 +1,15 @@
 name: ts-workspace
 services:
+  mailpit:
+    profiles: [email]
+    image: axllent/mailpit:v1.31.6
+    container_name: ts-workspace-mailpit
+    ports:
+      - "127.0.0.1:${MAILPIT_SMTP_PORT:-1029}:1025"
+      - "127.0.0.1:${MAILPIT_UI_PORT:-8029}:8025"
+    environment:
+      MP_MAX_MESSAGES: 500
+    networks: [java-network]
   garage:
     image: dxflrs/garage:v2.4.1
     container_name: ts-workspace-garage

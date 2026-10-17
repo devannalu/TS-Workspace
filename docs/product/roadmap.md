@@ -28,7 +28,8 @@ as equipes e frentes reais da Tech Sisters.
 
 Busca global já reúne os sete módulos textuais com autorização atual e links contextuais.
 Auditoria administrativa já permite consulta filtrada e detalhe seguro com audit.view.
-Consolidar envio de emails, integrações,
+SMTP já atende convites e confirmação de conta, com Mailpit local e provedor configurável.
+Consolidar integrações,
 performance, testes e polimento da interface. Preparar configuração segura,
 operação e recuperação de dados para o ambiente de produção.
 

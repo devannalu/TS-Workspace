@@ -74,3 +74,7 @@ Consulte [testes](testing.md), [convenções](conventions.md) e
 
 
 Uploads locais usam Garage: configure as variáveis STORAGE no `.env` ignorado e execute `python docker/garage/inicializar.py`. Veja [storage](storage.md) para credenciais, CORS e smoke real.
+
+## E-mails locais
+
+O profile opcional email inicia somente Mailpit; configuração e diferenças de produção estão em [e-mail transacional](email.md). EMAIL_ENABLED é false por padrão; testes usam apenas captura local, sem credenciais de provedor externo.

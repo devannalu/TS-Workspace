@@ -24,7 +24,7 @@ export const aceitarConviteComFeedback = (dadosAceite: AceitarConviteRequest) =>
 export async function criarConviteComFeedback(dadosConvite: CriarConviteRequest) {
   try {
     const conviteCriado = await criarConvite(dadosConvite);
-    return { ok: true as const, url: conviteCriado.inviteUrl };
+    return { ok: true as const, url: conviteCriado.inviteUrl, envioEmail: conviteCriado.envioEmail };
   }
   catch (erro) {
     return {

@@ -11,7 +11,7 @@ O Next.js apresenta os dados pelas APIs Auth, RBAC, Teams, Users, Invites, Tasks
 | --- | --- | --- |
 | Dashboard / Início | IMPLEMENTADO | Equipes pessoais, usuárias ativas, convites pendentes, tarefas atribuídas e projetos no escopo: ativos, em andamento e com prazo próximo. |
 | Usuárias | IMPLEMENTADO | Lista paginada com busca e filtros de status/perfil/equipe; permite editar cargo, role e equipes conforme permissão. Protege a última Super Admin ativa e revoga sessões na inativação. |
-| Convites | IMPLEMENTADO | Criação, cancelamento, expiração e aceite de uso único. O link aparece uma vez no dialog, com cópia e feedback; envio automático por SMTP é planejado. |
+| Convites | IMPLEMENTADO | Criação, cancelamento, expiração e aceite de uso único. O link aparece uma vez no dialog, com cópia e feedback; envio SMTP opcional após commit, com link manual preservado em falha. |
 | Equipes | IMPLEMENTADO | Hierarquia visual, criação, edição, arquivamento com confirmação e busca de integrantes; uma usuária pode participar de várias equipes. Proteções contra ciclos e alterações indevidas da raiz. |
 | Tarefas | IMPLEMENTADO | Kanban em quatro etapas, prioridades, prazo, equipe, múltiplas responsáveis, criação/edição/detalhe, movimentação e ordenação, filtros e arquivamento. Escopo por equipe e acesso. Comentários, anexos, atividade e checklist contextual no detalhe, com progresso, ordem, conclusão e versões. |
 | Projetos | IMPLEMENTADO | Objetivo, equipe, responsáveis, período e quatro status; cards, filtros e detalhe com progresso derivado das tarefas ativas. Conclusão e arquivo exigem ausência de pendências. Tarefas podem permanecer sem projeto; comentários, anexos e atividade contextual nos detalhes. |
@@ -24,6 +24,7 @@ O Next.js apresenta os dados pelas APIs Auth, RBAC, Teams, Users, Invites, Tasks
 | Notas | IMPLEMENTADO | Documentação contextual em Projetos, Eventos, Parcerias e Reuniões; título/texto simples, autoria, edição própria, versão e remoção lógica. Acesso herdado da fonte; sem módulo global. |
 | Chat | IMPLEMENTADO | Geral do Workspace e canais derivados das equipes; mensagens paginadas por cursor, texto simples, autoria, edição própria, remoção/moderação e histórico readonly de equipes arquivadas. Polling visível de três segundos; sem DM, threads ou uploads. |
 | Notificações | IMPLEMENTADO | Central pessoal paginada, contador e leitura individual/em lote; atribuições, comentários, status e prazos de tarefas/projetos. Acesso atual revalidado; atualização a cada 60 segundos com a página visível. |
+| E-mails transacionais | IMPLEMENTADO | SMTP opcional para convite e confirmação de conta; envio após commit, templates seguros, resultado na interface e Mailpit local. Credenciais/remetente de produção são configuração externa. |
 | Auditoria | IMPLEMENTADO | Consulta administrativa readonly com audit.view, autora/ação/tipo/período, paginação e detalhe seguro; reutiliza audit_log, inclui operações de equipes e exclui metadata, credenciais e conteúdo privado. |
 | Busca | IMPLEMENTADO | Resultados agrupados de Tarefas, Projetos, Reuniões, Eventos, Conteúdo, Parcerias e Notas; permissões e equipe atuais aplicadas antes de contar/retornar, paginação e links contextuais. Exclui arquivo, remoção e dados de identidade/contato. |
 

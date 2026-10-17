@@ -15,6 +15,21 @@ server:
 spring:
   application:
     name: ts-workspace-java
+  mail:
+    host: ${SMTP_HOST:127.0.0.1}
+    port: ${SMTP_PORT:1029}
+    username: ${SMTP_USER:}
+    password: ${SMTP_PASSWORD:}
+    default-encoding: UTF-8
+    properties:
+      mail.smtp.auth: ${SMTP_AUTH:false}
+      mail.smtp.starttls.enable: ${SMTP_STARTTLS:false}
+      mail.smtp.starttls.required: ${SMTP_STARTTLS:false}
+      mail.smtp.ssl.enable: ${SMTP_SSL:false}
+      mail.smtp.connectiontimeout: 5000
+      mail.smtp.timeout: 5000
+      mail.smtp.writetimeout: 5000
+      mail.debug: false
   datasource:
     url: ${JAVA_DATABASE_URL:jdbc:mysql://127.0.0.1:3309/ts_workspace_java}
     username: ${JAVA_MYSQL_USER:ts_workspace_java}
@@ -40,6 +55,9 @@ spring:
       initialize-schema: never
     timeout: 8h
 app:
+  email:
+    enabled: ${EMAIL_ENABLED:false}
+    from: ${EMAIL_FROM:workspace@example.test}
   frontend-origin: ${FRONTEND_ORIGIN:http://localhost:3000}
   bootstrap:
     enabled: ${JAVA_BOOTSTRAP_ENABLED:false}

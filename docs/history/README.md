@@ -57,3 +57,5 @@ Use a documentação viva para orientação atual:
 - [Fase 21 — Busca global](fase-21-busca.md)
 
 - [Fase 22 — Auditoria administrativa](fase-22-auditoria.md)
+
+- [Fase 23 — E-mails transacionais](fase-23-emails.md)

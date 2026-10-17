@@ -17,6 +17,7 @@ export type ConviteCriadoResponse = {
   invite: Convite;
   token: string;
   inviteUrl: string;
+  envioEmail: "ENVIADO" | "DESATIVADO" | "FALHOU";
 };
 export type CriarConviteRequest = {
   email: string;

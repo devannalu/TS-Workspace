@@ -100,9 +100,7 @@ mesma transação da operação. Não existe UI/endpoint público de auditoria.
 As páginas oficiais usam usuarios.ts/convites.ts. /convite/[token] valida e aceita
 convites Java, com senha confirmada e direcionamento para login.
 
-SMTP, recuperação de senha, gestão visual de sessões, rate limiting distribuído,
-Tasks permanecem fora deste módulo. Não há Redis ou rate limit
-em memória apresentado como segurança de produção.
+O envio SMTP de convites e boas-vindas ocorre após commit pelo ServicoEmail. Falha não desfaz convite/conta; a criação informa a situação e mantém o link de uso único. Veja [configuração de email](../development/email.md). Recuperação de senha, gestão visual de sessões e rate limiting distribuído não fazem parte deste módulo.
 
 ## Verificação
 

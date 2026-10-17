@@ -22,6 +22,7 @@ export function FormularioConvite({
     [salvando, iniciarTransicao] = useTransition(),
     [mensagemErro, definirMensagemErro] = useState(""),
     [urlConvite, definirUrlConvite] = useState(""),
+    [envioEmail,definirEnvioEmail]=useState(""),
     [linkCopiado, definirLinkCopiado] = useState(false),
     [mensagemSucesso, definirMensagemSucesso] = useState("");
   const fecharFeedback = useCallback(() => definirMensagemSucesso(""), []);
@@ -57,6 +58,7 @@ export function FormularioConvite({
       >
         {urlConvite ? (
           <div className="space-y-4">
+            <p role="status" className={envioEmail==="FALHOU"?"feedback-error":"subtle"}>{envioEmail==="ENVIADO"?"Convite enviado por e-mail. Você também pode copiar o link abaixo.":envioEmail==="FALHOU"?"Convite criado, mas não foi possível enviar o e-mail. Copie o link e compartilhe com a pessoa convidada.":"Envio por e-mail desativado. Copie o link e compartilhe com a pessoa convidada."}</p>
             <label className="field">
               Link de convite
               <Input
@@ -122,6 +124,7 @@ export function FormularioConvite({
                 if (!resultadoOperacao.ok) definirMensagemErro(resultadoOperacao.error);
                 else {
                   definirUrlConvite(resultadoOperacao.url);
+                  definirEnvioEmail(resultadoOperacao.envioEmail??"DESATIVADO");
                   definirMensagemSucesso("Convite criado.");
                   router.refresh();
                 }
