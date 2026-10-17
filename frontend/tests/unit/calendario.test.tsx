@@ -1,11 +1,11 @@
 // @vitest-environment jsdom
 import { beforeEach, afterEach, it, expect, vi } from "vitest";
-import { render, screen, fireEvent, waitFor, cleanup } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor, cleanup, act } from "@testing-library/react";
 import { Calendario } from "../../src/components/calendario/calendario";
 import { navegacaoPermitida } from "../../src/lib/ui/permissoes";
 import type { ItemCalendario } from "../../src/lib/api/calendario";
-const api = vi.hoisted(() => ({ calendario:vi.fn(), tarefa:vi.fn(), projeto:vi.fn(), opcoes:vi.fn() }));
-vi.mock("../../src/lib/api/calendario", () => ({buscarCalendario:api.calendario}));
+const api = vi.hoisted(() => ({ calendario:vi.fn(), exportar:vi.fn(), tarefa:vi.fn(), projeto:vi.fn(), opcoes:vi.fn() }));
+vi.mock("../../src/lib/api/calendario", () => ({buscarCalendario:api.calendario,exportarCalendario:api.exportar}));
 vi.mock("../../src/lib/api/tarefas", async original => ({...await original<object>(),buscarTarefa:api.tarefa,buscarOpcoesTarefas:api.opcoes}));
 vi.mock("../../src/lib/api/projetos", async original => ({...await original<object>(),buscarProjeto:api.projeto,buscarOpcoesProjetos:api.opcoes}));
 vi.mock("../../src/components/tarefas/detalhe-tarefa", () => ({DetalheTarefa:({inicial}:{inicial:{titulo:string}}) => <p>Detalhe reutilizado: {inicial.titulo}</p>}));
@@ -13,8 +13,8 @@ vi.mock("../../src/components/projetos/detalhe-projeto", () => ({DetalheProjeto:
 const equipe={id:"equipe",nome:"Comunicação"};
 const tarefa:ItemCalendario={id:"TAREFA:tarefa",recursoId:"tarefa",tipo:"TAREFA",titulo:"Publicar campanha",dataInicio:"2026-10-07",dataFim:"2026-10-07",equipe,status:"A_FAZER",prioridade:"ALTA",responsaveis:[{id:"ana",nome:"Ana"}],concluido:false,atrasado:true};
 const projeto:ItemCalendario={...tarefa,id:"PROJETO:projeto",recursoId:"projeto",tipo:"PROJETO",titulo:"Encontro TS",dataInicio:"2026-10-01",dataFim:"2026-10-22",status:"CONCLUIDO",prioridade:null,concluido:true,atrasado:false};
-beforeEach(() => { vi.resetAllMocks();api.calendario.mockResolvedValue([tarefa,projeto]);api.opcoes.mockResolvedValue({equipes:[equipe],responsaveis:[{id:"ana",nome:"Ana"}]});api.tarefa.mockResolvedValue({titulo:tarefa.titulo,capacidades:{editar:false}});api.projeto.mockResolvedValue({titulo:projeto.titulo,capacidades:{editar:false}}); });
-afterEach(cleanup);
+beforeEach(() => { vi.resetAllMocks();URL.createObjectURL=vi.fn(()=>"blob:ics");URL.revokeObjectURL=vi.fn();api.exportar.mockResolvedValue(new Blob(["BEGIN:VCALENDAR"],{type:"text/calendar"}));api.calendario.mockResolvedValue([tarefa,projeto]);api.opcoes.mockResolvedValue({equipes:[equipe],responsaveis:[{id:"ana",nome:"Ana"}]});api.tarefa.mockResolvedValue({titulo:tarefa.titulo,capacidades:{editar:false}});api.projeto.mockResolvedValue({titulo:projeto.titulo,capacidades:{editar:false}}); });
+afterEach(()=>{cleanup();vi.useRealTimers();vi.restoreAllMocks();});
 function abrir(permissoes=["tasks.view","projects.view"],visao="agenda") {return render(<Calendario usuarioId="ana" permissoes={permissoes} equipes={[equipe]} dataInicial="2026-10-07" visaoInicial={visao}/>);}
 it("sidebar usa união de permissões sem key própria", () => {
   for(const permissoes of [["tasks.view"],["projects.view"]]) expect(navegacaoPermitida(permissoes).some(p=>p.href==="/calendario")).toBe(true);
@@ -78,3 +78,18 @@ it("erro seguro preserva controles e permite retry",async()=>{
 });
 
 vi.mock("../../src/components/notas/notas-contextuais",()=>({NotasContextuais:()=>null}));
+
+it("exporta arquivo com filtros atuais e libera URL temporária",async()=>{
+ abrir();await screen.findByRole("button",{name:"Abrir tarefa Publicar campanha"});
+ fireEvent.change(screen.getByLabelText("Equipe"),{target:{value:"equipe"}});await screen.findByRole("option",{name:"Ana"});
+ fireEvent.change(screen.getByLabelText("Tipo"),{target:{value:"PROJETO"}});fireEvent.click(screen.getByLabelText("Meus itens"));
+ const botao=screen.getByRole("button",{name:"Exportar agenda (ICS)"});await waitFor(()=>expect((botao as HTMLButtonElement).disabled).toBe(false));
+ let nome="";vi.spyOn(HTMLAnchorElement.prototype,"click").mockImplementation(function(this:HTMLAnchorElement){nome=this.download;});
+ vi.useFakeTimers();await act(async()=>{fireEvent.click(botao);});
+ expect(api.exportar).toHaveBeenCalledWith("2026-10-01","2026-10-31","equipe","PROJETO","ana");expect(nome).toBe("ts-workspace.ics");expect(URL.createObjectURL).toHaveBeenCalledTimes(1);
+ vi.advanceTimersByTime(1000);expect(URL.revokeObjectURL).toHaveBeenCalledWith("blob:ics");
+});
+it("falha de exportação não cria arquivo nem repete envio",async()=>{
+ api.exportar.mockRejectedValueOnce(new Error("Você não tem permissão para esta ação."));abrir();await screen.findByRole("button",{name:"Abrir tarefa Publicar campanha"});
+ fireEvent.click(screen.getByRole("button",{name:"Exportar agenda (ICS)"}));expect(await screen.findByText("Você não tem permissão para esta ação.")).toBeTruthy();expect(URL.createObjectURL).not.toHaveBeenCalled();expect(api.exportar).toHaveBeenCalledTimes(1);
+});

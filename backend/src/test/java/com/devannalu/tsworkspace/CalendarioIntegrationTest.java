@@ -40,6 +40,7 @@ class CalendarioIntegrationTest {
     @Autowired MockMvc http;
     @Autowired Flyway flyway;
     @Autowired com.devannalu.tsworkspace.calendario.CalendarioService calendario;
+    @Autowired com.devannalu.tsworkspace.calendario.ExportacaoCalendario exportacao;
     String superAdmin, admin, supervisora, suporte, outra, fora, equipeA, equipeB;
     static final String SENHA_TESTE = "Senha apenas de teste isolado 2026";
 
@@ -171,4 +172,24 @@ class CalendarioIntegrationTest {
         negar(suporte,"tasks.view"); negar(suporte,"projects.view"); negar(suporte,"meetings.view"); negar(suporte,"events.view"); negar(suporte,"content.view");
         http.perform(get("/api/v1/calendar").cookie(sessao).param("from",DE.toString()).param("to",ATE.toString())).andExpect(status().isForbidden());
     }
+    @Test void exportacaoRespeitaFontesEquipesResponsaveisEArquivo() {
+        String propria=tarefa(equipeA,DE,"A_FAZER",false),externa=tarefa(equipeB,DE,"A_FAZER",false),arquivada=tarefa(equipeA,DE,"A_FAZER",true);
+        jdbc.update("INSERT INTO task_assignee(task_id,user_id) VALUES(?,?)",propria,suporte);
+        var tipos=Set.of(com.devannalu.tsworkspace.calendario.CalendarioService.Tipo.TAREFA);
+        String arquivo=exportacao.exportar(suporte,DE,ATE,equipeA,tipos,suporte).replace("\r\n ","");
+        assertThat(arquivo).contains(propria).doesNotContain(externa,arquivada);
+        jdbc.update("DELETE FROM team_member WHERE user_id=?",suporte);
+        assertThat(exportacao.exportar(suporte,DE,ATE,null,null,null)).doesNotContain(propria,externa);
+    }
+    @Test void exportacaoHttpProtegeSessaoPermissaoEPeriodo() throws Exception {
+        http.perform(get("/api/v1/calendar/export").param("from",DE.toString()).param("to",ATE.toString())).andExpect(status().isUnauthorized());
+        var sessao=entrar(suporte);
+        http.perform(get("/api/v1/calendar/export").cookie(sessao).accept("text/calendar","application/problem+json").param("from",DE.toString()).param("to",ATE.toString()))
+            .andExpect(status().isOk()).andExpect(content().contentTypeCompatibleWith("text/calendar"))
+            .andExpect(header().string("Cache-Control","no-store")).andExpect(header().string("Content-Disposition","attachment; filename=\"ts-workspace.ics\""));
+        http.perform(get("/api/v1/calendar/export").cookie(sessao).accept("text/calendar","application/problem+json").param("from",DE.toString()).param("to",DE.plusDays(366).toString())).andExpect(status().isBadRequest());
+        for(String chave:List.of("tasks.view","projects.view","meetings.view","events.view","content.view"))negar(suporte,chave);
+        http.perform(get("/api/v1/calendar/export").cookie(sessao).accept("text/calendar","application/problem+json").param("from",DE.toString()).param("to",ATE.toString())).andExpect(status().isForbidden());
+    }
+
 }

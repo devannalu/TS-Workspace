@@ -384,3 +384,8 @@ it("Projeto arquivado mantém abas e leitura", async () => {
     await screen.findByText("Ainda não há atividades registradas."),
   ).toBeTruthy();
 });
+
+it("atividade contextual traduz remoção de nota sem recuperar seu corpo",async()=>{
+ api.atividade.mockResolvedValue({items:[{id:"registro",tipo:"note.removed",ator:{id:"ana",nome:"Ana"},criadaEm:comentario.criadaEm}],total:1,page:0,size:25});
+ render(<AbasColaboracao recurso="projects" recursoId="projeto"><p>Detalhes</p></AbasColaboracao>);fireEvent.click(screen.getByRole("tab",{name:"Atividade"}));expect(await screen.findByText("removeu uma nota do projeto.",{exact:false})).toBeTruthy();expect(api.listar).not.toHaveBeenCalled();
+});

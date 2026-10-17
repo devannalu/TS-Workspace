@@ -13,3 +13,11 @@ export function buscarCalendario(de: string, ate: string, equipeId = "", tipo = 
   if (responsavelId) parametros.set("responsibleId", responsavelId);
   return requisitarJava<ItemCalendario[]>(`/calendar?${parametros}`);
 }
+
+export function exportarCalendario(de:string,ate:string,equipeId="",tipo="",responsavelId="") {
+  const parametros=new URLSearchParams({from:de,to:ate});
+  if(equipeId)parametros.set("teamId",equipeId);
+  if(tipo)parametros.set("types",tipo);
+  if(responsavelId)parametros.set("responsibleId",responsavelId);
+  return requisitarJava<Blob>(`/calendar/export?${parametros}`,"GET",undefined,"arquivo");
+}

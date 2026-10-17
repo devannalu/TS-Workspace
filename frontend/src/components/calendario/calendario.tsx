@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { CalendarDays, ChevronLeft, ChevronRight, CheckCircle2 } from "lucide-react";
 import { Button } from "../ui/button";
 import { ErrorState, EmptyState } from "../ui/feedback";
-import { buscarCalendario, type ItemCalendario } from "@/lib/api/calendario";
+import { exportarCalendario,buscarCalendario, type ItemCalendario } from "@/lib/api/calendario";
 import { buscarTarefa, buscarOpcoesTarefas, statusTarefa, prioridadesTarefa, type Tarefa, type OpcoesTarefas, type ReferenciaTarefa } from "@/lib/api/tarefas";
 import { buscarProjeto, buscarOpcoesProjetos, statusProjeto, type Projeto, type OpcoesProjetos } from "@/lib/api/projetos";
 import { buscarReuniao,opcoesReunioes,formatarHorarioReuniao,statusReuniao,type Reuniao,type OpcoesReunioes } from "@/lib/api/reunioes";
@@ -33,6 +33,7 @@ export function Calendario({ usuarioId, permissoes, equipes, dataInicial, visaoI
   const [erro, definirErro] = useState("");
   const [revisao, definirRevisao] = useState(0);
   const [abrindo, definirAbrindo] = useState(false);
+  const [exportando,definirExportando]=useState(false),[erroExportacao,definirErroExportacao]=useState("");
   const [tarefa, definirTarefa] = useState<{ recurso: Tarefa; opcoes: OpcoesTarefas }>();
   const [projeto, definirProjeto] = useState<{ recurso: Projeto; opcoes: OpcoesProjetos }>();
   const [reuniao,definirReuniao]=useState<{recurso:Reuniao;opcoes:OpcoesReunioes}>();
@@ -91,6 +92,16 @@ export function Calendario({ usuarioId, permissoes, equipes, dataInicial, visaoI
     } catch(e) { definirErro(e instanceof Error ? e.message : "Não foi possível abrir este recurso."); }
     finally { definirAbrindo(false); }
   }
+  async function exportar() {
+    definirExportando(true);definirErroExportacao("");
+    try {
+      const arquivo=await exportarCalendario(de,ate,equipeId,tipo,meusItens?usuarioId:responsavelId);
+      const url=URL.createObjectURL(arquivo),link=document.createElement("a");
+      link.href=url;link.download="ts-workspace.ics";document.body.append(link);link.click();link.remove();
+      setTimeout(()=>URL.revokeObjectURL(url),1000);
+    }catch(e){definirErroExportacao(e instanceof Error?e.message:"Não foi possível exportar a agenda.");}
+    finally{definirExportando(false);}
+  }
   function concluir() {
     definirTarefa(undefined); definirProjeto(undefined);definirReuniao(undefined);definirEvento(undefined);definirConteudo(undefined); prepararConsulta(); definirRevisao(r => r + 1);
   }
@@ -118,7 +129,9 @@ export function Calendario({ usuarioId, permissoes, equipes, dataInicial, visaoI
   const diasAgenda = dias.filter(dia => itens.some(item => (item.dataInicio < de ? de : item.dataInicio) === dia));
 
   return <div className="space-y-6">
-    <header><h1 className="page-title">Calendário</h1><p className="subtle mt-2">Prazos e períodos das suas equipes em um só lugar.</p></header>
+    <header className="flex flex-wrap justify-between items-start gap-3"><div><h1 className="page-title">Calendário</h1><p className="subtle mt-2">Prazos e períodos das suas equipes em um só lugar.</p></div><Button variant="secondary" disabled={exportando||carregando} onClick={()=>void exportar()}>{exportando?"Exportando…":"Exportar agenda (ICS)"}</Button></header>
+    {erroExportacao&&<ErrorState message={erroExportacao}/>}
+    <p className="subtle text-xs">A exportação usa o período e os filtros atuais. O arquivo é uma cópia privada para importar no seu calendário, sem sincronização automática.</p>
     <div className="workspace-panel space-y-4 p-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap gap-1" role="group" aria-label="Visão do calendário">

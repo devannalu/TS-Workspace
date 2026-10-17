@@ -42,6 +42,7 @@ class NotasIntegrationTest {
     @Autowired Flyway flyway;
     @Autowired com.devannalu.tsworkspace.parcerias.ParceriaService parcerias;
     @Autowired com.devannalu.tsworkspace.notas.NotaService notas;
+    @Autowired com.devannalu.tsworkspace.comentarios.ComentarioService comentarios;
     String superAdmin, admin, supervisora, suporte, outra, fora, equipeA, equipeB;
     static final String SENHA_TESTE = "Senha apenas de teste isolado 2026";
 
@@ -166,4 +167,15 @@ class NotasIntegrationTest {
             inicio.countDown();int sucesso=0;for(var resultado:resultados)if(resultado.get(15,java.util.concurrent.TimeUnit.SECONDS))sucesso++;assertThat(sucesso).isEqualTo(1);
         }finally{pool.shutdownNow();}
     }
+    @Test void atividadeDoProjetoConsolidaNotasSemExporCorpoRemovido() throws Exception {
+        String projeto=projeto(),outro=projeto();var nota=notas.criar(supervisora,Recurso.PROJETO,projeto,"Decisão","Corpo privado");
+        notas.editar(supervisora,nota.id(),"Decisão revisada","Corpo privado revisado",0);notas.remover(supervisora,nota.id(),1);
+        notas.criar(supervisora,Recurso.PROJETO,outro,"Outra nota","Outro corpo privado");
+        var tipo=com.devannalu.tsworkspace.comentarios.ComentarioRepository.Recurso.PROJETO;
+        var atividade=comentarios.listarAtividade(suporte,tipo,projeto,0,25);
+        assertThat(atividade.items()).extracting(e->e.tipo()).containsExactlyInAnyOrder("note.created","note.updated","note.removed");
+        assertThat(atividade.total()).isEqualTo(3);assertThat(json.writeValueAsString(atividade)).doesNotContain("Corpo privado","Decisão","Outro corpo");
+        assertThatThrownBy(()->comentarios.listarAtividade(fora,tipo,projeto,0,25)).isInstanceOf(AccessDeniedException.class);
+    }
+
 }

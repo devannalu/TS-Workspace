@@ -51,3 +51,11 @@ describe("cliente oficial Java", () => {
     expect(fetchMock.mock.calls[3][1].headers["X-XSRF-TOKEN"]).toBe("new");
   });
 });
+
+it("arquivo usa cookie e leitura binária sem preparar CSRF",async()=>{
+ fetchMock.mockResolvedValueOnce(new Response("BEGIN:VCALENDAR\r\nEND:VCALENDAR\r\n",{headers:{"Content-Type":"text/calendar;charset=UTF-8"}}));
+ const arquivo=await requisitarJava<Blob>("/calendar/export?from=2026-10-01&to=2026-10-31","GET",undefined,"arquivo");expect(await arquivo.text()).toContain("BEGIN:VCALENDAR");expect(fetchMock).toHaveBeenCalledTimes(1);expect(fetchMock.mock.calls[0][1]).toMatchObject({credentials:"include",cache:"no-store",headers:{Accept:"text/calendar, application/problem+json"}});
+});
+it("erro de arquivo preserva tratamento central e não baixa problema JSON",async()=>{
+ fetchMock.mockResolvedValueOnce(response(403,{detail:"SQL privado"}));await expect(requisitarJava<Blob>("/calendar/export","GET",undefined,"arquivo")).rejects.toMatchObject({status:403,message:"Você não tem permissão para esta ação."});
+});

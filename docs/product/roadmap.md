@@ -29,8 +29,8 @@ as equipes e frentes reais da Tech Sisters.
 Busca global já reúne os sete módulos textuais com autorização atual e links contextuais.
 Auditoria administrativa já permite consulta filtrada e detalhe seguro com audit.view.
 SMTP já atende convites e confirmação de conta, com Mailpit local e provedor configurável.
-Consolidar integrações,
-performance, testes e polimento da interface. Preparar configuração segura,
+Integrações S3/R2, SMTP e exportação ICS estão consolidadas e documentadas.
+Revisar performance, testes e polimento da interface. Preparar configuração segura,
 operação e recuperação de dados para o ambiente de produção.
 
 ## Critérios de evolução
@@ -53,4 +53,4 @@ Anexos contextuais utilizam storage S3 compatível, Garage local e R2 configurá
 
 Calendário é uma projeção de Tarefas, Projetos, Reuniões/Talks, Eventos e Conteúdo e não possui persistência própria.
 A visão temporal disponível agrega prazos e períodos, respeita permissões e escopo das fontes
-e inclui encontros com horário/fuso. Sincronização externa e ICS permanecem fora desta entrega.
+e inclui encontros com horário/fuso. Exportação ICS privada utiliza os mesmos filtros e autorização, sem persistência paralela. Sincronização automática e OAuth são evoluções futuras fora do escopo atual.

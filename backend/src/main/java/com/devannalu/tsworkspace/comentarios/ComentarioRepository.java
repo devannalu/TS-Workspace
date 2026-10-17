@@ -68,17 +68,23 @@ public class ComentarioRepository {
             + "(a.entity_type='Comment' AND a.action IN ('comment.created','comment.updated','comment.removed') "
             + "AND EXISTS (SELECT 1 FROM workspace_comment c WHERE c.id=a.entity_id AND c." + recurso.coluna + "=?)) OR "
             + "(a.entity_type='Attachment' AND a.action IN ('attachment.created','attachment.removed') "
-            + "AND EXISTS(SELECT 1 FROM attachment x WHERE x.id=a.entity_id AND x." + recurso.coluna + "=?)))";
+            + "AND EXISTS(SELECT 1 FROM attachment x WHERE x.id=a.entity_id AND x." + recurso.coluna + "=?))"
+            + (recurso==Recurso.PROJETO?" OR (a.entity_type='Note' AND a.action IN ('note.created','note.updated','note.removed') AND EXISTS(SELECT 1 FROM workspace_note n WHERE n.id=a.entity_id AND n.project_id=?))":"")+")";
     }
     public List<Evento> listarAtividade(Recurso recurso, String id, int pagina, int tamanho) {
+        var parametros=new java.util.ArrayList<Object>(List.of(recurso.entidade,id,id,id));
+        if(recurso==Recurso.PROJETO)parametros.add(id);
+        parametros.add(tamanho);parametros.add(pagina*tamanho);
         return jdbc.query("SELECT a.id,a.action,a.actor_id,u.name,a.created_at FROM audit_log a LEFT JOIN app_user u ON u.id=a.actor_id WHERE "
             + filtroAtividade(recurso) + " ORDER BY a.created_at DESC,a.id DESC LIMIT ? OFFSET ?",
             (r, linha) -> new Evento(r.getString("id"), r.getString("action"),
                 r.getString("actor_id") == null ? null : new Pessoa(r.getString("actor_id"), r.getString("name")),
-                r.getTimestamp("created_at").toInstant()), recurso.entidade, id, id, id, tamanho, pagina * tamanho);
+                r.getTimestamp("created_at").toInstant()), parametros.toArray());
     }
     public long contarAtividade(Recurso recurso, String id) {
+        var parametros=new java.util.ArrayList<Object>(List.of(recurso.entidade,id,id,id));
+        if(recurso==Recurso.PROJETO)parametros.add(id);
         return jdbc.queryForObject("SELECT COUNT(*) FROM audit_log a WHERE " + filtroAtividade(recurso),
-            Long.class, recurso.entidade, id, id, id);
+            Long.class,parametros.toArray());
     }
 }

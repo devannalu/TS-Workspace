@@ -59,3 +59,5 @@ Use a documentação viva para orientação atual:
 - [Fase 22 — Auditoria administrativa](fase-22-auditoria.md)
 
 - [Fase 23 — E-mails transacionais](fase-23-emails.md)
+
+- [Fase 24 — Integrações e consolidação](fase-24-integracoes.md)

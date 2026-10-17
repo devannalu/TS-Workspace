@@ -19,7 +19,7 @@ export async function lerResposta<T>(response: Response): Promise<T> {
     };
     // Detalhes técnicos do servidor não devem chegar à interface.
     const problema = await response.json().catch(() => null);
-    if (response.status === 400 && ["Informe um intervalo válido de até 366 dias.","Horário inexistente ou ambíguo neste fuso. Escolha outro horário."].includes(problema?.detail))
+    if (response.status === 400 && ["Informe um intervalo válido de até 366 dias.","Horário inexistente ou ambíguo neste fuso. Escolha outro horário.","Há muitos itens para exportar. Reduza o período ou aplique filtros."].includes(problema?.detail))
       throw new ErroApi(400, problema.detail);
     const conflitosConhecidos = [
       "Esta mensagem foi alterada. Atualize a conversa e tente novamente.",
@@ -114,8 +114,9 @@ export async function requisitarJava<T>(
   path: string,
   method = "GET",
   body?: unknown,
+  formato: "json" | "arquivo" = "json",
 ): Promise<T> {
-  const headers: Record<string, string> = { Accept: "application/json" };
+  const headers: Record<string, string> = { Accept: formato === "arquivo" ? "text/calendar, application/problem+json" : "application/json" };
   if (method !== "GET") headers["X-XSRF-TOKEN"] = await obterCsrf();
   if (body !== undefined) headers["Content-Type"] = "application/json";
   const response = await fetch(`${urlApiJava}/api/v1${path}`, {
@@ -138,6 +139,7 @@ export async function requisitarJava<T>(
     typeof window !== "undefined"
   )
     window.dispatchEvent(new Event("java-session-expired"));
+  if(formato === "arquivo" && response.ok) return response.blob().catch(()=>{throw new ErroApi(502,"Não foi possível ler o arquivo. Tente novamente em instantes.");}) as Promise<T>;
   return lerResposta<T>(response);
 }
 export const consultarSaudeJava = () =>
